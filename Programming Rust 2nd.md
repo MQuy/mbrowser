@@ -34,7 +34,7 @@
   ```rust
   (&str, i32, ) == (&str, i32)
   ```
-- Rust borrow rules: you either have any number of immutable references or only one mutable reference at a given time
+- Rust borrow rules: you either have any number of immutable references or only one mutable reference at a given time (lifetime of references)
 - Rust has no notation for an uninitialized object (array, tuple ...) to prevent junk values
 - Slices `&[T]` are always passed by reference and are converted automatically from vector and array
   ```rust
@@ -86,3 +86,58 @@
   }
   ```
 - any type that needs to do something special when a value is dropped cannot be _Copy_ (whole value is on stack)
+
+### 5. References
+
+- if there is an immutable reference, the owner cannot modify its value. If there is a mutable reference, owner cannot be used (until the mutable reference goes away).
+- to a function:
+  - pass by value <-> move the ownership
+  - pass by reference <-> borrow from the owner
+- [`.` operator](https://doc.rust-lang.org/nomicon/dot-operator.html) performs a lot of magic to convert types including auto-reference, auto-dereference ...
+- Once C++ reference has been initialized, there is no way to change while in Rust reference can be changed.
+  ```rust
+  let x = 10;
+  let y = 20;
+  let mut z = &x;
+  z = &y;
+  ```
+- reference to references.
+  ```rust
+  struct Point { x: i32, y: i32 }
+  let point = Point { x: 1000, y: 729 };
+  let r: &Point = &point;
+  let rr: &&Point = &r;
+  let rrr: &&&Point = &rr;
+  ```
+  ![reference](https://i.imgur.com/KelOvgm.png)
+- comparing references performs on their final target. Using `std::ptr:eq`, if you want to compare their addresses
+  ```rust
+  let x = 10;
+  let y = 10;
+  let rx = &x;
+  let ry = &y;
+  let rrx = &rx;
+  let rry = &ry;
+  assert!(rrx <= rry);
+  assert!(rrx == rry);
+  assert!(!std::ptr::eq(rx, ry));
+  ```
+- references are never null. You can reference to the value of any sort of expression.
+  ```rust
+  let x = &1000; // anonymous variable is created to hold a value
+  ```
+- every reference (to be correct, variable) has a lifetime which is used by Rust to prevent a dangling pointer.
+  ```rust
+  let x;
+  {
+    let y = 10;
+    x = &y; // lifetime of &y from this point to end of block
+  }
+  println!("{}", x); // error
+  ```
+- you can explicity specify lifetime in function parameters and return
+  ```rust
+  fn foo<'a, 'b>(x: &'a i32, y: &'b i32) -> &'a i32 {}
+  ```
+- each kind of reference affects what we can do with other values in the same ownership tree.
+  ![tree](https://i.imgur.com/52OG5Au.png)
