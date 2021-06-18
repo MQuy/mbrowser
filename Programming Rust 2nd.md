@@ -35,7 +35,6 @@
   (&str, i32, ) == (&str, i32)
   ```
 - Rust borrow rules: you either have any number of immutable references or only one mutable reference at a given time (lifetime of references)
-- Rust has no notation for an uninitialized object (array, tuple ...) to prevent junk values
 - Slices `&[T]` are always passed by reference and are converted automatically from vector and array
   ```rust
   let v: Vec<f64> = vec![0.0,  0.707,  1.0,  0.707];
@@ -135,9 +134,44 @@
   }
   println!("{}", x); // error
   ```
-- you can explicity specify lifetime in function parameters and return
+- you can explicity specify lifetime in function parameters and return.
   ```rust
   fn foo<'a, 'b>(x: &'a i32, y: &'b i32) -> &'a i32 {}
   ```
 - each kind of reference affects what we can do with other values in the same ownership tree.
   ![tree](https://i.imgur.com/52OG5Au.png)
+
+### 6. Expressions
+
+- Rust is expression language (most statements in C are expressions in Rust).
+- value of the block is the last expression without a semicolon.
+  ```rust
+  {
+    let x = 10;
+    x  // value of this block
+  }
+  ```
+- `if` without `else` must always return `()` and all blocks of `if` expression must produce values of the same type (similar to `match`).
+  ```rust
+  let suggested_pet =
+    if with_wings { Pet::Buzzard } else { Pet::Hyena };  // ok
+  let favorite_number =
+      if user.is_hobbit() { "eleventy-one" } else { 9 };  // error
+  let best_sports_team =
+      if is_hockey_season() { "Predators" };  // error
+  ```
+- `fn` is declared inside a block, its scope is the entire block (outside cannot see it) and it cannot access local variables.
+- a condition (in `if`, `while` ...) must be an expression of `bool` (Rust doesn't implicitly convert to bool).
+- loops are also expressions in Rust (`while`, `for` produces `()`). `break` can be used with label and value while `continue` only can be used with a label
+  ```rust
+  let foo = 'outer: loop {
+    break 'outer 10;
+  }
+  ```
+- unlike C, Rust differentitate between `()` (unit type) and `!` (never returns).
+- `a..b` is end-exclusive range (not include b) while `a..=b` is end-inclusive range.
+- unlike C, `%` can be used on floating-point numbers
+  ```rust
+  let x = 12.5 % 10; // 2.5
+  ```
+- values of type `bool`, `char` or, C-like `enum` may be cast to any integer type. The opposite direction is not allowed for example cannot cast `u16` to `char` because some `u16` values cannot be presented in `char` (`0xd800`). We can use a standard method `std::char::from_u32()` which returns `Option<char>`
