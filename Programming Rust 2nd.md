@@ -182,3 +182,60 @@
 - panic is safe (catch before it actually happens), it doesn't voliate any Rust's safety rules since stack (including heap segments linked to variables) is cleanup -> there is no dangling pointer . Panic is like `RuntimeException` in C++.
 - second panic happens during the cleanup of the first panic causes fatal -> thread is aborted. You can also config panic behavior like `-C panic=abort` (abort in the first panic).
 - there is shortcut for handling `Result` (like `unwrap/expect`) and error propagation (`?`).
+
+### 8. Crates and Modules
+
+- There are two kinds of crate: binary or library. You can either specify or let Rust figure it out by looking at `src/lib.rs` or `src/main.rs`.
+- program can mix crates written in different editions since edition only affects how source code is construed.
+- modules can be nested and be specified with `pub(super)/pub(in <path>)` to make them visible to a specific parent or its descendants.
+- a path (smiliar to filesystem) can take two forms:
+  - absolute path starts a crate root like `crate`.
+  - relative path starts from a current module like `self/super`.
+  ```rust
+  mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+  }
+  pub fn eat_at_restaurant() {
+      // Absolute path
+      crate::front_of_house::hosting::add_to_waitlist();
+      // Relative path
+      front_of_house::hosting::add_to_waitlist();
+  }
+  ```
+- struct's fields, even private fields, are accessible in the module and its submodules where the struct is declared. Outside the module, only public fields are accessible.
+- `const` is smiliar to C `#define`, `static` is smiliar to C `static`
+  ```rust
+  pub const FOO: i32 = 10;
+  pub static BAZ: &str = "hello world";
+  ```
+- tests are ordinary functions marked with the `#[test]` attribute. You can either use `assert!` family macros to validate or return `Result<(), E>`.
+- tests are compilied conditionally, `cargo build` skips the testing code.
+- there are 3 styles of testings:
+  - unit testing lives right alongside with your code.
+  - integration testing, files (each file is compiled as a separate crate) in `tests` directory.
+  - documentation testing, code block in your document. `rustdoc` stores each code sample in a separate file, adding boilterplate code to produce programs. You disable if needed via `no_run/ignore`.
+  ```rust
+  /// Return true if two ranges overlap.
+  ///
+  ///     assert_eq!(ranges::overlap(0..7, 3..10), true);
+  ///     assert_eq!(ranges::overlap(1..5, 101..105), false);
+  ///
+  /// If either range is empty, they don't count as overlapping.
+  ///
+  ///     assert_eq!(ranges::overlap(0..0, 0..10), false);
+  ///
+  ---- // temporary file 1
+  use ranges;
+  fn main() {
+      assert_eq!(ranges::overlap(0..7, 3..10), true);
+      assert_eq!(ranges::overlap(1..5, 101..105), false);
+  }
+  ---- // temporary file 2
+  use ranges;
+  fn main() {
+      assert_eq!(ranges::overlap(0..0, 0..10), false);
+  }
+  ```
+- cargo uses semantic versioning, lock mechanism and workspace (probably like `yarn`).
