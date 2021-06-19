@@ -175,3 +175,10 @@
   let x = 12.5 % 10; // 2.5
   ```
 - values of type `bool`, `char` or, C-like `enum` may be cast to any integer type. The opposite direction is not allowed for example cannot cast `u16` to `char` because some `u16` values cannot be presented in `char` (`0xd800`). We can use a standard method `std::char::from_u32()` which returns `Option<char>`
+
+### 7. Error Handling
+
+- There are two kinds of error handling: panic and `Result`.
+- panic is safe (catch before it actually happens), it doesn't voliate any Rust's safety rules since stack (including heap segments linked to variables) is cleanup -> there is no dangling pointer . Panic is like `RuntimeException` in C++.
+- second panic happens during the cleanup of the first panic causes fatal -> thread is aborted. You can also config panic behavior like `-C panic=abort` (abort in the first panic).
+- there is shortcut for handling `Result` (like `unwrap/expect`) and error propagation (`?`).
