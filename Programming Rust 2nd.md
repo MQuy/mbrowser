@@ -239,3 +239,62 @@
   }
   ```
 - cargo uses semantic versioning, lock mechanism and workspace (probably like `yarn`).
+
+### 8. Structs
+
+- There are 3 kinds of struct types: named-field, tuple-like and unit-like.
+- struct and its fields are private by default. Visiblity is for different modules, creating a struct value requires all the struct's fields are visible.
+  ```rust
+  mod Foo {
+    #[derive(Debug)]
+    pub struct Point {
+        pub x: i32,
+        y: i32,         // private
+    }
+  }
+  pub struct Distance {
+      meter: i32,
+  }
+  fn main() {
+      let p = Foo::Point { x: 10, y: 20 }; // y is private, not visible since Point and main belong to different modules
+      let d = Distance { meter: 100 };     // meter is private, Distance and main belong to the same module
+  }
+  ```
+- not like spread operator in javascript, `..` in rust only takes fields (move) not mentioned.
+  ```rust
+  struct Point {
+    x: i32,
+    y: i32,
+  }
+  let p1 = Point { x: 10, y: 20 };
+  let p2 = Point { x: 15, ..p1 }; // p2 = { 15, 20 }
+  ```
+- tuple-like struct is good for _newtypes_ since you get stricker type checking.
+  ```rust
+  struct Ascii(Vec<u8>);
+  ```
+- values of unit-like struct occupies no memory and no generated code.
+- struct fields' values might be not stored in the order they are in struct (you can specify layout like `#[repr(C)]`).
+- a method's `self` argument can also be a `Box<Self>`, `Rc<Self>`, or `Arc<Self>` (same for `&self` and `&mut self`).
+  ```rust
+  struct Queue {}
+  impl Queue {
+    pub fn push(&mut self, c: char) {}
+  }
+  let mut q = Queue {};
+  q.push('h');
+  let mut bq = Box::new(Queue {});
+  bq.push('e');
+  ```
+- there are associated functions and consts.
+  ```rust
+  impl Queue {
+    const ZERO: Queue = Queue {};
+    const NAME: &str = "Queue";
+    pub fn new() -> Queue {
+      Queue {}
+    }
+  }
+  ```
+- generic struct is similar to c++ template, so you can specialize if needed.
+- when you need mutable data inside an immutable value, there are `Cell<T>` and `RefCell<T>`.
