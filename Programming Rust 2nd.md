@@ -298,3 +298,56 @@
   ```
 - generic struct is similar to c++ template, so you can specialize if needed.
 - when you need mutable data inside an immutable value, there are `Cell<T>` and `RefCell<T>`.
+
+### 10. Enums and Patterns
+
+- enum is similiar to Haskell algebraic data types.
+- enum without data is similar to C enum (default and following values). You can cast enum to integer, but integer to enum is not allowed.
+  ```rust
+  enum Status {
+    Created,
+    Pending = 10,
+    Completed,
+  }
+  println!("{}", Status::Completed as i32); // 11
+  ```
+- there are 3 kinds of enum variant, echoing 3 kinds of struct. All constructions and fields share the same visibility of the enum.
+  ```rust
+  enum RelationshipStatus {
+    Single,
+    InARelationship,
+    ItsComplicated(Option<String>),
+    ItsExtremelyComplicated {
+        car: DifferentialEquation,
+        cdr: EarlyModernistPoem,
+    },
+  }
+  ```
+- enum with data is stored as a small integer tag, plus enough memory to hold all the fields the largest variant.
+  ![enum](https://i.imgur.com/O0kGJKX.png)
+- there are special cases, Rust can eliminate the tag field. For example, `Option<T>` when T is a reference (`Box` or smart pointer types), since T is cannot be null, so `None` can be represented as 0, `Some` for pointers.
+- pattern matching supports a various types: literal, variable, tuple, struct, array, reference ...
+  ```rust
+  match get_account(id) {
+    Some(Account { name, language, ..}) => something // match name, language and ignore other fields
+  }
+  ```
+- matching a noncopyable value moves the value.
+  ```rust
+  match account {
+    Account { name, language, .. } => {
+        ui.greet(&name, &language);
+        ui.show_settings(&account);  // error: borrow of moved value: `account`
+    }
+  }
+  // borrow instead
+  match account {
+    Account { ref name, ref language, .. } => {
+        ui.greet(name, language);
+        ui.show_settings(&account);  // ok
+    }
+  }
+  ```
+- there are two kind of patterns:
+  - irrefutable pattern always match, `let` and `for` only accepts this pattern.
+  - refutable pattern might not match.
