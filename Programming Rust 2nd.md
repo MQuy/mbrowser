@@ -301,7 +301,7 @@
 
 ### 10. Enums and Patterns
 
-- enum is similiar to Haskell algebraic data types.
+- enum is similiar to Haskell's algebraic data types.
 - enum without data is similar to C enum (default and following values). You can cast enum to integer, but integer to enum is not allowed.
   ```rust
   enum Status {
@@ -351,3 +351,116 @@
 - there are two kind of patterns:
   - irrefutable pattern always match, `let` and `for` only accepts this pattern.
   - refutable pattern might not match.
+
+### 11. Traits and Generics
+
+- traits is inspired by Haskell's typeclass, while generics is similiar to C++ template (generate machine code for each type `T` that you actually use).
+- to use traits methods for a type, you have to explicity import that traits.
+- C# interface, a value of type T is a reference to any object that implements T, the same for Rust.
+  ```rust
+  use std::io::Write;
+  let mut buf: Vec<u8> = vec![];
+  let writer: dyn Write = buf;  // error: `Write` does not have a constant size
+  let writer: &dyn Write = &buf;  // ok
+  let writer: &mut dyn Write = &mut buf;  // ok, creating fat pointer (trait object) contains a pointer to data and a pointer to vtable
+  ```
+  [trait object](https://i.imgur.com/RSudX7c.png)
+- unlike C++, the vtable pointer is stored as part of the struct, Rust use flat pointers so a struct can implement dozens of traits without containing dozens of vtable pointers -> a method call will be dynamic dispatching.
+- references and smart pointers (`Box`, `Rc` ...) are converted to trait objects when needed.
+- different between generic and trait
+  - generic generates machine code for each type you use (easy for optimize and better speed).
+  - trait object uses dynamic dispatch.
+  ```rust
+  fn say_hello(out: &mut dyn Write)     // plain
+  fn say_hello<W: Write>(out: &mut W)   // generic
+  fn say_hello(out: &mut dyn Write)     // trait
+  ```
+- everything defined in a trait `impl` must actually be a feature of trait (if you need a helper method, defining in `impl` of that type).
+  ```rust
+  trait Visible {
+    fn draw(&self, canvas: &mut Canvas);
+    fn hit_test(&self, x: i32, y: i32) -> bool;
+  }
+  impl Visible for Broom {
+    fn draw(&self, canvas: &mut Canvas) {
+        for y in self.broomstick_range() {
+            canvas.write_at(self.x, y, '|');
+        }
+        canvas.write_at(self.x, self.y, 'M');
+    }
+    fn hit_test(&self, x: i32, y: i32) -> bool {
+        self.x == x
+        && self.y - self.height - 1 <= y
+        && y <= self.y
+    }
+  }
+  impl Broom {
+    fn broomstick_range(&self) -> Range<i32> {
+        self.y - self.height - 1 .. self.y
+    }
+  }
+  ```
+- when implementing a trait, either the trait (also trait's type parameter) or the type must be local in the current crate (_orphan rule_) to ensure that other people's code cannot break yours and vice versa.
+- a trait that uses `Self` is incompatible with trait objects
+  ```rust
+  pub trait Spliceable {
+    fn splice(&self, other: &Self) -> Self; // requires self and other are the same type
+  }
+  impl Spliceable for CherryTree {
+    fn splice(&self, other: &Self) -> Self {
+    }
+  }
+  impl Spliceable for Mammoth {
+    fn splice(&self, other: &Self) -> Self {
+    }
+  }
+  fn splice_anything(left: &dyn Spliceable, right: &dyn Spliceable) {
+    let combo = left.splice(right); // error since Rust doesn't know at compile type if `left and `right` are the same type as required.
+  }
+  // if we replace with the trait below, it will works.
+  pub trait MegaSpliceable {
+    fn splice(&self, other: &dyn MegaSpliceable) -> Box<dyn MegaSpliceable>;
+  }
+  ```
+- trait can include type-associated functions. If you want to use `&dyn StringSet` (trait object), you have to add the bounding and those bounding functions are excluded.
+  ```rust
+  trait StringSet {
+    fn new() -> Self;
+    fn contains(&self, string: &str) -> bool;
+    ----
+    fn new() -> Self          // for trait object usage since it is not included -> only can use contains
+        where Self: Sized;
+  }
+  ```
+- associated types trait defines one specific related type for each implementation.
+  ```rust
+  pub trait Iterator {
+    type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+  }
+  impl Iterator for Args {
+    type Item = String;
+    fn next(&mut self) -> Option<String> {
+    }
+  }
+  ```
+- operator overloading can be achieved via generic type parameters.
+  ```rust
+  struct Meters(u32);
+  impl Add<Meters> for Millimeters {
+    type Output = Millimeters;
+    fn add(self, other: Meters) -> Millimeters {
+      Millimeters(self.0 + (other.0 * 1000))
+    }
+  }
+  ```
+- associated trait consts can be declared them without giving a value, then implentators of that trait can define those.
+  ```rust
+  trait Greet {
+    const GREETING: &'static str = "Hello";
+    const ZERO: Self;
+  }
+  impl Greet for f32 {
+    const ZERO: f32 = 0.0;
+  }
+  ```
