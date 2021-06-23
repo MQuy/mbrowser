@@ -179,16 +179,16 @@
 ### 7. Error Handling
 
 - There are two kinds of error handling: panic and `Result`.
-- panic is safe (catch before it actually happens), it doesn't voliate any Rust's safety rules since stack (including heap segments linked to variables) is cleanup -> there is no dangling pointer . Panic is like `RuntimeException` in C++.
+- panic is safe (catch before it happens), it doesn't violate any of Rust's safety rules since stack (including heap segments linked to variables) is cleanup -> there is no dangling pointer. Panic is like `RuntimeException` in C++.
 - second panic happens during the cleanup of the first panic causes fatal -> thread is aborted. You can also config panic behavior like `-C panic=abort` (abort in the first panic).
-- there is shortcut for handling `Result` (like `unwrap/expect`) and error propagation (`?`).
+- there is a shortcut for handling `Result` (like `unwrap/expect`) and error propagation (`?`).
 
 ### 8. Crates and Modules
 
 - There are two kinds of crate: binary or library. You can either specify or let Rust figure it out by looking at `src/lib.rs` or `src/main.rs`.
 - program can mix crates written in different editions since edition only affects how source code is construed.
 - modules can be nested and be specified with `pub(super)/pub(in <path>)` to make them visible to a specific parent or its descendants.
-- a path (smiliar to filesystem) can take two forms:
+- a path (similar to filesystem) can take two forms:
   - absolute path starts a crate root like `crate`.
   - relative path starts from a current module like `self/super`.
   ```rust
@@ -205,17 +205,17 @@
   }
   ```
 - struct's fields, even private fields, are accessible in the module and its submodules where the struct is declared. Outside the module, only public fields are accessible.
-- `const` is smiliar to C `#define`, `static` is smiliar to C `static`
+- `const` is similar to C `#define`, `static` is similar to C `static`
   ```rust
   pub const FOO: i32 = 10;
   pub static BAZ: &str = "hello world";
   ```
 - tests are ordinary functions marked with the `#[test]` attribute. You can either use `assert!` family macros to validate or return `Result<(), E>`.
-- tests are compilied conditionally, `cargo build` skips the testing code.
+- tests are compiled conditionally, `cargo build` skips the testing code.
 - there are 3 styles of testings:
-  - unit testing lives right alongside with your code.
+  - unit testing lives right alongside your code.
   - integration testing, files (each file is compiled as a separate crate) in `tests` directory.
-  - documentation testing, code block in your document. `rustdoc` stores each code sample in a separate file, adding boilterplate code to produce programs. You disable if needed via `no_run/ignore`.
+  - documentation testing, code block in your document. `rustdoc` stores each code sample in a separate file, adding boilerplate code to produce programs. You disable if needed via `no_run/ignore`.
   ```rust
   /// Return true if two ranges overlap.
   ///
@@ -238,12 +238,12 @@
       assert_eq!(ranges::overlap(0..0, 0..10), false);
   }
   ```
-- cargo uses semantic versioning, lock mechanism and workspace (probably like `yarn`).
+- cargo uses semantic versioning, lock mechanism, and workspace (probably like `yarn`).
 
 ### 8. Structs
 
 - There are 3 kinds of struct types: named-field, tuple-like and unit-like.
-- struct and its fields are private by default. Visiblity is for different modules, creating a struct value requires all the struct's fields are visible.
+- struct and its fields are private by default. Visibility is for different modules, creating a struct value requires all the struct's fields are visible.
   ```rust
   mod Foo {
     #[derive(Debug)]
@@ -260,7 +260,7 @@
       let d = Distance { meter: 100 };     // meter is private, Distance and main belong to the same module
   }
   ```
-- not like spread operator in javascript, `..` in rust only takes fields (move) not mentioned.
+- not like the spread operator in javascript, `..` in rust only takes fields (move) not mentioned.
   ```rust
   struct Point {
     x: i32,
@@ -269,11 +269,11 @@
   let p1 = Point { x: 10, y: 20 };
   let p2 = Point { x: 15, ..p1 }; // p2 = { 15, 20 }
   ```
-- tuple-like struct is good for _newtypes_ since you get stricker type checking.
+- tuple-like struct is good for _newtypes_ since you get stricter type checking.
   ```rust
   struct Ascii(Vec<u8>);
   ```
-- values of unit-like struct occupies no memory and no generated code.
+- values of unit-like struct occupy no memory and no generated code.
 - struct fields' values might be not stored in the order they are in struct (you can specify layout like `#[repr(C)]`).
 - a method's `self` argument can also be a `Box<Self>`, `Rc<Self>`, or `Arc<Self>` (same for `&self` and `&mut self`).
   ```rust
@@ -301,7 +301,7 @@
 
 ### 10. Enums and Patterns
 
-- enum is similiar to Haskell's algebraic data types.
+- enum is similar to Haskell's algebraic data types.
 - enum without data is similar to C enum (default and following values). You can cast enum to integer, but integer to enum is not allowed.
   ```rust
   enum Status {
@@ -311,7 +311,7 @@
   }
   println!("{}", Status::Completed as i32); // 11
   ```
-- there are 3 kinds of enum variant, echoing 3 kinds of struct. All constructions and fields share the same visibility of the enum.
+- there are 3 kinds of enum variants, echoing 3 kinds of struct. All constructions and fields share the same visibility of the enum.
   ```rust
   enum RelationshipStatus {
     Single,
@@ -326,13 +326,13 @@
 - enum with data is stored as a small integer tag, plus enough memory to hold all the fields the largest variant.
   ![enum](https://i.imgur.com/O0kGJKX.png)
 - there are special cases, Rust can eliminate the tag field. For example, `Option<T>` when T is a reference (`Box` or smart pointer types), since T is cannot be null, so `None` can be represented as 0, `Some` for pointers.
-- pattern matching supports a various types: literal, variable, tuple, struct, array, reference ...
+- pattern matching supports various types: literal, variable, tuple, struct, array, reference ...
   ```rust
   match get_account(id) {
     Some(Account { name, language, ..}) => something // match name, language and ignore other fields
   }
   ```
-- matching a noncopyable value moves the value.
+- matching a non copyable value moves the value.
   ```rust
   match account {
     Account { name, language, .. } => {
@@ -349,13 +349,13 @@
   }
   ```
 - there are two kind of patterns:
-  - irrefutable pattern always match, `let` and `for` only accepts this pattern.
+  - irrefutable pattern always matches, `let` and `for` only accept this pattern.
   - refutable pattern might not match.
 
 ### 11. Traits and Generics
 
-- traits is inspired by Haskell's typeclass, while generics is similiar to C++ template (generate machine code for each type `T` that you actually use).
-- to use traits methods for a type, you have to explicity import that traits.
+- traits is inspired by Haskell's typeclass, while generics is similar to C++ template (generate machine code for each type `T` that you use).
+- to use traits methods for a type, you have to explicitly import that traits.
 - C# interface, a value of type T is a reference to any object that implements T, the same for Rust.
   ```rust
   use std::io::Write;
@@ -365,17 +365,17 @@
   let writer: &mut dyn Write = &mut buf;  // ok, creating fat pointer (trait object) contains a pointer to data and a pointer to vtable
   ```
   [trait object](https://i.imgur.com/RSudX7c.png)
-- unlike C++, the vtable pointer is stored as part of the struct, Rust use flat pointers so a struct can implement dozens of traits without containing dozens of vtable pointers -> a method call will be dynamic dispatching.
+- unlike C++, the vtable pointer is stored as part of the struct, Rust uses flat pointers so a struct can implement dozens of traits without containing dozens of vtable pointers -> a method call will be dynamic dispatching.
 - references and smart pointers (`Box`, `Rc` ...) are converted to trait objects when needed.
-- different between generic and trait
-  - generic generates machine code for each type you use (easy for optimize and better speed).
+- difference between generic and trait
+  - generic generates machine code for each type you use (easy to optimize and better speed).
   - trait object uses dynamic dispatch.
   ```rust
   fn say_hello(out: &mut dyn Write)     // plain
   fn say_hello<W: Write>(out: &mut W)   // generic
   fn say_hello(out: &mut dyn Write)     // trait
   ```
-- everything defined in a trait `impl` must actually be a feature of trait (if you need a helper method, defining in `impl` of that type).
+- everything defined in a trait `impl` must be a feature of trait (if you need a helper method, defining in `impl` of that type).
   ```rust
   trait Visible {
     fn draw(&self, canvas: &mut Canvas);
@@ -400,7 +400,7 @@
     }
   }
   ```
-- when implementing a trait, either the trait (also trait's type parameter) or the type must be local in the current crate (_orphan rule_) to ensure that other people's code cannot break yours and vice versa.
+- when implementing a trait, either the trait or the type must be local in the current crate (_orphan rule_) to ensure that other people's code cannot break yours and vice versa.
 - a trait that uses `Self` is incompatible with trait objects
   ```rust
   pub trait Spliceable {
@@ -444,17 +444,17 @@
     }
   }
   ```
-- operator overloading can be achieved via generic type parameters.
+- generic type get a special dispensation, you can implement a foreign trait for a foreign type, as long as one of the trait's type parameters is defined in the local crate.
   ```rust
   struct Meters(u32);
-  impl Add<Meters> for Millimeters {
+  impl Add<Meters> for Millimeters {            // Milimeters is the 3rd crate
     type Output = Millimeters;
     fn add(self, other: Meters) -> Millimeters {
       Millimeters(self.0 + (other.0 * 1000))
     }
   }
   ```
-- associated trait consts can be declared them without giving a value, then implentators of that trait can define those.
+- associated trait consts can be declared without giving a value, then implementors of that trait can define those.
   ```rust
   trait Greet {
     const GREETING: &'static str = "Hello";
@@ -464,3 +464,68 @@
     const ZERO: f32 = 0.0;
   }
   ```
+
+### 12. Operator Overloading
+
+- arithmetic expressions are shorthand for method calls like `a + b` -> `a.add(b)` (`add` belongs `std::ops::Add`).
+  ```rust
+  trait Add<Rhs = Self> {
+    type Output;
+    fn add(self, rhs: Rhs) -> Self::Output;
+  }
+  assert_eq!(10.add(20), 10 + 20); // ok
+  ```
+- `std::cmp::PartialEq` contains 2 methods. Since `ne` method has a default definition, you only need to define `eq`.
+  ```rust
+  trait PartialEq<Rhs = Self>
+  where
+      Rhs: ?Sized,
+  {
+      fn eq(&self, other: &Rhs) -> bool;
+      fn ne(&self, other: &Rhs) -> bool {
+          !self.eq(other)
+      }
+  }
+  ```
+- math equivalence relation imposes three requirements below. `PartialEq` is used for the `==` operator's built-in trait because `==` doesn't meet the third one like `NaN` is not equal to `NaN`. There is `Eq` trait that represents all.
+  - `x == y` -> `y == x`.
+  - `x == y` and `y == z` -> `x == z`.
+  - `x == x`.
+- among all primitive types, only comparisons between floating-point values return `None` (`NaN` with anything else returns `None`).
+- `std::cmp::PartialOrd` contains 5 methods but 4 methods have default definition. The only you have to implement is `partial_cmp`.
+  ```rust
+  trait PartialOrd<Rhs = Self>: PartialEq<Rhs>
+  where
+      Rhs: ?Sized,
+  {
+      fn partial_cmp(&self, other: &Rhs) -> Option<Ordering>; // None means self and other are unordered with each other (like NaN)
+      fn lt(&self, other: &Rhs) -> bool { ... }
+      fn le(&self, other: &Rhs) -> bool { ... }
+      fn gt(&self, other: &Rhs) -> bool { ... }
+      fn ge(&self, other: &Rhs) -> bool { ... }
+  }
+  ----
+  enum Ordering {
+    Less,       // self < other
+    Equal,      // self == other
+    Greater,    // self > other
+  }
+  ```
+- depends on the expression (like borrowing), Rust translates to either `std::ops::Index` or `std::ops::IndexMut`.
+  ```rust
+  let mut m = HashMap::new();
+  assert_eq!(m["十"], 10);
+  assert_eq!(m["千"], 1000);
+  // ->
+  assert_eq!(*m.index("十"), 10);
+  assert_eq!(*m.index("千"), 1000);
+  ```
+  ```rust
+  let mut desserts = vec!["Howalon".to_string(), "Soan papdi".to_string()];
+  desserts[0].push_str(" (fictional)");
+  desserts[1].push_str(" (real)");
+  // ->
+  (*desserts.index_mut(0)).push_str(" (fictional)");
+  (*desserts.index_mut(1)).push_str(" (real)");
+  ```
+- not all operators can be overloaded like `?`, `=`, `&&`, `||`, function call operator ...
