@@ -529,3 +529,71 @@
   (*desserts.index_mut(1)).push_str(" (real)");
   ```
 - not all operators can be overloaded like `?`, `=`, `&&`, `||`, function call operator ...
+
+### 13. Utility Traits
+
+- There are 3 categories of traits
+  - Language extension traits: integrate your own types closely to the language like `Drop`, `Deref` ...
+  - Marker traits: express constaints to bound generic type variables like `Sized` and `Copy`.
+  - Public vocabulary traits like `Default`, `Borrow` ...
+- `Drop` trait which is analogous to C++ destructor is called (dropping in stack, heap and system resources) when a value's owner goes away (out of scope, end of expression statement, truncate a vector ...). Usually, it is handled automatically but you can define it needed.
+  ```rust
+  struct Appellation {
+    name: String,
+    nicknames: Vec<String>
+  }
+  impl Drop for Appellation {
+    fn drop(&mut self) {
+        print!("Dropping {}", self.name);
+        if !self.nicknames.is_empty() {
+            print!(" (AKA {})", self.nicknames.join(", "));
+        }
+        println!("");
+    }
+  }
+  ```
+- `Copy` trait is for types whose values can be duplicated simply by copying bits (on stack) while `Clone` trait is always explicit and may or may not expensive.
+- `std::ops::Deref/DerefMut` traits specify how deferencing operators `*` and `.` behave. They are designed for implementating smart pointers like `Box`, `Rc`, `Arc` ...
+  ```rust
+  trait Deref {
+    type Target: ?Sized;
+    fn deref(&self) -> &Self::Target;
+  }
+  trait DerefMut: Deref {
+      fn deref_mut(&mut self) -> &mut Self::Target;
+  }
+  ```
+- Since `deref` takes `&Self` reference and returns a `&Self::Target` reference, references can be converted to the latter. Rust will apply several deref coercions in succession if necessary.
+  ```rust
+  struct Selector<T> {
+    /// Elements available in this `Selector`.
+    elements: Vec<T>,
+    /// The index of the "current" element in `elements`. A `Selector`
+    /// behaves like a pointer to the current element.
+    current: usize
+  }
+  impl<T> Deref for Selector<T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        &self.elements[self.current]
+    }
+  }
+  let mut s = Selector { elements: vec!['x', 'y', 'z'],
+                       current: 2 };
+  // Because `Selector` implements `Deref`, we can use the `*` operator to
+  // refer to its current element.
+  assert_eq!(*s, 'z');
+  // Assert that 'z' is alphabetic, using a method of `char` directly on a
+  // `Selector`, via deref coercion.
+  assert!(s.is_alphabetic());
+  // Change the 'z' to a 'w', by assigning to the `Selector`'s referent.
+  *s = 'w';
+  // ---------
+  assert_eq!(s.elements, ['x', 'y', 'w']);
+  let s = Selector { elements: vec!["good", "bad", "ugly"],
+                   current: 2 };
+  fn show_it(thing: &str) { println!("{}", thing); }
+  show_it(&s);
+  // type of &s is &Selector<&str>, due to Deref<Target=str> -> show_it(s.deref())
+  // if you change show_it to generic function, it doesn't work since Rust doesn't try deref coercions to satisfy type variable bounds
+  ```
