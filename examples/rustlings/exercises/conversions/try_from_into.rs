@@ -3,7 +3,7 @@
 // instead of the target type itself.
 // You can read more about it at https://doc.rust-lang.org/std/convert/trait.TryFrom.html
 use std::convert::{TryFrom, TryInto};
-use std::error;
+use std::{error::Error, fmt};
 
 #[derive(Debug, PartialEq)]
 struct Color {
@@ -12,33 +12,55 @@ struct Color {
     blue: u8,
 }
 
-// I AM NOT DONE
+#[derive(Debug, Clone)]
+struct ColorError;
+impl Error for ColorError {}
 
-// Your task is to complete this implementation
-// and return an Ok result of inner type Color.
-// You need to create an implementation for a tuple of three integers,
-// an array of three integers and a slice of integers.
-//
-// Note that the implementation for tuple and array will be checked at compile time,
-// but the slice implementation needs to check the slice length!
-// Also note that correct RGB color values must be integers in the 0..=255 range.
+impl fmt::Display for ColorError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Oh no, something bad went down")
+    }
+}
+
+fn construct_color(red: i16, green: i16, blue: i16) -> Result<Color, Box<dyn Error>> {
+    let range = 0..255;
+    if range.contains(&red) && range.contains(&green) && range.contains(&blue) {
+        Ok(Color {
+            red: red as u8,
+            green: green as u8,
+            blue: blue as u8,
+        })
+    } else {
+        Err(Box::new(ColorError))
+    }
+}
 
 // Tuple implementation
 impl TryFrom<(i16, i16, i16)> for Color {
-    type Error = Box<dyn error::Error>;
-    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {}
+    type Error = Box<dyn Error>;
+    fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let (r, g, b) = tuple;
+        construct_color(r, g, b)
+    }
 }
 
-// Array implementation
 impl TryFrom<[i16; 3]> for Color {
-    type Error = Box<dyn error::Error>;
-    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {}
+    type Error = Box<dyn Error>;
+    fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let [r, g, b] = arr;
+        construct_color(r, g, b)
+    }
 }
 
 // Slice implementation
 impl TryFrom<&[i16]> for Color {
-    type Error = Box<dyn error::Error>;
-    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {}
+    type Error = Box<dyn Error>;
+    fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        match slice {
+            [r, g, b] => construct_color(*r, *g, *b),
+            _ => Err(Box::new(ColorError)),
+        }
+    }
 }
 
 fn main() {
