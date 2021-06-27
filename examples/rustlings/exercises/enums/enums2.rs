@@ -9,7 +9,6 @@ enum Message {
     Echo(String),
     ChangeColor(u32, u32, u32),
     Quit,
-    // TODO: define the different variants used below
 }
 
 impl Message {

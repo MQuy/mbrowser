@@ -4,7 +4,7 @@
 // I AM NOT DONE
 
 mod sausage_factory {
-    fn make_sausage() {
+    pub fn make_sausage() {
         println!("sausage!");
     }
 }
