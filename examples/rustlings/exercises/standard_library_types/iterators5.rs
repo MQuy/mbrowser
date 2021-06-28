@@ -36,6 +36,13 @@ fn count_for(map: &HashMap<String, Progress>, value: Progress) -> usize {
 fn count_iterator(map: &HashMap<String, Progress>, value: Progress) -> usize {
     // map is a hashmap with String keys and Progress values.
     // map = { "variables1": Complete, "from_str": None, ... }
+    let mut count = 0;
+    map.into_iter().for_each(|(_, val)| {
+        if val == &value {
+            count += 1;
+        }
+    });
+    count
 }
 
 fn count_collection_for(collection: &[HashMap<String, Progress>], value: Progress) -> usize {
@@ -54,6 +61,15 @@ fn count_collection_iterator(collection: &[HashMap<String, Progress>], value: Pr
     // collection is a slice of hashmaps.
     // collection = [{ "variables1": Complete, "from_str": None, ... },
     //     { "variables2": Complete, ... }, ... ]
+    let mut count = 0;
+    collection.into_iter().for_each(|map| {
+        map.into_iter().for_each(|(_, val)| {
+            if val == &value {
+                count += 1;
+            }
+        });
+    });
+    count
 }
 
 #[cfg(test)]
