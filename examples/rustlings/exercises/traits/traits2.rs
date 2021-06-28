@@ -14,7 +14,7 @@ trait AppendBar {
     fn append_bar(self) -> Self;
 }
 
-impl<String> AppendBar for Vec<String> {
+impl AppendBar for Vec<String> {
     fn append_bar(mut self) -> Vec<String> {
         let bar = String::from("Bar");
         self.push(bar);
