@@ -8,8 +8,6 @@
 //
 // Execute `rustlings hint iterators1` for hints :D
 
-// I AM NOT DONE
-
 fn main() {
     let my_fav_fruits = vec!["banana", "custard apple", "avocado", "peach", "raspberry"];
 

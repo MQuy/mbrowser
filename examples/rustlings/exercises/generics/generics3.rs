@@ -10,7 +10,6 @@
 
 // Execute 'rustlings hint generics3' for hints!
 
-// I AM NOT DONE
 use std::fmt::Display;
 
 pub struct ReportCard<T> {

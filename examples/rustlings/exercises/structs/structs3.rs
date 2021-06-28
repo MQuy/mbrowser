@@ -4,8 +4,6 @@
 // Make the code compile and the tests pass!
 // If you have issues execute `rustlings hint structs3`
 
-// I AM NOT DONE
-
 #[derive(Debug)]
 struct Package {
     sender_country: String,

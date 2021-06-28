@@ -1,10 +1,7 @@
 // structs1.rs
 // Address all the TODOs to make the tests pass!
 
-// I AM NOT DONE
-
 struct ColorClassicStruct<'a> {
-    // TODO: Something goes here
     name: &'a str,
     hex: &'a str,
 }
