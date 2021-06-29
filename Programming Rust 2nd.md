@@ -597,3 +597,91 @@
   // type of &s is &Selector<&str>, due to Deref<Target=str> -> show_it(s.deref())
   // if you change show_it to generic function, it doesn't work since Rust doesn't try deref coercions to satisfy type variable bounds
   ```
+- `AsRef<T>/AsMut<T>` is used to make functions more flexiable in the argument types they accept
+  ```rust
+  fn open<P: AsRef<Path>>(path: P) -> Result<File>
+  let dot_emacs = std::fs::File::open("/home/jimb/.emacs")?;
+  ```
+  `open` wants `&Path` (filesystem path type). By using `AsRef<Path>`, `open` accepts anything it can borrow a `&Path` from, in that case `str`. Rust rewrite like `std::fs::File::open("/home/jimb/.emacs".as_ref())?`
+- `std::borrow::Borrow` trait is similar to `AsRef1`, except it imposes more restrictions: a type should implement `Borrow<T>` when a `&T` hashes and compares the same way as the value it's borrowed from.
+- `std::convert::From/Into` are infalliable trait and take ownership of their argument, transform it, and return ownership of the conversion. `Into` is generally used to make your function's arguments are flexiable while `From` serves as a generic constructor for producing an instance of type from another value.
+  ```rust
+  use std::net::Ipv4Addr;
+  fn ping<A>(address: A) -> std::io::Result<bool>
+      where A: Into<Ipv4Addr>
+  {
+      let ipv4_address = address.into();
+      ...
+  }
+  println!("{:?}", ping(Ipv4Addr::new(23, 21, 68, 141))); // pass an Ipv4Addr
+  println!("{:?}", ping([66, 146, 219, 98]));             // pass a [u8; 4]
+  println!("{:?}", ping(0xd076eb94_u32));                 // pass a u32
+  ```
+  ```rust
+  let addr1 = Ipv4Addr::from([66, 146, 219, 98]);
+  let addr2 = Ipv4Addr::from(0xd076eb94_u32);
+  ```
+- `TryFrom/TryInto` are fallible cousins of `From/Into` which including expressive error handling.
+  ```rust
+  let smaller: i32 = huge_number.try_into().unwrap_or(i32::MAX);
+  ```
+
+### 14. Closures
+
+- There are two ways for closures to get data from enclosing scopes: move or borrowing.
+  ```rust
+  let color = String::from("green");
+  // A closure to print `color` which immediately borrows (`&`) `color` and
+  // stores the borrow and closure in the `print` variable. It will remain
+  // borrowed until `print` is used the last time.
+  //
+  // `println!` only requires arguments by immutable reference so it doesn't
+  // impose anything more restrictive.
+  let print = || println!("`color`: {}", color);
+  // Call the closure using the borrow.
+  print();
+  //
+  // using move to specify a closure will steal color
+  let print_move = move || { println!("{}", color); };
+  print_move();
+  let color1 = color; // error since color ownership is already moved to print_move
+  ```
+- all functions and most closures (others are implemented `FnOnce` and `FnMut`) are implemented automatically `Fn` trait. Every closure has an ad hoc type created by the compiler, no two closures have exactly the same type.
+  ```rust
+  fn(&City) -> bool    // fn type (functions only)
+  Fn(&City) -> bool    // Fn trait (both functions and closures)
+  ```
+- there are three kinds of closure traits below. Without specifing `move`, closure prefer capturing variables by reference and only go lower (by mutable reference -> by value) when required.
+  - `Fn` for functions and closures which you can call multiple times without restriction.
+  - `FnMut` for closures which you can call multiple time if closure itself is declared `mut`.
+  - `FnOnce` for closures which you can call once, if the caller owns the closure.
+- in memory, closure looks like a small structure containing references to the variables or values it uses.
+  ![closure](https://i.imgur.com/NiQrkPc.png)
+- rules for `Copy` and `Clone` on closures are like for regular struct mentioned above
+  - non-`move` closure only hold shared references which are `Clone/Copy` supports `Clone/Copy`.
+  ```rust
+  let y = 10;
+  let add_y = |x| x + y;
+  let copy_of_add_y = add_y;                // This closure is `Copy`, so...
+  assert_eq!(add_y(copy_of_add_y(22)), 42); // ... we can call both.
+  ```
+  - non-`move` closure mutates references in its body doesn't support `Clone/Copy`.
+  ```rust
+  let mut x = 0;
+  let mut add_to_x = |n| { x += n; x };
+  let copy_of_add_to_x = add_to_x;         // this moves, rather than copies
+  assert_eq!(add_to_x(copy_of_add_to_x(1)), 2); // error: use of moved value
+  ```
+  - `move` closure, everything captured is either `Copy` -> `Copy` or `Clone` -> `Clone`.
+  ```rust
+  let mut greeting = String::from("Hello, ");
+  let greet = move |name| {
+      greeting.push_str(name);
+      println!("{}", greeting);
+  };
+  greet.clone()("Alfred"); // Hello, Alfred
+  greet.clone()("Bruce");  // Hello, Bruce
+  ```
+  `greeting` is moved to `greet`, and when `greet` (is a structure) is cloned, `greeting` is cloned as well -> two copies of `greeting` which are modified separately when the clones of `greet` are called.
+
+### 23. Foreign Functions
