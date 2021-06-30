@@ -684,4 +684,57 @@
   ```
   `greeting` is moved to `greet`, and when `greet` (is a structure) is cloned, `greeting` is cloned as well -> two copies of `greeting` which are modified separately when the clones of `greet` are called.
 
+### 15. Iterators
+
+- an iterator is any value that implements the `std::iter::Iterator` trait and any type that implements `IntoIterator` is an `iterable`.
+  ```rust
+  trait Iterator {
+      type Item;
+      fn next(&mut self) -> Option<Self::Item>;
+      ... // many default methods
+  }
+  trait IntoIterator where Self::IntoIter: Iterator<Item=Self::Item> {
+    type Item;                  // type of iterator produces
+    type IntoIter: Iterator;    // type of iterator value
+    fn into_iter(self) -> Self::IntoIter;
+  }
+  ```
+- under the hood, every `for` loop is just shorthand for calls to `IntoIterator` and `Iterator` methods
+  ```rust
+  println!("There's:");
+  let v = vec!["antimony", "arsenic", "aluminum", "selenium"];
+  // for
+  for element in &v {
+      println!("{}", element);
+  }
+  // sugar syntax for while
+  let mut iterator = (&v).into_iter();
+  while let Some(element) = iterator.next() {
+      println!("{}", element);
+  }
+  ```
+- `into_iter` returns iterator which yields values, immutable references or mutable references is context dependent. While `iter` and `iter_mut` return iterator which yields `&T` and `&mut T`, respectively.
+- iterator adapter is the concept that consumes on iterator and build a new one with useful behaviors. There are two important points:
+  - simply calling an adapter on an iterator doesn't consume any items, just returns a new iterator. In a chain of adapters, the only way to make any work actually get done is to call `next` on the final iterator.
+  ```rust
+  ["earth", "water", "air", "fire"]
+    .iter().map(|elt| println!("{}", elt)); // nothing happens until you actually demand a value via .next method
+  ```
+  - adapter is zero-overhead abstraction, for example applying `map`, `filter` ... to an iterator will specialize their code
+  ```rust
+  let text = "  ponies  \n   giraffes\niguanas  \nsquid".to_string();
+  let v: Vec<&str> = text.lines()
+      .map(str::trim)
+      .filter(|s| *s != "iguanas")
+      .collect();
+  // ->
+  let mut v = Vec::new();
+  for line in text.lines() {
+    let line = line.trim();
+    if line != "iguanas" {
+        v.push(line);
+    }
+  }
+  ```
+
 ### 23. Foreign Functions
