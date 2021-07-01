@@ -819,4 +819,41 @@
   let b2 = large_hash_set.contains(&"needle");  // fast, hash lookup
   ```
 
+### 17. Strings and Text
+
+- `String` and `str` types represent text using UTF-8 encoding form.
+  [UTF-8](https://i.imgur.com/TPdrP0u.png)
+- there are two restrictions on well-formed UTF-8 sequences (first bytes and following bytes are always distinct):
+  - only the shortest encoding for any given code point is considered well-formed.
+  - exclude encode numbers from `0xd800-0xdfff` and `> 0x10ffff`.
+- Unicode stores characters in order in which they would normally be written or read.
+  ```rust
+  assert_eq!("ערב טוב".chars().next(), Some('ע'));
+  ```
+- use byte offset in the midst of some UTF-8 characters encoding -> the method panics since it causes ill-formed UTF-8.
+  ```rust
+  let full = "xin chào";
+  println!("Result {}", full[7..]); // panic
+  ```
+- `String` is implemented as a wrapper around `Vec<u8>`, it encourages to build strings from begin to end by appending small pieces like the way vector works.
+  ```rust
+  let s1 = String::from("tic");
+  let s2 = String::from("tac");
+  let s = s1 + &s2;      // s1 is moved and s2 is appended to s1
+  // s1.add(&s2);
+  ```
+- iterate over a slice
+  ![iterate slice](https://i.imgur.com/dEEEttj.png)
+- if a type implements `Display`, the standard library automatically implements the `std::str::ToString` trait for it.
+- there are two main ways to get the bytes representing text:
+  - `slice.as_bytes()` is borrow bytes as `&[u8]` and it is immutable reference -> its bytes will remain well-formed.
+  - `slice.into_bytes()` take ownership of `string` and returns a `Vec<u8>`, since `string` no longer exists -> no need for bytes to be in well-formed.
+- Unicode has two ways to represent the text:
+  - composed form, for example `thé` == [`t`, `h`, `é`] where `é` is a single Unicode character.
+  - decomposed form, for example `thé` == [`t`, `h`, `e`, `\u{301`] where `0x301` adds an acute accent to character it follows.
+
 ### 23. Foreign Functions
+
+```
+
+```
