@@ -715,7 +715,7 @@
   ```
 - `into_iter` returns iterator which yields values, immutable references or mutable references is context dependent. While `iter` and `iter_mut` return iterator which yields `&T` and `&mut T`, respectively.
 - iterator adapter is the concept that consumes on iterator and build a new one with useful behaviors. There are two important points:
-  - simply calling an adapter on an iterator doesn't consume any items, just returns a new iterator. In a chain of adapters, the only way to make any work actually get done is to call `next` on the final iterator.
+  - simply calling an adapter on an iterator doesn't consume any items, just returns a new iterator. In a chain of adapters, the only way to make any work actually get done is to call `next` on the final iterator (output is lazy evaluation, each value is constructed via `next` call)
   ```rust
   ["earth", "water", "air", "fire"]
     .iter().map(|elt| println!("{}", elt)); // nothing happens until you actually demand a value via .next method
@@ -735,6 +735,88 @@
         v.push(line);
     }
   }
+  ```
+- adapters take ownership of the underlying iterator. Using `by_ref`, you can borrow a mutable reference to the iterator
+  ```rust
+  let message = "To: jimb\r\n\
+               From: id\r\n\
+               \r\n\
+               Oooooh, donuts!!\r\n";
+  let mut lines = message.lines();
+  println!("Headers:");
+  for header in lines.by_ref().take_while(|l| !l.is_empty()) {  // lines iterator changes its internal position to 3
+      println!("{}" , header);
+  }
+  println!("\nBody:");
+  for body in lines {         // same iterator -> lines iterator continues consuming with internal position 3
+      println!("{}" , body);
+  }
+  ```
+- the standard library provides a blanket implementation of `IntoIterator` for every type that implements `Iterator` (iterator and iterable are the same type)
+  ```rust
+  struct I32Range {
+    start: i32,
+    end: i32
+  }
+  impl Iterator for I32Range {
+    type Item = i32;
+    fn next(&mut self) -> Option<i32> {
+        }
+        let result = Some(self.start);
+        self.start += 1;
+        result
+    }
+  }
+  for k in (I32Range { start: 0, end: 14 }) {   // works
+  }
+  ```
+  for other cases, you can create another structure to keep track current progress.
+  ```rust
+  enum BinaryTree<T> {
+    Empty,
+    NonEmpty(Box<TreeNode<T>>)
+  }
+  struct TreeNode<T> {
+      element: T,
+      left: BinaryTree<T>,
+      right: BinaryTree<T>
+  }
+  struct TreeIter<'a, T> {
+    unvisited: Vec<&'a TreeNode<T>>
+  }
+  impl<T> BinaryTree<T> {
+    fn iter(&self) -> TreeIter<T> {
+        let mut iter = TreeIter { unvisited: Vec::new() };
+        iter
+    }
+  }
+  ```
+
+### 16. Collections
+
+- Rust's collections are different comparing to other languages' collections:
+  - move and borrowing are everywhere to void deep-coping values, for example `Vec<T>::push(item)` takes its argument by value not reference.
+  - doesn't have invalidation errors when a collection is resized (program is holding a pointer to data inside it).
+- collections interal structures
+  ![VecDeque](https://i.imgur.com/JlymONY.png)
+  ![Hashmap](https://i.imgur.com/zMDvHwl.png)
+  ![BTreeMap](https://i.imgur.com/pqrQtez.png)
+- both `HashMap` and `BTreeMap` have a corresponding `Entry` type to eliminate redudant map lookups.
+  ```rust
+  // Do we already have a record for this student?
+  if !student_map.contains_key(name) {
+      // No: create one.
+      student_map.insert(name.to_string(), Student::new());
+  }
+  // Now a record definitely exists.
+  let record = student_map.get_mut(name).unwrap();
+  // ->
+  let record = student_map.entry(name.to_string()).or_insert_with(Student::new); // lookup only once and use for subsequent operations
+  ```
+- Sets are collections of values arranged for fast membership testing and never contains multiple copies of the same value. Internally, a set is like a map with only keys. In fact, `HashSet<T>` and `BTreeSet<T>` are thin wrappers around `HashMap<T, ()>` and `BTreeMap<T, ()>`.
+  ```rust
+  let b1 = large_vector.contains(&"needle");    // slow, checks every element
+  let b2 = large_hash_set.contains(&"needle");  // fast, hash lookup
   ```
 
 ### 23. Foreign Functions
