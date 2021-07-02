@@ -852,8 +852,51 @@
   - composed form, for example `thé` == [`t`, `h`, `é`] where `é` is a single Unicode character.
   - decomposed form, for example `thé` == [`t`, `h`, `e`, `\u{301`] where `0x301` adds an acute accent to character it follows.
 
+### 18. Input and Output
+
+- input and output are organized around three traits `Read`, `BufRead` and `Write`:
+  - `Read` for byte-oriented input (_readers_).
+  - `BufRead` for buffered readers. They support all methods of `Read` plus methods for reading lines of text and so forth.
+    ![buffer](https://i.imgur.com/crqeiBS.png)
+  - `Writer` for both byte-oriented and UTF-8 output (_writers_).
+    ![io](https://i.imgur.com/GBSUTml.png)
+- `OpenOptions` is advanced usage when `File` doesn't fit your requirement
+  ```rust
+  use std::fs::OpenOptions;
+  let log = OpenOptions::new()
+      .append(true)  // if file exists, add to the end
+      .open("server.log")?;
+  let file = OpenOptions::new()
+      .write(true)
+      .create_new(true)  // fail if file exists
+      .open("new_file.txt")?;
+  ```
+- operating system doesn't force filenames to be valid Unicode. You have to use `OsStr/OsString` and `Path` for filenames since `str/String` only accept well-formed Unicode.
+  ```rust
+  $ echo "hello world" > ô.txt                                            // valid
+  $ echo "O brave new world, that has such filenames in't" > $'\xf4'.txt  // invalid
+  ```
+- use `Path` for both absolute and relative paths, `OsStr` for an individual component of a path. `Path` is exactly like `OsStr`, it just adds many handy filename-related methods.
+  | | str | OsStr | Path |
+  | ------------- |:-------------:| -----:| -----:|
+  | Unsized type, always passed by reference | Yes | Yes | Yes |
+  | Can contain any Unicode text | Yes | Yes | Yes |
+  | Looks just like UTF-8, normally | Yes | Yes | Yes |
+  | Can contain non-Unicode data | No | Yes | Yes |
+  | Text processing methods | Yes | No | Yes |
+  | Filename-related methods | No | No | No |
+  | Owned, growable, heap-allocated equivalent| `String` | `OsString` | `PathBuf` |
+  | Convert to owned type | `.to_string()` | `.to_os_string()` | `.to_path_buf()` |
+- there are standard libaries, like `std::os::unix::fs::symlink`, which are only available on certain platforms and you can conditional compile for those.
+  ```rust
+  #[cfg(unix)]
+  use std::os::unix::fs::symlink;
+  /// Stub implementation of `symlink` for platforms that don't provide it.
+  #[cfg(not(unix))]
+  fn symlink<P: AsRef<Path>, Q: AsRef<Path>>(src: P, _dst: Q)
+      -> std::io::Result<()>
+  {
+  }
+  ```
+
 ### 23. Foreign Functions
-
-```
-
-```
