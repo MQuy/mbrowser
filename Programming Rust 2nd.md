@@ -899,4 +899,143 @@
   }
   ```
 
+### 19. Concurrency
+
+- fork-join parallelism for handling completely independent tasks at the same time.
+  ![fork](https://i.imgur.com/7B2497R.png)
+  - you can use atomic reference counting like `Arc` to share data between threads.
+    ```rust
+    fn process_files(filenames: Vec<String>) -> io::Result<()> {
+        Ok(())
+    }
+    fn process_files_in_parallel(filenames: Vec<String>, glossary: Arc<GigabyteMap>) -> io::Result<()>
+    {
+        const NTHREADS: usize = 8;
+        let worklists = split_vec_into_chunks(filenames, NTHREADS);
+        for worklist in worklists {
+            // This call to .clone() only clones the Arc and bumps the
+            // reference count. It does not clone the GigabyteMap.
+            let glossary_for_child = glossary.clone();
+            thread_handles.push(
+                spawn(move || process_files(worklist, &glossary_for_child))
+            );
+        }
+    }
+    ```
+  - unlike java and c# (exceptions in child thread are dumped to terminal and forgotten) and c++ (abort the process), in Rust errors are `Result` values (data) instead of exceptions (control flow) which are passed back to parent thread.
+- channel is one-way pipe (thread-safe queue) for sending values (while Unix pipe for sending bytes) from one thread to another and data is moved between from sender to receiver. Channel is implemented via `std::sync::mpsc` stands for multiproduce and single-consumer.
+  ![channel](https://i.imgur.com/9Y1r6el.png)
+  - internally, Rust uses different queue implementation when using channel. When a channel is created, special "one-shot" queue implementation. Second value is sent, different queue implementation is used and if you clone sender, another queue implementation is used.
+  - there is the case when sending values faster than receiving, you can use _synchronous channel_ which specifies how many values can be hold.
+    ```rust
+    let (sender, receiver) = mpsc::sync_channel(1000);
+    ```
+  - under the hood, thread safety (no data races and undefined behaviors) is based on two builtin traits `std::marker::Send` (for move) and `std::marker::Sync` (for non-mut references).
+    ![marker](https://i.imgur.com/jACF7Yw.png)
+    if `Rc<String>` is `Sync` and both threads happen to clone the `Rc` at the same time -> data races in shared reference count.
+    ![Rc data race](https://i.imgur.com/NGxQ6Oa.png)
+  - `OffThreadExt` allows us to unify iterator pipelines and thread pipelines.
+    ```rust
+    documents.into_iter()
+      .map(read_whole_file)
+      .errors_to(error_sender)   // filter out error results
+      .off_thread()              // spawn a thread for the above work
+      .map(make_single_file_index)
+      .off_thread()              // spawn another thread for stage 2
+    // ----
+    impl<T> OffThreadExt for T
+    where T: Iterator + Send + 'static,
+          T::Item: Send + 'static
+    {
+        /// Transform this iterator into an off-thread iterator: the
+        /// `next()` calls happen on a separate worker thread, so the
+        /// iterator and the body of your loop run concurrently.
+        fn off_thread(self) -> mpsc::IntoIter<Self::Item> {
+            // Create a channel to transfer items from the worker thread.
+            let (sender, receiver) = mpsc::sync_channel(1024);
+            // Move this iterator to a new worker thread and run it there.
+            thread::spawn(move || {
+                for item in self {
+                    if sender.send(item).is_err() {
+                        break;
+                    }
+                }
+            });
+            // Return an iterator that pulls values from the channel.
+            receiver.into_iter()
+        }
+    }
+    ```
+- mutex is used to force multiple threads to take turns when accessing certain data. In Rust mutex and data are combined into one form `Mutex<T>` (in C++, mutex type and data are separated).
+  ```c++
+  class FernEmpireApp {
+  private:
+      // List of players waiting to join a game. Protected by `mutex`.
+      vector<PlayerId> waitingList;
+      // Lock to acquire before reading or writing `waitingList`.
+      Mutex mutex;
+  };
+  ```
+  ```rust
+  /// All threads have shared access to this big context struct.
+  struct FernEmpireApp {
+      waiting_list: Mutex<WaitingList>,
+  }
+  impl FernEmpireApp {
+    /// Add a player to the waiting list for the next game.
+    /// Start a new game immediately if enough players are waiting.
+    fn join_waiting_list(&self, player: PlayerId) {
+        // Lock the mutex and gain access to the data inside.
+        // The scope of `guard` is a critical section.
+        let mut guard = self.waiting_list.lock().unwrap();
+        guard.push(player);
+        if guard.len() == GAME_SIZE {
+            let players = guard.split_off(0);
+            self.start_game(players);
+        }
+    }
+  }
+  ```
+  - we don't need `&mut self` in `join_waitting_list` because `Mutex` is the lock which provides exclusive (`mut`) access to the data inside, even though many threads may have share (non-`mut`) access to the `Mutex`.
+  - if a thread panics while holding a `Mutex`, the `Mutex` is marked as _poisoned_. Any subsequent attempt to `lock` will get an error result. You can still lock and access the data inside poisoned mutex with fully enforced via `std::sync::PoisonError`.
+  - `RwLock` provides read/write locking methods `read` (non-`mut` access) and `write` (`mut` access).
+  - `CondVar` has `.wait()` and `.notify_all()`, `.wait()` blocks until other threads call `.notify_all()`.
+  - Rust provides atomic types which are similar to C++ atomics.
+  ```rust
+  let cancel_flag = Arc::new(AtomicBool::new(false));
+  let worker_cancel_flag = cancel_flag.clone();
+  let worker_handle = thread::spawn(move || {
+    for pixel in animation.pixels_mut() {
+        render(pixel); // ray-tracing - this takes a few microseconds
+        if worker_cancel_flag.load(Ordering::SeqCst) {
+            return None;
+        }
+    }
+    Some(animation)
+  });
+  // Cancel rendering.
+  cancel_flag.store(true, Ordering::SeqCst);
+  // Discard the result, which is probably `None`.
+  worker_handle.join().unwrap();
+  ```
+  - for global variables, we either use atmoic types (numbers and boolean) or custom types with two restrictions:
+    - the variable must be thread safety `Sync` and non-`mut` (workaround to use `Mutex`, `RwLock` and atomic types to modify).
+    - static initializer can only call functions which are marked as `const` (smiliar to C++ `constexpr`).
+    ```rust
+    const fn mono_to_rgba(level: u8) -> Color {
+        Color {
+            red: level,
+            green: level,
+            blue: level,
+            alpha: 0xFF
+        }
+    }
+    const WHITE: Color = mono_to_rgba(255);
+    const BLACK: Color = mono_to_rgba(000);
+    static HOSTNAME: Mutex<String> = Mutex::new(String::new()); // error Mutex::new is not const
+    lazy_static! {  // lazy_static crate which allows you to use any expression you like to initialize
+        static ref HOSTNAME: Mutex<String> = Mutex::new(String::new());
+    }
+    ```
+
 ### 23. Foreign Functions
