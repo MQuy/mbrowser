@@ -1038,4 +1038,103 @@
     }
     ```
 
+### 20. Asynchronous Programming
+
+- asynchronous operations are supported via a trait `std::future::Future`.
+  ```rust
+  trait Future {
+      type Output;
+      // For now, read `Pin<&mut Self>` as `&mut Self`.
+      fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
+  }
+  enum Poll<T> { Ready(T), Pending }
+  ```
+- once a future has returned `Poll::Ready`, it may assume it will never be polled again. Overpolling could cause either returning `Poll::Pending`, panic or hang.
+- future returned by an async function wraps up all the information the function body need to run (function's arguments, space for its local variables). Similar to closure's type, future's type is generated automatically by the compiler.
+- polling is designed carefully, it only happens when there is something somewhere return `Ready` or making progress toward the goal.
+  ```rust
+  // synchronous
+  fn cheapo_request(host: &str, port: u16, path: &str) -> std::io::Result<String>
+  {
+      let mut socket = net::TcpStream::connect((host, port))?;
+      // construct get request and send via tcp
+      let request = format!("GET {} HTTP/1.1\r\nHost: {}\r\n\r\n", path, host);
+      socket.write_all(request.as_bytes())?;
+      socket.shutdown(net::Shutdown::Write)?;
+      // get response
+      let mut response = String::new();
+      socket.read_to_string(&mut response)?;
+      // return data
+      Ok(response)
+  }
+  // asynchronous
+  async fn cheapo_request(host: &str, port: u16, path: &str) -> std::io::Result<String>
+  {
+      let mut socket = net::TcpStream::connect((host, port)).await?;
+      // construct get request and send via tcp
+      let request = format!("GET {} HTTP/1.1\r\nHost: {}\r\n\r\n", path, host);
+      socket.write_all(request.as_bytes()).await?;
+      socket.shutdown(net::Shutdown::Write)?;
+      // get response
+      let mut response = String::new();
+      socket.read_to_string(&mut response).await?;
+      // return data
+      Ok(response)
+  }
+  // first polling executes at top of body till the first await, the next polling will start at what it is paused
+  {
+    // Note: this is pseudocode, not valid Rust
+    let connect_future = TcpStream::connect(...);
+    'retry_point:
+    match connect_future.poll(cx) {
+        Poll::Ready(value) => value,
+        Poll::Pending => {
+            // Arrange for the next `poll` of `cheapo_request`'s
+            // future to resume execution at 'retry_point.
+            return Poll::Pending;
+        }
+    }
+  }
+  ```
+  ```rust
+  fn main() -> std::io::Result<()> {
+    use async_std::task;
+    let response = task::block_on(cheapo_request("example.com", 80, "/"))?;
+    println!("{}", response);
+    Ok(())
+  }
+  ```
+  ![async](https://i.imgur.com/SyJzdrT.png)
+- one important difference between async tasks and threads: switching from one async task to another happens only at `await` expressions while operating system can suspend thread at any point.
+- using async block (like closure, it can be use with/without `move`), you can do some computation immediately, when the function is called before creating the returned future.
+  ```rust
+  fn cheapo_request(host: &str, port: u16, path: &str) -> impl Future<Output = io::Result<String>> + 'static
+  {
+      let host = host.to_string();
+      let path = path.to_string();
+      async move {
+          ... use &*host, port, and path ...
+      }
+  }
+  ```
+- `async_std::task::spawn` to spawn a future onto a pool of worker threads delicated to polling. Unlike `spawn_local` which has to be waited for you to call `block_on`, as soon as one of thread from thread polls is free, it will try polling it.
+- difference with `spawn_local` which only executes in the same thread, for `spawn` an async call may begin execution on one thread, block on `await` and get resumed in a different thread -> future must implement the `Send` marker trait.
+  ```rust
+  async fn reluctant() -> String {
+    let string = Rc::new("ref-counted string".to_string());
+    some_asynchronous_thing().await;
+    format!("Your splendid string: {}", string) // error, string's type Rc<String> is not implemented Send trait you could use Arc instead
+  }
+  task::spawn(reluctant());
+  ```
+- async tasks are cooperative scheduling, so `poll` method should always return asap. For long computation, you could either return pending manually or use `spawn_blocking` to run a future on a standlone/separated thread.
+  ```rust
+  while computation_not_done() {
+    ... do one medium-sized step of computation ...
+    async_std::task::yield_now().await; // first time, it returns Poll::Pending
+                                        // second time, it returns Poll::Ready
+  }
+  ```
+- to represent incomplete computations, C# calls them "tasks", Javascript calls them "promises" and Rust calls them "future". In Javascript and C#, an async function begins running as soon as it is called and there is a global event loop to resume when needed. In Rust, it is polled (only run when passing to) by an executor (`block_on`, `spawn` or `spawn_local`).
+
 ### 23. Foreign Functions
