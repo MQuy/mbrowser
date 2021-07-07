@@ -1136,5 +1136,127 @@
   }
   ```
 - to represent incomplete computations, C# calls them "tasks", Javascript calls them "promises" and Rust calls them "future". In Javascript and C#, an async function begins running as soon as it is called and there is a global event loop to resume when needed. In Rust, it is polled (only run when passing to) by an executor (`block_on`, `spawn` or `spawn_local`).
+- an executor like `block_on` polls a future, it must pass in a callback called _waker_ and future decides to invoke when needed. A handwritten implementation of `Future` looks like below. Conceptually, an executor polls the future and goes to sleep, then the future invokes the waker, so the executor wakes up and polls the future again. Communication is done via passing context around.
+  ```rust
+  struct MyPrimitiveFuture {
+      ...
+      waker: Option<Waker>,
+  }
+  impl Future for MyPrimitiveFuture {
+      type Output = ...;
+      fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<...> {
+          ...
+          if ... future is ready ... {
+              return Poll::Ready(final_value);
+          }
+          // Save the waker for later.
+          self.waker = Some(cx.waker().clone());
+          Poll::Pending
+      }
+  }
+  // somewhere
+  // If we have a waker, invoke it, and clear `self.waker`.
+  if let Some(waker) = self.waker.take() {
+      waker.wake();
+  }
+  ```
+
+### 21. Macros
+
+- unlike C++, Rust macro are hygenic, must produce syntactically correct code and are always marked with an exclamation point when calling.
+- a macro defined with `macro_rules!` works entirely by pattern matching (macro's body is just a series of rules).
+  ![macro](https://i.imgur.com/zDlXy1N.png)
+- you can use square brackets, curly braces and parentheses around the pattern or the template. By convention, parentheses when calling `assert_eq!`, square backets for `vec!` and curly braces for `macro_rules!`.
+  ```rust
+  assert_eq!(gcd(6, 10), 2);
+  assert_eq![gcd(6, 10), 2];
+  assert_eq!{gcd(6, 10), 2};
+  // ----
+  macro_rules! assert_eq {
+    ($left:expr, $right:expr) {
+      match (&$left, &$right) {
+        (left_val, right_val) => {
+          if !(*left_val == *right_val) {
+            ...
+          }
+        }
+      }
+    }
+  }
+  ```
+  - `$left:expr` and `$right:expr` are fragments and both have the type of `expr`.
+  - `$left` is replaced with `gcd(6, 10)` and `$right` is replaced with `2`.
+  - pattern matching `left_val` and `right_val` for later usage because we only want `$left` and `$right` to evaluate once, for example `assert_eq!(letters.pop(), Some('z'))`.
+  - borrow reference `&$left` and `&right` since we don't want to move the value out of variables.
+    ```rust
+    fn main() {
+      let s = "a rose".to_string();
+      bad_assert_eq!(s, "a rose");
+      println!("confirmed: {} is a rose", s);  // error: use of moved value "s"
+    }
+    ```
+- to debug macro, we can either
+  - check the expand version of your code via `rustc -Z unstable-options --pretty expanded`.
+  - use `log_syntax!()` macro to print its arguments to terminal at the compile time.
+  - insert `trace_macros!(true);` somewhere in your code, from that point, each time macro is expanded, it will print the macro name and arguments.
+- json macro example
+  ```rust
+  macro_rules! json {
+    (null) => {
+        Json::Null
+    };
+    ([ $( $element:tt ),* ]) => {
+        Json::Array(vec![ $( json!($element) ),* ])
+    };
+    ({ $($key:tt : $value:tt),* }) => {
+      {
+        let mut fields = Box::new(HashMap::new());
+        $( fields.insert($key.to_string(), json!($value)); )*
+        Json::Object(fields)
+      }
+    };
+    ( $other:tt ) => {
+        Json::from($other)  // Handle Boolean/number/string
+    };
+  }
+  ```
+- local variables and arguments in macro like `fields` will be renamed. This feature was implemented firstly in Scheme macros called _hygiene_.
+  ```rust
+  let fields = "Fields, W.C.";
+  let role = json!({
+    "name": "Larson E. Whipsnade",
+    "actor": fields
+  });
+  // ->
+  let fields = "Fields, W.C.";
+  let role = {
+    let mut __fields = Box::new(HashMap::new());
+    __fields.insert("name".to_string(), Json::from("Larson E. Whipsnade"));
+    __fields.insert("actor".to_string(), Json::from(fields));
+    Json::Object(__fields)
+  };
+  ```
+- if you want to use caller's identifiers, you have to pass them to macro.
+  ```rust
+  macro_rules! setup_req {
+    ($req:ident, $server_socket:ident) => {
+      let $req = ServerRequest::new($server_socket.session());
+    }
+  }
+  fn handle_http_request(server_socket: &ServerSocket) {
+    setup_req!(req, server_socket);
+    ... // code that uses `req`
+  }
+  ```
+- since macros are expanded early in compilation, before Rust knows the full module structure of your project, special annotation is used
+  - `#[macro_use]` to export macros from children to their parent module.
+  - `#[macro_export]` to export macros automatically and can be referred by path.
+- beside declarative macros above, Rust also provides procedural macros which act like functions. Procedural macros accept code as an input, operate on that code, and produce code as ouput.
+  ```rust
+  #[some_attribute]
+  pub fn some_name(input: TokenStream) -> TokenStream {
+  }
+  ```
+  - There are 3 kinds of procedural macros: custom derive, attribute-like, and function-like.
 
 ### 23. Foreign Functions
