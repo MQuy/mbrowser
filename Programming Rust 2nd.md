@@ -1259,4 +1259,113 @@
   ```
   - There are 3 kinds of procedural macros: custom derive, attribute-like, and function-like.
 
+### 22. Unsafe Code
+
+- unsafe draws human attention (explicity write `unsafe` annotation) to code whose safety Rust cannot guarantee.
+- unsafe block unlocks five additional options
+  - call unsafe functions.
+  - dereference raw pointers. Safe code can pass raw pointers around, compare them, and create them by conversion but only unsafe code can use them to access memory.
+  - access the fields of `union`.
+  - access mutable `static` variables.
+  - access functions and variables declared through Rust's foreign function interface.
+  ```rust
+  pub struct Ascii(
+    // This must hold only well-formed ASCII text:
+    // bytes from `0` to `0x7f`.
+    Vec<u8>
+  );
+  impl Ascii {
+    /// Create an `Ascii` from the ASCII text in `bytes`. Return a
+    /// `NotAsciiError` error if `bytes` contains any non-ASCII
+    /// characters.
+    pub fn from_bytes(bytes: Vec<u8>) -> Result<Ascii, NotAsciiError> {
+      if bytes.iter().any(|&byte| !byte.is_ascii()) {
+          return Err(NotAsciiError(bytes));
+      }
+      Ok(Ascii(bytes))
+    }
+  }
+  // When conversion fails, we give back the vector we couldn't convert.
+  // This should implement `std::error::Error`; omitted for brevity.
+  #[derive(Debug, Eq, PartialEq)]
+  pub struct NotAsciiError(pub Vec<u8>);
+  // Safe, efficient conversion, implemented using unsafe code.
+  impl From<Ascii> for String {
+    fn from(ascii: Ascii) -> String {
+      // If this module has no bugs, this is safe, because
+      // well-formed ASCII text is also well-formed UTF-8.
+      unsafe { String::from_utf8_unchecked(ascii.0) }
+    }
+  }
+  ```
+- the body of unsafe function is automatically considered an unsafe block and it can only be called within unsafe blocks.
+  ```rust
+  // This must be placed inside the `my_ascii` module.
+  impl Ascii {
+    pub unsafe fn from_bytes_unchecked(bytes: Vec<u8>) -> Ascii {
+      Ascii(bytes)
+    }
+  }
+  // Imagine that this vector is the result of some complicated process
+  // that we expected to produce ASCII. Something went wrong!
+  let bytes = vec![0xf7, 0xbf, 0xbf, 0xbf];
+  let ascii = unsafe {
+      // This unsafe function's contract is violated
+      // when `bytes` holds non-ASCII bytes.
+      Ascii::from_bytes_unchecked(bytes)
+  };
+  let bogus: String = ascii.into();
+  // `bogus` now holds ill-formed UTF-8. Parsing its first character produces
+  // a `char` that is not a valid Unicode code point. That's undefined
+  // behavior, so the language doesn't say how this assertion should behave.
+  assert_eq!(bogus.chars().next().unwrap() as u32, 0x1fffff);   // panic
+  ```
+- `Send/Sync` (marker traits) are the classic examples of unsafe traits. They have contracts: `Send` requires implementers to be safe to move to another thread, and `Sync` requires them to be safe to share among threads via shared references. Implementing `Send` for an inappropriate type, for example, would make `Mutex` no longer safe from data races.
+- Rust raw pointers are equivalent to C/C++ pointers. There are two kind of raw pointers (no plain `*T`): `*mut T` (permits modifing its referent) and `*const T` (only permits reading its referent).
+  - raw pointers must be dereference explicitily for example `(*raw).field`.
+  - unlike `+` operator in C/C++, in Rust `+` doesn't handle raw pointers, you can perform arithmetic via their `offset/wrapping_offset`, `add/wrapping_add`, and `sub/wrapping_sub` methods.
+  - raw pointer to an unsized type is a fat pointer for example `*const [u8]` pointer includes a length + the address, trait object like `*mut dyn Write` pointer carries a vtable.
+  - sometime, you need to break up a complex conversion into a series of simpler steps.
+  ```rust
+  &vec![42_u8] as *const String;  // error: invalid conversion
+  &vec![42_u8] as *const Vec<u8> as *const String;  // permitted
+  ```
+- A value of any `Sized` type occupies a constant number of bytes in memory while for unsized types, the size and alignment depend on the value at hand.
+  ```rust
+  assert_eq!(std::mem::size_of::<i64>(), 8);
+  assert_eq!(std::mem::align_of::<(i32, i32)>(), 4);
+  // Fat pointers to slices carry their referent's length.
+  let slice: &[i32] = &[1, 3, 9, 27, 81];
+  assert_eq!(std::mem::size_of_val(slice), 20);
+  let text: &str = "alligator";
+  assert_eq!(std::mem::size_of_val(text), 9);
+  use std::fmt::Display;
+  let unremarkable: &dyn Display = &193_u8;
+  let remarkable: &dyn Display = &0.0072973525664;
+  // These return the size/alignment of the value the
+  // trait object points to, not those of the trait object
+  // itself. This information comes from the vtable the
+  // trait object refers to.
+  assert_eq!(std::mem::size_of_val(unremarkable), 1);
+  assert_eq!(std::mem::align_of_val(remarkable), 8);
+  ```
+- it is undefined behaviour to use `offset` to produce a pointer beyond the start or end of the array even if you never dereference it since the arthmetic in `offset` might overflow an `isize` value (address space).
+- a move and copy have the same effect on memory. Only difference after a move, the source is no longer treated as live while copy both source and destination are live. Rust tracks which local variables are live at compile time to prevent you from using not live values. In practice, move usually doesn't do anything to source.
+  [move](https://i.imgur.com/txTdMhC.png)
+- constructing a union or assigning to its fields is safe, reading from any field of a union is always unsafe.
+  ```rust
+  let mut one = FloatOrInt { i: 1 };
+  assert_eq!(unsafe { one.i }, 0x00_00_00_01);
+  one.f = 1.0;
+  ```
+- there is no guarantee that any fields of union start at a specific place unless adding an attribute to tell compiler how to lay out the data in memory.
+  ```rust
+  #[repr(C)]            // gurantee all fields start a offset 0
+  union SignExtractor {
+    value: i64,
+    bytes: [u8; 8]
+  }
+  ```
+- unions cannot tell how to drop their contents, all their fields must be `Copy`. There is a workaround via `std::mem::ManuallyDrop`.
+
 ### 23. Foreign Functions
