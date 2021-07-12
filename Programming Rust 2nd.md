@@ -1369,3 +1369,28 @@
 - unions cannot tell how to drop their contents, all their fields must be `Copy`. There is a workaround via `std::mem::ManuallyDrop`.
 
 ### 23. Foreign Functions
+
+- for Rust's struct types compatible with C's structs, you can use `#[repr(C)]`. `#[repr(C)]` only affects the layout of struct itself, not its individual fields. To match with C struct, each field must use C-like type
+  ```rust
+  #[repr(C)]
+  pub struct git_error {
+    pub message: *const c_char,
+    pub klass: c_int
+  }
+  ```
+- to use functions provided by a particular library, you can place a `#[link]` atop the `extern` block.
+  ```rust
+  use std::os::raw::c_int;
+  #[link(name = "git2")]
+  extern {
+    pub fn git_libgit2_init() -> c_int;
+      pub fn git_libgit2_shutdown() -> c_int;
+  }
+  fn main() {
+    unsafe {
+      git_libgit2_init();
+      git_libgit2_shutdown();
+    }
+  }
+  ```
+- a1
