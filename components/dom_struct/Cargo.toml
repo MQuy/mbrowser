@@ -1,12 +1,13 @@
 [package]
-name = "dom"
+name = "dom_struct"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-html5ever = "0.25.1"
-mime = "0.3.16"
-encoding_rs = "0.8.28"
-dom_struct = { path = "../dom_struct" }
+syn = "1.0"
+quote = "1.0"
+
+[lib]
+proc-macro = true

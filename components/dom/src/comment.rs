@@ -1,8 +1,7 @@
+use crate::characterdata::CharacterData;
 use dom_struct::dom_struct;
 
-use crate::characterdata::CharacterData;
-
 #[dom_struct]
-pub struct Text {
+pub struct Comment {
     character_data: CharacterData,
 }
