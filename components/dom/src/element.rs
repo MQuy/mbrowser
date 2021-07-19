@@ -2,9 +2,7 @@ use html5ever::{LocalName, Namespace, Prefix};
 
 use crate::node::Node;
 
-use dom_struct::dom_struct;
-
-#[dom_struct]
+#[derive(Clone)]
 pub struct Element {
     node: Node,
     prefix: Option<Prefix>,
@@ -12,3 +10,16 @@ pub struct Element {
     tag_name: LocalName,
     namespace: Namespace,
 }
+
+impl Element {
+    pub fn namespace(&self) -> &Namespace {
+        &self.namespace
+    }
+
+    pub fn local_name(&self) -> &LocalName {
+        &self.local_name
+    }
+}
+
+impl crate::inheritance::Castable for Element {}
+impl crate::inheritance::DerivedFrom<Node> for Element {}

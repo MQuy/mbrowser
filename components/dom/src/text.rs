@@ -1,8 +1,14 @@
-use dom_struct::dom_struct;
+use crate::{
+    characterdata::CharacterData,
+    inheritance::{Castable, DerivedFrom},
+    node::Node,
+};
 
-use crate::characterdata::CharacterData;
-
-#[dom_struct]
+#[derive(Clone)]
 pub struct Text {
     character_data: CharacterData,
 }
+
+impl Castable for Text {}
+impl DerivedFrom<Node> for Text {}
+impl DerivedFrom<CharacterData> for Text {}

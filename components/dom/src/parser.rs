@@ -1,15 +1,22 @@
-use html5ever::tree_builder::{ElementFlags, NextParserState, NodeOrText, QuirksMode, TreeSink};
+use std::rc::Rc;
 
-use crate::node::Node;
+use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
 
-pub struct HTMLParser {}
+use crate::{
+    comment::Comment, document::Document, dom_object::Dom, element::Element, inheritance::Castable,
+    node::Node, not_supported,
+};
 
-impl TreeSink for HTMLParser {
+pub struct DomParser {
+    document: Dom<Document>,
+}
+
+impl TreeSink for DomParser {
     type Output = Self;
-    type Handle = Node;
+    type Handle = Dom<Node>;
 
     fn finish(self) -> Self::Output {
-        todo!()
+        self
     }
 
     fn parse_error(&mut self, msg: std::borrow::Cow<'static, str>) {
@@ -17,24 +24,30 @@ impl TreeSink for HTMLParser {
     }
 
     fn get_document(&mut self) -> Self::Handle {
-        todo!()
+        Dom::from_ref(self.document.upcast())
     }
 
     fn elem_name<'a>(&'a self, target: &'a Self::Handle) -> html5ever::ExpandedName<'a> {
-        todo!()
+        let elem = target.downcast::<Element>();
+        html5ever::ExpandedName {
+            ns: elem.namespace(),
+            local: elem.local_name(),
+        }
     }
 
     fn create_element(
         &mut self,
         name: html5ever::QualName,
         attrs: Vec<html5ever::Attribute>,
-        flags: ElementFlags,
+        _flags: ElementFlags,
     ) -> Self::Handle {
-        todo!()
+        let element = create_element(name, attrs, &self.document);
+        Dom::from_ref(element.upcast())
     }
 
     fn create_comment(&mut self, text: html5ever::tendril::StrTendril) -> Self::Handle {
-        todo!()
+        let comment = Comment::new(String::from(text), &self.document);
+        Dom::from_ref(comment.upcast())
     }
 
     fn create_pi(
@@ -42,7 +55,7 @@ impl TreeSink for HTMLParser {
         target: html5ever::tendril::StrTendril,
         data: html5ever::tendril::StrTendril,
     ) -> Self::Handle {
-        todo!()
+        not_supported!()
     }
 
     fn append(&mut self, parent: &Self::Handle, child: NodeOrText<Self::Handle>) {
@@ -80,7 +93,7 @@ impl TreeSink for HTMLParser {
     }
 
     fn set_quirks_mode(&mut self, mode: QuirksMode) {
-        todo!()
+        self.document.set_quirks_mode(mode);
     }
 
     fn append_before_sibling(
@@ -117,7 +130,18 @@ impl TreeSink for HTMLParser {
 
     fn set_current_line(&mut self, _line_number: u64) {}
 
-    fn complete_script(&mut self, _node: &Self::Handle) -> NextParserState {
-        NextParserState::Continue
+    fn complete_script(
+        &mut self,
+        _node: &Self::Handle,
+    ) -> html5ever::tree_builder::NextParserState {
+        html5ever::tree_builder::NextParserState::Continue
     }
+}
+
+fn create_element(
+    name: html5ever::QualName,
+    attrs: Vec<html5ever::Attribute>,
+    document: &Dom<Document>,
+) -> Element {
+    todo!()
 }

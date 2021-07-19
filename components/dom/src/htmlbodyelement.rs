@@ -1,7 +1,16 @@
-use crate::htmlelement::HTMLElement;
-use dom_struct::dom_struct;
+use crate::{
+    element::Element,
+    htmlelement::HTMLElement,
+    inheritance::{Castable, DerivedFrom},
+    node::Node,
+};
 
-#[dom_struct]
+#[derive(Clone)]
 pub struct HTMLBodyElement {
     html_element: HTMLElement,
 }
+
+impl Castable for HTMLBodyElement {}
+impl DerivedFrom<Node> for HTMLBodyElement {}
+impl DerivedFrom<Element> for HTMLBodyElement {}
+impl DerivedFrom<HTMLElement> for HTMLBodyElement {}

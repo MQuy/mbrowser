@@ -9,4 +9,3 @@ edition = "2018"
 html5ever = "0.25.1"
 mime = "0.3.16"
 encoding_rs = "0.8.28"
-dom_struct = { path = "../dom_struct" }
