@@ -1,3 +1,5 @@
+use std::rc::Weak;
+
 use crate::{
     characterdata::CharacterData,
     document::Document,
@@ -11,7 +13,7 @@ pub struct Comment {
 }
 
 impl Comment {
-    pub fn new(text: String, document: &Document) -> Comment {
+    pub fn new(text: String, document: Weak<Document>) -> Comment {
         Comment {
             character_data: CharacterData::new(text, document),
         }

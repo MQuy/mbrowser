@@ -9,3 +9,9 @@ edition = "2018"
 html5ever = "0.25.1"
 mime = "0.3.16"
 encoding_rs = "0.8.28"
+string_cache = "0.8"
+cssparser = "0.28.1"
+css = { path = "../css" }
+url = "2.2.2"
+log = "0.4.14"
+

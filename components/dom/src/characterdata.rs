@@ -1,3 +1,5 @@
+use std::rc::Weak;
+
 use crate::{
     document::Document,
     inheritance::{Castable, DerivedFrom},
@@ -12,7 +14,7 @@ pub struct CharacterData {
 }
 
 impl CharacterData {
-    pub fn new(data: String, document: &Document) -> CharacterData {
+    pub fn new(data: String, document: Weak<Document>) -> CharacterData {
         CharacterData {
             data,
             node: Node::new(

@@ -1,9 +1,11 @@
 mod annotation;
+mod attr;
 mod characterdata;
 mod comment;
 mod document;
-mod dom_object;
+mod documenttype;
 mod element;
+mod error;
 mod htmlbodyelement;
 mod htmldivelement;
 mod htmlelement;
