@@ -19,6 +19,7 @@ pub struct Node {
     children_count: u32,
     owner_doc: Option<Weak<Document>>,
 }
+impl Castable for Node {}
 
 impl PartialEq for Node {
     fn eq(&self, other: &Self) -> bool {
@@ -109,4 +110,3 @@ impl Node {
         todo!()
     }
 }
-impl Castable for Node {}

@@ -1,6 +1,9 @@
 use std::rc::{Rc, Weak};
 
-use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
+use html5ever::{
+    tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
+    Attribute, LocalName, QualName,
+};
 use log::debug;
 
 use crate::{
@@ -53,8 +56,8 @@ impl TreeSink for DomParser {
 
     fn create_pi(
         &mut self,
-        target: html5ever::tendril::StrTendril,
-        data: html5ever::tendril::StrTendril,
+        _target: html5ever::tendril::StrTendril,
+        _data: html5ever::tendril::StrTendril,
     ) -> Self::Handle {
         not_supported!()
     }
@@ -102,7 +105,7 @@ impl TreeSink for DomParser {
         todo!()
     }
 
-    fn get_template_contents(&mut self, target: &Self::Handle) -> Self::Handle {
+    fn get_template_contents(&mut self, _target: &Self::Handle) -> Self::Handle {
         todo!()
     }
 
@@ -181,10 +184,22 @@ fn insert(parent: &Rc<Node>, reference_child: Option<&Node>, child: NodeOrText<R
     }
 }
 
+/// https://html.spec.whatwg.org/multipage/#create-an-element-for-the-token
 fn create_element_for_token(
-    name: html5ever::QualName,
-    attrs: Vec<html5ever::Attribute>,
+    name: QualName,
+    attrs: Vec<Attribute>,
     document: &Rc<Document>,
-) -> Element {
-    todo!()
+) -> Rc<Element> {
+    let is = attrs
+        .iter()
+        .find(|attr| attr.name.local.eq_str_ignore_ascii_case("is"))
+        .map(|attr| LocalName::from(&*attr.value));
+
+    let element = Element::create(name, is, Rc::downgrade(document));
+
+    for attr in attrs.iter() {
+        element.set_attribute(attr.name, String::from(attr.value), None);
+    }
+
+    element
 }

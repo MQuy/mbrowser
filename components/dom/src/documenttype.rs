@@ -1,9 +1,6 @@
 use std::rc::Weak;
 
-use crate::{
-    document::{self, Document},
-    node::Node,
-};
+use crate::{document::Document, node::Node};
 
 pub struct DocumentType {
     node: Node,

@@ -1,5 +1,6 @@
 mod annotation;
 mod attr;
+mod cdatasection;
 mod characterdata;
 mod comment;
 mod document;
@@ -14,6 +15,8 @@ mod node;
 mod nodetype;
 mod parser;
 mod svgelement;
+mod svggraphicselement;
+mod svgsvgelement;
 mod text;
 
 #[cfg(test)]

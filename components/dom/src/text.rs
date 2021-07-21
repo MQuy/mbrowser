@@ -5,6 +5,7 @@ use crate::{
     document::Document,
     inheritance::{Castable, DerivedFrom},
     node::Node,
+    nodetype::{CharacterDataTypeId, NodeTypeId, TextTypeId},
 };
 
 #[derive(Clone)]
@@ -14,8 +15,16 @@ pub struct Text {
 
 impl Text {
     pub fn new(text: String, document: Weak<Document>) -> Self {
-        Text {
-            character_data: CharacterData::new(text, document),
+        Text::new_inherited(
+            NodeTypeId::CharacterData(CharacterDataTypeId::Text(TextTypeId::Text)),
+            text,
+            document,
+        )
+    }
+
+    pub fn new_inherited(node_type_id: NodeTypeId, text: String, document: Weak<Document>) -> Self {
+        Self {
+            character_data: CharacterData::new_inherited(node_type_id, text, document),
         }
     }
 }
