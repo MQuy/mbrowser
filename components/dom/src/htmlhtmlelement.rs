@@ -12,16 +12,20 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct HTMLDivElement {
+pub struct HTMLHtmlElement {
     htmlelement: HTMLElement,
 }
+impl Castable for HTMLHtmlElement {}
+impl DerivedFrom<Node> for HTMLHtmlElement {}
+impl DerivedFrom<Element> for HTMLHtmlElement {}
+impl DerivedFrom<HTMLElement> for HTMLHtmlElement {}
 
-impl HTMLDivElement {
+impl HTMLHtmlElement {
     pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
         Self {
             htmlelement: HTMLElement::new_inherited(
                 NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLDivElement,
+                    HTMLElementTypeId::HTMLHtmlElement,
                 )),
                 local_name,
                 prefix,
@@ -30,8 +34,3 @@ impl HTMLDivElement {
         }
     }
 }
-
-impl Castable for HTMLDivElement {}
-impl DerivedFrom<Node> for HTMLDivElement {}
-impl DerivedFrom<Element> for HTMLDivElement {}
-impl DerivedFrom<HTMLElement> for HTMLDivElement {}

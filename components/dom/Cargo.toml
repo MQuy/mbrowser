@@ -14,4 +14,4 @@ cssparser = "0.28.1"
 css = { path = "../css" }
 url = "2.2.2"
 log = "0.4.14"
-
+num-traits = "0.2.14"

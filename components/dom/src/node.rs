@@ -3,8 +3,9 @@ use std::rc::{Rc, Weak};
 use crate::{
     document::Document,
     error::{ErrorResult, Fallible},
-    inheritance::Castable,
+    inheritance::{Castable, DerivedFrom},
     nodetype::NodeTypeId,
+    virtualmethods::VirtualMethods,
 };
 
 #[derive(Clone)]
@@ -109,4 +110,14 @@ impl Node {
     fn pre_remove(child: &Node, parent: &Node) -> Fallible<Rc<Node>> {
         todo!()
     }
+}
+
+impl VirtualMethods for Node {
+    fn super_type(&self) -> Option<&dyn VirtualMethods> {
+        None
+    }
+}
+
+pub fn document_from_node<T: DerivedFrom<Node>>(derived: &T) -> Weak<Document> {
+    derived.upcast().owner_doc()
 }

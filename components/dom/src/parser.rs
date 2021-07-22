@@ -1,4 +1,4 @@
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use html5ever::{
     tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
@@ -129,7 +129,7 @@ impl TreeSink for DomParser {
     fn add_attrs_if_missing(&mut self, target: &Self::Handle, attrs: Vec<html5ever::Attribute>) {
         let elem = target.downcast::<Element>();
         for attr in attrs {
-            elem.set_attribute_from_parser(attr.name, String::from(attr.value), None);
+            elem.set_attribute(attr.name, String::from(&attr.value), None);
         }
     }
 
@@ -197,7 +197,7 @@ fn create_element_for_token(
 
     let element = Element::create(name, is, Rc::downgrade(document));
 
-    for attr in attrs.iter() {
+    for attr in attrs {
         element.set_attribute(attr.name, String::from(attr.value), None);
     }
 

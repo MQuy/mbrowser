@@ -6,22 +6,25 @@ use crate::{
     document::Document,
     element::Element,
     htmlelement::HTMLElement,
-    inheritance::{Castable, DerivedFrom},
     node::Node,
     nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId},
 };
 
-#[derive(Clone)]
-pub struct HTMLDivElement {
+pub struct HTMLUnknownElement {
     htmlelement: HTMLElement,
 }
 
-impl HTMLDivElement {
+impl crate::inheritance::Castable for HTMLUnknownElement {}
+impl crate::inheritance::DerivedFrom<Node> for HTMLUnknownElement {}
+impl crate::inheritance::DerivedFrom<Element> for HTMLUnknownElement {}
+impl crate::inheritance::DerivedFrom<HTMLElement> for HTMLUnknownElement {}
+
+impl HTMLUnknownElement {
     pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
         Self {
             htmlelement: HTMLElement::new_inherited(
                 NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLDivElement,
+                    HTMLElementTypeId::HTMLUnknownElement,
                 )),
                 local_name,
                 prefix,
@@ -30,8 +33,3 @@ impl HTMLDivElement {
         }
     }
 }
-
-impl Castable for HTMLDivElement {}
-impl DerivedFrom<Node> for HTMLDivElement {}
-impl DerivedFrom<Element> for HTMLDivElement {}
-impl DerivedFrom<HTMLElement> for HTMLDivElement {}

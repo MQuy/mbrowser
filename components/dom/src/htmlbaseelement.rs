@@ -1,6 +1,6 @@
-use std::rc::Weak;
+use std::{rc::Weak, sync::Arc};
 
-use html5ever::{local_name, LocalName, Prefix};
+use html5ever::{local_name, ns, LocalName, Prefix};
 
 use crate::{
     attr::AttrValue,
@@ -10,25 +10,27 @@ use crate::{
     inheritance::{Castable, DerivedFrom},
     node::{document_from_node, Node},
     nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId},
+    url::BrowserUrl,
     virtualmethods::VirtualMethods,
 };
+use html5ever::namespace_url;
 
 #[derive(Clone)]
-pub struct HTMLBodyElement {
+pub struct HTMLBaseElement {
     htmlelement: HTMLElement,
 }
 
-impl Castable for HTMLBodyElement {}
-impl DerivedFrom<Node> for HTMLBodyElement {}
-impl DerivedFrom<Element> for HTMLBodyElement {}
-impl DerivedFrom<HTMLElement> for HTMLBodyElement {}
+impl Castable for HTMLBaseElement {}
+impl DerivedFrom<Node> for HTMLBaseElement {}
+impl DerivedFrom<Element> for HTMLBaseElement {}
+impl DerivedFrom<HTMLElement> for HTMLBaseElement {}
 
-impl HTMLBodyElement {
+impl HTMLBaseElement {
     pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
         Self {
             htmlelement: HTMLElement::new_inherited(
                 NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLBodyElement,
+                    HTMLElementTypeId::HTMLBaseElement,
                 )),
                 local_name,
                 prefix,
@@ -36,8 +38,23 @@ impl HTMLBodyElement {
             ),
         }
     }
+
+    /// <https://html.spec.whatwg.org/multipage/#frozen-base-url>
+    pub fn frozen_base_url(&self) -> BrowserUrl {
+        let href = self
+            .upcast::<Element>()
+            .get_attribute(&ns!(), &local_name!("href"))
+            .expect(
+                "The frozen base url is only defined for base elements \
+                 that have a base url.",
+            );
+        let document = document_from_node(self);
+        let base = document.upgrade().unwrap().fallback_base_url();
+        let parsed = base.join(&href.value.borrow());
+        parsed.unwrap_or(base)
+    }
 }
-impl VirtualMethods for HTMLBodyElement {
+impl VirtualMethods for HTMLBaseElement {
     fn super_type(&self) -> Option<&dyn VirtualMethods> {
         Some(self.upcast::<HTMLElement>() as &dyn VirtualMethods)
     }
