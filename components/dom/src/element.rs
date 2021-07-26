@@ -149,7 +149,7 @@ impl Element {
         match name.ns {
             ns!(html) => create_html_element(name, prefix, is, document),
             ns!(svg) => create_svg_element(name, prefix, document),
-            _ => todo!(),
+            _ => Rc::new(Element::new(name.local, name.ns, prefix, document)),
         }
     }
 }

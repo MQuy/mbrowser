@@ -93,7 +93,7 @@ impl TreeSink for DomParser {
             Rc::downgrade(&self.document),
         );
         doc.upcast::<Node>()
-            .append_child(doctype.upcast())
+            .append_child(Rc::new(doctype.upcast().clone()))
             .expect("Appending failed");
     }
 
@@ -123,7 +123,7 @@ impl TreeSink for DomParser {
         new_node: NodeOrText<Self::Handle>,
     ) {
         let parent = sibling.get_parent_node().unwrap().upgrade().unwrap();
-        insert(&parent, Some(sibling), new_node)
+        insert(&parent, Some(sibling.clone()), new_node)
     }
 
     fn add_attrs_if_missing(&mut self, target: &Self::Handle, attrs: Vec<html5ever::Attribute>) {
@@ -149,8 +149,8 @@ impl TreeSink for DomParser {
     }
 
     fn reparent_children(&mut self, node: &Self::Handle, new_parent: &Self::Handle) {
-        while let Some(ref child) = node.get_first_child() {
-            new_parent.append_child(&child).unwrap();
+        while let Some(child) = node.get_first_child() {
+            new_parent.append_child(child).unwrap();
         }
     }
 
@@ -170,15 +170,15 @@ impl TreeSink for DomParser {
     }
 }
 
-fn insert(parent: &Rc<Node>, reference_child: Option<&Node>, child: NodeOrText<Rc<Node>>) -> () {
+fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrText<Rc<Node>>) -> () {
     match child {
         NodeOrText::AppendNode(n) => {
-            parent.insert_before(&n, reference_child).unwrap();
+            parent.insert_before(n, reference_child).unwrap();
         }
         NodeOrText::AppendText(t) => {
             let text = Text::new(String::from(t), parent.owner_doc());
             parent
-                .insert_before(text.upcast(), reference_child)
+                .insert_before(Rc::new(text.upcast::<Node>().clone()), reference_child)
                 .unwrap();
         }
     }

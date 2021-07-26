@@ -8,6 +8,57 @@ pub enum NodeTypeId {
     Element(ElementTypeId),
 }
 
+impl NodeTypeId {
+    pub fn is_attr(&self) -> bool {
+        match self {
+            Self::Attr => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_character_data(&self) -> bool {
+        match self {
+            Self::CharacterData(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_character_data_text(&self) -> bool {
+        match self {
+            Self::CharacterData(CharacterDataTypeId::Text(_)) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_character_data_comment(&self) -> bool {
+        match self {
+            Self::CharacterData(CharacterDataTypeId::Comment) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_document(&self) -> bool {
+        match self {
+            Self::Document => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_document_type(&self) -> bool {
+        match self {
+            Self::DocumentType => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_element(&self) -> bool {
+        match self {
+            Self::Element(_) => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum CharacterDataTypeId {
     Comment,
