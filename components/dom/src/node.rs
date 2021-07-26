@@ -1,4 +1,6 @@
 use std::{
+    borrow::Borrow,
+    cell::{Ref, RefCell},
     ops::Deref,
     rc::{Rc, Weak},
     slice::Iter,
@@ -6,23 +8,23 @@ use std::{
 
 use crate::{
     document::Document,
+    element::Element,
     error::{Error, ErrorResult, Fallible},
     inheritance::{Castable, DerivedFrom},
     nodetype::{CharacterDataTypeId, NodeTypeId},
-    virtualmethods::VirtualMethods,
+    virtualmethods::{vtable_for, VirtualMethods},
 };
 
 #[derive(Clone)]
 pub struct Node {
     node_type_id: NodeTypeId,
-    parent_node: Option<Weak<Node>>,
-    first_child: Option<Rc<Node>>,
-    last_child: Option<Rc<Node>>,
-    next_sibling: Option<Weak<Node>>,
-    prev_sibling: Option<Weak<Node>>,
-    child_list: Vec<Rc<Node>>,
+    parent_node: RefCell<Option<Weak<Node>>>,
+    first_child: RefCell<Option<Rc<Node>>>,
+    last_child: RefCell<Option<Rc<Node>>>,
+    next_sibling: RefCell<Option<Weak<Node>>>,
+    prev_sibling: RefCell<Option<Weak<Node>>>,
     children_count: u32,
-    owner_doc: Option<Weak<Document>>,
+    owner_doc: RefCell<Option<Weak<Document>>>,
 }
 impl Castable for Node {}
 
@@ -41,67 +43,138 @@ impl Node {
             last_child: Default::default(),
             next_sibling: Default::default(),
             prev_sibling: Default::default(),
-            child_list: Default::default(),
             children_count: 0u32,
-            owner_doc: doc,
+            owner_doc: RefCell::new(doc),
         }
     }
 
-    pub fn owner_doc(&self) -> Weak<Document> {
-        self.owner_doc.clone().unwrap()
+    pub fn get_owner_doc(&self) -> Option<Rc<Document>> {
+        match self.owner_doc.borrow().deref() {
+            Some(node) => node.upgrade(),
+            _ => None,
+        }
+    }
+
+    pub fn set_owner_doc(&self, document: Rc<Document>) {
+        self.owner_doc.replace(Some(Rc::downgrade(&document)));
     }
 
     // https://dom.spec.whatwg.org/#dom-node-parentnode
-    pub fn get_parent_node(&self) -> Option<Weak<Node>> {
-        self.parent_node.clone()
+    pub fn get_parent_node(&self) -> Option<Rc<Node>> {
+        match self.parent_node.borrow().deref() {
+            Some(node) => node.upgrade(),
+            _ => None,
+        }
     }
 
+    pub fn get_next_sibling(&self) -> Option<Rc<Node>> {
+        match self.next_sibling.borrow().deref() {
+            Some(node) => node.upgrade(),
+            _ => None,
+        }
+    }
+
+    pub fn get_prev_sibling(&self) -> Option<Rc<Node>> {
+        match self.prev_sibling.borrow().deref() {
+            Some(node) => node.upgrade(),
+            _ => None,
+        }
+    }
+
+    pub fn get_node_type_id(&self) -> NodeTypeId {
+        self.node_type_id
+    }
+
+    // https://dom.spec.whatwg.org/#dom-node-firstchild
+    pub fn get_first_child(&self) -> Option<Rc<Node>> {
+        self.first_child.borrow().deref().clone()
+    }
+
+    // https://dom.spec.whatwg.org/#dom-node-lastchild
+    pub fn get_last_child(&self) -> Option<Rc<Node>> {
+        self.last_child.borrow().deref().clone()
+    }
+
+    fn add_child(&self, new_child: Rc<Node>, before: Option<Rc<Node>>) {
+        new_child
+            .parent_node
+            .replace(Some(Rc::downgrade(&Rc::new(self.clone()))));
+
+        match before {
+            Some(ref before) => {
+                match before.get_prev_sibling() {
+                    Some(ref prev_sibling) => {
+                        prev_sibling
+                            .next_sibling
+                            .replace(Some(Rc::downgrade(&new_child)));
+                        new_child
+                            .prev_sibling
+                            .replace(Some(Rc::downgrade(prev_sibling)));
+                    }
+                    None => {
+                        self.first_child.replace(Some(new_child.clone()));
+                    }
+                }
+                before.prev_sibling.replace(Some(Rc::downgrade(&new_child)));
+                new_child.next_sibling.replace(Some(Rc::downgrade(before)));
+            }
+            None => {
+                match self.get_last_child() {
+                    Some(ref last_child) => {
+                        last_child
+                            .next_sibling
+                            .replace(Some(Rc::downgrade(&new_child)));
+                        new_child
+                            .prev_sibling
+                            .replace(Some(Rc::downgrade(last_child)));
+                    }
+                    None => {
+                        self.first_child.replace(Some(new_child.clone()));
+                    }
+                };
+                self.last_child.replace(Some(new_child.clone()));
+            }
+        }
+    }
     // https://dom.spec.whatwg.org/#dom-node-appendchild
     pub fn append_child(&self, node: Rc<Node>) -> Fallible<Rc<Node>> {
         Node::pre_insert(node, self, None)
     }
 
+    // https://dom.spec.whatwg.org/#dom-node-insertbefore
     pub fn insert_before(&self, node: Rc<Node>, child: Option<Rc<Node>>) -> Fallible<Rc<Node>> {
         Node::pre_insert(node, self, child)
     }
 
-    pub fn node_type_id(&self) -> NodeTypeId {
-        self.node_type_id
-    }
-
     // https://dom.spec.whatwg.org/#dom-node-removechild
-    pub fn remove_child(&self, node: &Node) -> Fallible<Rc<Node>> {
+    pub fn remove_child(&self, node: Rc<Node>) -> Fallible<Rc<Node>> {
         Node::pre_remove(node, self)
-    }
-
-    pub fn get_next_sibling(&self) -> Option<Weak<Node>> {
-        self.next_sibling.clone()
-    }
-
-    pub fn get_prev_sibling(&self) -> Option<Weak<Node>> {
-        self.prev_sibling.clone()
     }
 
     // https://dom.spec.whatwg.org/#concept-tree-root
     pub fn get_root(&self) -> Rc<Node> {
-        if self.parent_node.is_none() {
+        let parent_node = self.get_parent_node();
+        if parent_node.is_none() {
             Rc::new(self.clone())
         } else {
-            self.parent_node
-                .clone()
-                .unwrap()
-                .upgrade()
-                .unwrap()
-                .get_root()
+            parent_node.clone().unwrap().get_root()
         }
     }
 
-    pub fn ancestors(&self) -> PrecedingNodeIterator {
-        todo!()
+    pub fn ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
+        SimpleNodeIterator {
+            current: self.get_parent_node(),
+            next_node: |n: &Rc<Node>| n.get_parent_node(),
+        }
     }
 
     pub fn is_ancestor_of(&self, node: &Node) -> bool {
-        self.ancestors().any(|ancestor| ancestor.as_ptr() == node)
+        self.ancestors().any(|ancestor| ancestor.as_ref() == node)
+    }
+
+    /// Iterates over this node and all its descendants, in preorder.
+    pub fn traverse_preorder(&self) -> TreeIterator {
+        TreeIterator::new(Rc::new(self.clone()))
     }
 
     // https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
@@ -110,31 +183,57 @@ impl Node {
         self.is_ancestor_of(parent)
     }
 
-    // https://dom.spec.whatwg.org/#dom-node-firstchild
-    pub fn get_first_child(&self) -> Option<Rc<Node>> {
-        self.first_child.clone()
-    }
-
     // https://dom.spec.whatwg.org/#concept-node-pre-insert
     pub fn pre_insert(
         node: Rc<Node>,
         parent: &Node,
         child: Option<Rc<Node>>,
     ) -> Fallible<Rc<Node>> {
+        // Step 1
         Node::ensure_pre_insertion_validity(node.clone(), parent, child.clone())?;
 
+        // Step 2-3
         let reference_child = match child {
-            Some(child) if child == node => node.get_next_sibling().unwrap().upgrade().clone(),
+            Some(child) if child == node => node.get_next_sibling(),
             _ => child,
         };
 
-        Node::insert(node.clone(), parent, reference_child);
+        // Step 4
+        Node::insert(
+            node.clone(),
+            parent,
+            reference_child,
+            SuppressObserver::Unsuppressed,
+        );
         Ok(node)
     }
 
     // https://dom.spec.whatwg.org/#concept-node-insert
-    fn insert(node: Rc<Node>, parent: &Node, child: Option<Rc<Node>>) {
-        todo!()
+    fn insert(
+        node: Rc<Node>,
+        parent: &Node,
+        child: Option<Rc<Node>>,
+        suppress_observers: SuppressObserver,
+    ) {
+        // TODO Step 5, 6, 7.5-7, 8-9
+
+        // Step 1-4
+        if node.node_type_id.is_document_fragment() {
+            if node.children().count() == 0 {
+                return;
+            }
+            node.children()
+                .for_each(|child| node.remove(child, suppress_observers));
+        }
+
+        // Step 7
+        node.children().for_each(|node| {
+            // Step 7.1
+            Node::adopt(node.as_ref(), parent.get_owner_doc().unwrap());
+
+            // Step 7.2-3
+            parent.add_child(node, child.clone());
+        });
     }
 
     // https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
@@ -215,9 +314,10 @@ impl Node {
                                 return Err(Error::HierarchyRequest);
                             }
                             if let Some(ref child) = child {
-                                if child.following_siblings().any(|sibling| {
-                                    sibling.upgrade().unwrap().node_type_id.is_document_type()
-                                }) {
+                                if child
+                                    .following_siblings()
+                                    .any(|sibling| sibling.node_type_id.is_document_type())
+                                {
                                     return Err(Error::HierarchyRequest);
                                 }
                             }
@@ -237,7 +337,7 @@ impl Node {
                         Some(ref child) => {
                             if child
                                 .preceding_siblings()
-                                .any(|sibling| sibling.upgrade().unwrap().node_type_id.is_element())
+                                .any(|sibling| sibling.node_type_id.is_element())
                             {
                                 return Err(Error::HierarchyRequest);
                             }
@@ -259,32 +359,107 @@ impl Node {
         Ok(())
     }
 
+    // https://dom.spec.whatwg.org/#concept-node-adopt
+    pub fn adopt(node: &Node, document: Rc<Document>) {
+        // TODO Step 3.1.2, 3.2
+
+        // Step 1
+        let old_document = node.get_owner_doc();
+
+        // Step 2
+        if let Some(parent) = node.get_parent_node() {
+            parent.remove(Rc::new(node.clone()), SuppressObserver::Unsuppressed);
+        }
+
+        // Step 3
+        if let Some(old_document) = old_document {
+            // Step 3.1
+            if std::ptr::eq(old_document.as_ref(), document.as_ref()) {
+                for descendant in node.traverse_preorder() {
+                    descendant.set_owner_doc(document.clone())
+                }
+            }
+
+            // Step 3.3
+            for descendant in node.traverse_preorder() {
+                vtable_for(&descendant).adopting_steps(old_document.clone());
+            }
+        }
+    }
+
     pub fn is_parent_of(&self, child: Rc<Node>) -> bool {
         child
-            .parent_node
-            .clone()
-            .map_or(false, |parent| parent.as_ptr() == self)
+            .get_parent_node()
+            .map_or(false, |parent| parent.as_ref() == self)
     }
 
     // https://dom.spec.whatwg.org/#concept-node-pre-remove
-    fn pre_remove(child: &Node, parent: &Node) -> Fallible<Rc<Node>> {
-        todo!()
+    fn pre_remove(child: Rc<Node>, parent: &Node) -> Fallible<Rc<Node>> {
+        // Step 1
+        if child.get_parent_node().unwrap().as_ref() != parent {
+            return Err(Error::NotFound);
+        }
+
+        // Step 2
+        parent.remove(child.clone(), SuppressObserver::Unsuppressed);
+
+        // Step 3
+        Ok(child)
     }
 
-    pub fn following_siblings(&self) -> FollowingNodeIterator {
-        FollowingNodeIterator {
-            current: self.next_sibling.clone(),
+    // https://dom.spec.whatwg.org/#concept-node-remove
+    fn remove(&self, child: Rc<Node>, suppress_observers: SuppressObserver) {
+        assert!(child.get_parent_node().is_some());
+
+        // Step 9-11
+        match child.get_prev_sibling() {
+            Some(prev_sibling) => {
+                prev_sibling
+                    .next_sibling
+                    .replace(Some(Rc::downgrade(&child.get_next_sibling().unwrap())));
+            }
+            None => {
+                self.first_child.replace(child.get_next_sibling());
+            }
+        }
+
+        match child.get_next_sibling() {
+            Some(next_sibling) => {
+                next_sibling
+                    .prev_sibling
+                    .replace(Some(Rc::downgrade(&child.get_prev_sibling().unwrap())));
+            }
+            None => {
+                self.last_child.replace(child.get_prev_sibling());
+            }
+        }
+        child.prev_sibling.replace(None);
+        child.next_sibling.replace(None);
+        child.parent_node.replace(None);
+
+        // Step 15
+        vtable_for(&child).unbind_from_tree();
+    }
+
+    pub fn following_siblings(&self) -> impl Iterator<Item = Rc<Node>> {
+        SimpleNodeIterator {
+            current: self.get_next_sibling(),
+            next_node: |n: &Rc<Node>| n.get_next_sibling(),
         }
     }
 
-    pub fn preceding_siblings(&self) -> PrecedingNodeIterator {
-        PrecedingNodeIterator {
-            current: self.next_sibling.clone(),
+    pub fn preceding_siblings(&self) -> impl Iterator<Item = Rc<Node>> {
+        SimpleNodeIterator {
+            current: self.get_prev_sibling(),
+            next_node: |n: &Rc<Node>| n.get_prev_sibling(),
         }
     }
 
-    pub fn children(&self) -> Iter<Rc<Node>> {
-        self.child_list.iter()
+    pub fn children(&self) -> impl Iterator<Item = Rc<Node>> {
+        SimpleNodeIterator {
+            current: self.first_child.borrow().deref().clone(),
+            next_node: |n: &Rc<Node>| n.get_next_sibling(),
+        }
     }
 }
 
@@ -294,42 +469,91 @@ impl VirtualMethods for Node {
     }
 }
 
-pub fn document_from_node<T: DerivedFrom<Node>>(derived: &T) -> Weak<Document> {
-    derived.upcast().owner_doc()
+/// suppress observers flag
+/// <https://dom.spec.whatwg.org/#concept-node-insert>
+/// <https://dom.spec.whatwg.org/#concept-node-remove>
+#[derive(Clone, Copy)]
+enum SuppressObserver {
+    Suppressed,
+    Unsuppressed,
 }
 
-pub struct FollowingNodeIterator {
-    current: Option<Weak<Node>>,
+pub struct SimpleNodeIterator<T, I>
+where
+    I: Fn(&T) -> Option<T>,
+{
+    current: Option<T>,
+    next_node: I,
 }
-impl Iterator for FollowingNodeIterator {
-    type Item = Weak<Node>;
 
-    // https://dom.spec.whatwg.org/#concept-tree-following
+impl<T, I> Iterator for SimpleNodeIterator<T, I>
+where
+    I: Fn(&T) -> Option<T>,
+{
+    type Item = T;
+
     fn next(&mut self) -> Option<Self::Item> {
-        match self.current.take() {
-            Some(node) => {
-                self.current = node.upgrade().unwrap().get_next_sibling();
-                Some(node)
-            }
-            None => None,
-        }
+        let current = self.current.take();
+        self.current = current.as_ref().and_then(|c| (self.next_node)(c));
+        current
     }
 }
 
-pub struct PrecedingNodeIterator {
-    current: Option<Weak<Node>>,
+pub fn document_from_node<T: DerivedFrom<Node>>(derived: &T) -> Rc<Document> {
+    derived.upcast().get_owner_doc().unwrap()
 }
-impl Iterator for PrecedingNodeIterator {
-    type Item = Weak<Node>;
 
-    // https://dom.spec.whatwg.org/#concept-tree-preceding
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.current.take() {
-            Some(node) => {
-                self.current = node.upgrade().unwrap().get_prev_sibling();
-                Some(node)
-            }
-            None => None,
+pub struct TreeIterator {
+    current: Option<Rc<Node>>,
+    depth: usize,
+}
+
+impl TreeIterator {
+    fn new(root: Rc<Node>) -> TreeIterator {
+        TreeIterator {
+            current: Some(root),
+            depth: 0,
         }
+    }
+
+    pub fn next_skipping_children(&mut self) -> Option<Rc<Node>> {
+        let current = self.current.take()?;
+
+        self.next_skipping_children_impl(current)
+    }
+
+    fn next_skipping_children_impl(&mut self, current: Rc<Node>) -> Option<Rc<Node>> {
+        let iter = current.ancestors();
+
+        for ancestor in iter {
+            if self.depth == 0 {
+                break;
+            }
+            if let Some(next_sibling) = ancestor.get_next_sibling() {
+                self.current = Some(next_sibling);
+                return Some(current);
+            }
+            self.depth -= 1;
+        }
+        debug_assert_eq!(self.depth, 0);
+        self.current = None;
+        Some(current)
+    }
+}
+
+impl Iterator for TreeIterator {
+    type Item = Rc<Node>;
+
+    // https://dom.spec.whatwg.org/#concept-tree-order
+    fn next(&mut self) -> Option<Rc<Node>> {
+        let current = self.current.take()?;
+
+        if let Some(first_child) = current.get_first_child() {
+            self.current = Some(first_child);
+            self.depth += 1;
+            return Some(current);
+        };
+
+        self.next_skipping_children_impl(current)
     }
 }

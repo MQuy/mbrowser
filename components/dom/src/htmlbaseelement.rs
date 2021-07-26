@@ -49,7 +49,7 @@ impl HTMLBaseElement {
                  that have a base url.",
             );
         let document = document_from_node(self);
-        let base = document.upgrade().unwrap().fallback_base_url();
+        let base = document.fallback_base_url();
         let parsed = base.join(&href.value.borrow());
         parsed.unwrap_or(base)
     }
@@ -64,10 +64,9 @@ impl VirtualMethods for HTMLBaseElement {
             local_name!("bgcolor") | local_name!("text") => {
                 AttrValue::from_legacy_color(value.into())
             }
-            local_name!("background") => AttrValue::from_resolved_url(
-                &document_from_node(self).upgrade().unwrap().base_url(),
-                value.into(),
-            ),
+            local_name!("background") => {
+                AttrValue::from_resolved_url(&document_from_node(self).base_url(), value.into())
+            }
             _ => self
                 .super_type()
                 .unwrap()

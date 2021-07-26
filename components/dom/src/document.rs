@@ -3,7 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use encoding_rs::Encoding;
+use encoding_rs::{Encoding, UTF_8};
 use html5ever::{ns, tree_builder::QuirksMode, LocalName, Namespace};
 use mime::Mime;
 
@@ -22,30 +22,29 @@ pub struct Document {
     content_type: Mime,
     url: RefCell<BrowserUrl>,
     encoding: &'static Encoding,
-    quirk_mode: Cell<QuirksMode>,
-    base_element: Rc<HTMLBaseElement>,
+    quirks_mode: Cell<QuirksMode>,
+    base_element: RefCell<Option<Rc<HTMLBaseElement>>>,
 }
 
 impl Document {
-    pub fn set_quirks_mode(&self, mode: QuirksMode) {
-        self.quirk_mode.set(mode);
-    }
-
-    pub fn lookup_custom_element_definition(
-        &self,
-        namespace: &Namespace,
-        local_name: &LocalName,
-        is: Option<&LocalName>,
-    ) -> Option<Rc<CustomElementDefinition>> {
-        if ns!(html) != *namespace {
-            return None;
+    pub fn new(url: Option<BrowserUrl>) -> Self {
+        let url = url.unwrap_or_else(|| BrowserUrl::parse("about:blank").unwrap());
+        Self {
+            node: Node::new(crate::nodetype::NodeTypeId::Document, None),
+            content_type: mime::TEXT_HTML,
+            encoding: UTF_8,
+            quirks_mode: Cell::new(QuirksMode::NoQuirks),
+            base_element: RefCell::new(None),
+            url: RefCell::new(url),
         }
-        todo!();
+    }
+    pub fn set_quirks_mode(&self, mode: QuirksMode) {
+        self.quirks_mode.set(mode);
     }
 
     /// Returns the first `base` element in the DOM that has an `href` attribute.
     pub fn base_element(&self) -> Option<Rc<HTMLBaseElement>> {
-        Some(self.base_element.clone())
+        self.base_element.borrow().clone()
     }
 
     // https://html.spec.whatwg.org/multipage/#document-base-url

@@ -47,10 +47,9 @@ impl VirtualMethods for HTMLBodyElement {
             local_name!("bgcolor") | local_name!("text") => {
                 AttrValue::from_legacy_color(value.into())
             }
-            local_name!("background") => AttrValue::from_resolved_url(
-                &document_from_node(self).upgrade().unwrap().base_url(),
-                value.into(),
-            ),
+            local_name!("background") => {
+                AttrValue::from_resolved_url(&document_from_node(self).base_url(), value.into())
+            }
             _ => self
                 .super_type()
                 .unwrap()

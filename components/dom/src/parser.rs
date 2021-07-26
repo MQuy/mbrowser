@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{fmt::Display, rc::Rc};
 
 use html5ever::{
     tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
@@ -7,12 +7,35 @@ use html5ever::{
 use log::debug;
 
 use crate::{
-    comment::Comment, document::Document, documenttype::DocumentType, element::Element,
-    inheritance::Castable, node::Node, not_supported, text::Text,
+    comment::Comment,
+    document::Document,
+    documenttype::DocumentType,
+    element::Element,
+    inheritance::Castable,
+    node::{self, Node},
+    not_supported,
+    text::Text,
+    virtualmethods::vtable_for,
 };
 
 pub struct DomParser {
     document: Rc<Document>,
+    current_line: u64,
+}
+
+impl Default for DomParser {
+    fn default() -> Self {
+        Self {
+            document: Rc::new(Document::new(None)),
+            current_line: 0,
+        }
+    }
+}
+
+impl Display for DomParser {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Ok(())
+    }
 }
 
 impl TreeSink for DomParser {
@@ -101,8 +124,8 @@ impl TreeSink for DomParser {
         todo!()
     }
 
-    fn pop(&mut self, _node: &Self::Handle) {
-        todo!()
+    fn pop(&mut self, node: &Self::Handle) {
+        vtable_for(&node).pop();
     }
 
     fn get_template_contents(&mut self, _target: &Self::Handle) -> Self::Handle {
@@ -122,7 +145,7 @@ impl TreeSink for DomParser {
         sibling: &Self::Handle,
         new_node: NodeOrText<Self::Handle>,
     ) {
-        let parent = sibling.get_parent_node().unwrap().upgrade().unwrap();
+        let parent = sibling.get_parent_node().unwrap();
         insert(&parent, Some(sibling.clone()), new_node)
     }
 
@@ -143,8 +166,8 @@ impl TreeSink for DomParser {
     }
 
     fn remove_from_parent(&mut self, target: &Self::Handle) {
-        if let Some(ref parent) = target.get_parent_node() {
-            parent.upgrade().unwrap().remove_child(&*target).unwrap();
+        if let Some(parent) = target.get_parent_node() {
+            parent.remove_child(target.clone()).unwrap();
         }
     }
 
@@ -158,8 +181,8 @@ impl TreeSink for DomParser {
         false
     }
 
-    fn set_current_line(&mut self, _line_number: u64) {
-        todo!()
+    fn set_current_line(&mut self, line_number: u64) {
+        self.current_line = line_number;
     }
 
     fn complete_script(
@@ -176,7 +199,10 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
             parent.insert_before(n, reference_child).unwrap();
         }
         NodeOrText::AppendText(t) => {
-            let text = Text::new(String::from(t), parent.owner_doc());
+            let text = Text::new(
+                String::from(t),
+                Rc::downgrade(&parent.get_owner_doc().unwrap()),
+            );
             parent
                 .insert_before(Rc::new(text.upcast::<Node>().clone()), reference_child)
                 .unwrap();

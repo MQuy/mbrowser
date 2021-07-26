@@ -44,6 +44,13 @@ impl NodeTypeId {
         }
     }
 
+    pub fn is_document_fragment(&self) -> bool {
+        match self {
+            Self::DocumentFragment(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_document_type(&self) -> bool {
         match self {
             Self::DocumentType => true,

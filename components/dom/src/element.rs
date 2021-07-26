@@ -1,7 +1,5 @@
 use std::{
-    borrow::Borrow,
-    cell::{Cell, RefCell},
-    ops::Deref,
+    cell::RefCell,
     rc::{Rc, Weak},
 };
 
@@ -16,7 +14,7 @@ use crate::{
     htmlhtmlelement::HTMLHtmlElement,
     htmlunknownelement::HTMLUnknownElement,
     inheritance::Castable,
-    node::Node,
+    node::{document_from_node, Node},
     nodetype::{ElementTypeId, NodeTypeId},
     svgelement::SVGElement,
     svgsvgelement::SVGSVGElement,

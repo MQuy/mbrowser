@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
+            "name": "(cpp) Launch",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceRoot}/target/debug/mbrowser.exe",
@@ -11,6 +11,21 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "externalTerminal"
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "(lldb) Launch",
+            "args": [],
+            "program": "${workspaceFolder}/target/debug/mbrowser.exe",
+            "windows": {
+                "program": "${workspaceFolder}/target/debug/mbrowser.exe"
+            },
+            "cwd": "${workspaceFolder}",
+            "stopOnEntry": false,
+            "sourceLanguages": [
+                "rust"
+            ]
+        },
     ]
 }
