@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use crate::{
     characterdata::CharacterData,
@@ -8,6 +8,8 @@ use crate::{
     text::Text,
 };
 
+#[derive(Clone)]
+#[repr(C)]
 pub struct CDATASection {
     text: Text,
 }
@@ -18,7 +20,7 @@ impl crate::inheritance::DerivedFrom<CharacterData> for CDATASection {}
 impl crate::inheritance::DerivedFrom<Text> for CDATASection {}
 
 impl CDATASection {
-    pub fn new(text: String, document: Weak<Document>) -> Self {
+    pub fn new(text: String, document: Rc<Document>) -> Self {
         Self {
             text: Text::new_inherited(
                 NodeTypeId::CharacterData(CharacterDataTypeId::Text(TextTypeId::CDATASection)),

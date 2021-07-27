@@ -1,6 +1,7 @@
 use std::{fmt::Display, rc::Rc};
 
 use html5ever::{
+    ns,
     tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
     Attribute, LocalName, QualName,
 };
@@ -17,6 +18,7 @@ use crate::{
     text::Text,
     virtualmethods::vtable_for,
 };
+use html5ever::namespace_url;
 
 pub struct DomParser {
     document: Rc<Document>,
@@ -68,12 +70,12 @@ impl TreeSink for DomParser {
         attrs: Vec<html5ever::Attribute>,
         _flags: ElementFlags,
     ) -> Self::Handle {
-        let element = create_element_for_token(name, attrs, &self.document);
+        let element = create_element_for_token(name, attrs, self.document.clone());
         Rc::new(element.upcast().clone())
     }
 
     fn create_comment(&mut self, text: html5ever::tendril::StrTendril) -> Self::Handle {
-        let comment = Comment::new(String::from(text), Rc::downgrade(&self.document));
+        let comment = Comment::new(String::from(text), self.document.clone());
         Rc::new(comment.upcast::<Node>().clone())
     }
 
@@ -113,7 +115,7 @@ impl TreeSink for DomParser {
             String::from(name),
             String::from(public_id),
             String::from(system_id),
-            Rc::downgrade(&self.document),
+            self.document.clone(),
         );
         doc.upcast::<Node>()
             .append_child(Rc::new(doctype.upcast().clone()))
@@ -199,10 +201,7 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
             parent.insert_before(n, reference_child).unwrap();
         }
         NodeOrText::AppendText(t) => {
-            let text = Text::new(
-                String::from(t),
-                Rc::downgrade(&parent.get_owner_doc().unwrap()),
-            );
+            let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
             parent
                 .insert_before(Rc::new(text.upcast::<Node>().clone()), reference_child)
                 .unwrap();
@@ -214,14 +213,14 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 fn create_element_for_token(
     name: QualName,
     attrs: Vec<Attribute>,
-    document: &Rc<Document>,
+    document: Rc<Document>,
 ) -> Rc<Element> {
     let is = attrs
         .iter()
         .find(|attr| attr.name.local.eq_str_ignore_ascii_case("is"))
         .map(|attr| LocalName::from(&*attr.value));
 
-    let element = Element::create(name, is, Rc::downgrade(document));
+    let element = Element::create(name, is, document);
 
     for attr in attrs {
         element.set_attribute(attr.name, String::from(attr.value), None);

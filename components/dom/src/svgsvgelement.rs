@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use html5ever::{local_name, LocalName, Prefix};
 
@@ -17,6 +17,8 @@ use crate::{
 const DEFAULT_WIDTH: u32 = 300;
 const DEFAULT_HEIGHT: u32 = 150;
 
+#[derive(Clone)]
+#[repr(C)]
 pub struct SVGSVGElement {
     svggraphicselement: SVGGraphicsElement,
 }
@@ -28,7 +30,7 @@ impl crate::inheritance::DerivedFrom<SVGElement> for SVGSVGElement {}
 impl crate::inheritance::DerivedFrom<SVGGraphicsElement> for SVGSVGElement {}
 
 impl SVGSVGElement {
-    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
+    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
         Self {
             svggraphicselement: SVGGraphicsElement::new_inherited(
                 NodeTypeId::Element(ElementTypeId::SVGElement(

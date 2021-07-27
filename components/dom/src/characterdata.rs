@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use crate::{
     document::Document,
@@ -8,13 +8,14 @@ use crate::{
 };
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct CharacterData {
     node: Node,
     data: String,
 }
 
 impl CharacterData {
-    pub fn new_inherited(node_type_id: NodeTypeId, data: String, document: Weak<Document>) -> Self {
+    pub fn new_inherited(node_type_id: NodeTypeId, data: String, document: Rc<Document>) -> Self {
         Self {
             node: Node::new(node_type_id, Some(document)),
             data,

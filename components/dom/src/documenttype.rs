@@ -1,7 +1,9 @@
-use std::rc::Weak;
+use std::rc::{Rc, Weak};
 
 use crate::{document::Document, node::Node};
 
+#[derive(Clone)]
+#[repr(C)]
 pub struct DocumentType {
     node: Node,
     name: String,
@@ -10,12 +12,7 @@ pub struct DocumentType {
 }
 
 impl DocumentType {
-    pub fn new(
-        name: String,
-        public_id: String,
-        system_id: String,
-        document: Weak<Document>,
-    ) -> Self {
+    pub fn new(name: String, public_id: String, system_id: String, document: Rc<Document>) -> Self {
         DocumentType {
             node: Node::new(crate::nodetype::NodeTypeId::DocumentType, Some(document)),
             name,

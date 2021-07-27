@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use crate::{
     characterdata::CharacterData,
@@ -9,12 +9,13 @@ use crate::{
 };
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct Comment {
     character_data: CharacterData,
 }
 
 impl Comment {
-    pub fn new(text: String, document: Weak<Document>) -> Comment {
+    pub fn new(text: String, document: Rc<Document>) -> Comment {
         Comment {
             character_data: CharacterData::new_inherited(
                 NodeTypeId::CharacterData(CharacterDataTypeId::Comment),

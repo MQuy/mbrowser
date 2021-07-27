@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use html5ever::{ns, LocalName, Prefix};
 
@@ -13,6 +13,7 @@ use crate::{
 use html5ever::namespace_url;
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct SVGElement {
     element: Element,
 }
@@ -22,7 +23,7 @@ impl DerivedFrom<Node> for SVGElement {}
 impl DerivedFrom<Element> for SVGElement {}
 
 impl SVGElement {
-    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
+    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
         SVGElement::new_inherited(
             NodeTypeId::Element(ElementTypeId::SVGElement(SVGElementTypeId::SVGElement)),
             local_name,
@@ -35,7 +36,7 @@ impl SVGElement {
         node_type_id: NodeTypeId,
         local_name: LocalName,
         prefix: Option<Prefix>,
-        document: Weak<Document>,
+        document: Rc<Document>,
     ) -> Self {
         Self {
             element: Element::new_inherited(node_type_id, local_name, ns!(svg), prefix, document),

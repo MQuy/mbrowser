@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use html5ever::{local_name, namespace_url};
 use html5ever::{ns, LocalName, Prefix};
@@ -14,6 +14,7 @@ use crate::{
 };
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct HTMLElement {
     element: Element,
 }
@@ -23,7 +24,7 @@ impl DerivedFrom<Node> for HTMLElement {}
 impl DerivedFrom<Element> for HTMLElement {}
 
 impl HTMLElement {
-    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Weak<Document>) -> Self {
+    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
         HTMLElement::new_inherited(
             NodeTypeId::Element(ElementTypeId::Element),
             local_name,
@@ -36,7 +37,7 @@ impl HTMLElement {
         node_type_id: NodeTypeId,
         local_name: LocalName,
         prefix: Option<Prefix>,
-        document: Weak<Document>,
+        document: Rc<Document>,
     ) -> Self {
         HTMLElement {
             element: Element::new_inherited(node_type_id, local_name, ns!(html), prefix, document),

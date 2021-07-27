@@ -1,14 +1,11 @@
 use std::{
-    borrow::Borrow,
-    cell::{Ref, RefCell},
+    cell::RefCell,
     ops::Deref,
     rc::{Rc, Weak},
-    slice::Iter,
 };
 
 use crate::{
     document::Document,
-    element::Element,
     error::{Error, ErrorResult, Fallible},
     inheritance::{Castable, DerivedFrom},
     nodetype::{CharacterDataTypeId, NodeTypeId},
@@ -35,7 +32,7 @@ impl PartialEq for Node {
 }
 
 impl Node {
-    pub fn new(node_type_id: NodeTypeId, doc: Option<Weak<Document>>) -> Node {
+    pub fn new(node_type_id: NodeTypeId, doc: Option<Rc<Document>>) -> Node {
         Node {
             node_type_id,
             parent_node: Default::default(),
@@ -44,7 +41,10 @@ impl Node {
             next_sibling: Default::default(),
             prev_sibling: Default::default(),
             children_count: 0u32,
-            owner_doc: RefCell::new(doc),
+            owner_doc: RefCell::new(match doc {
+                Some(doc) => Some(Rc::downgrade(&doc)),
+                None => None,
+            }),
         }
     }
 
@@ -217,23 +217,29 @@ impl Node {
     ) {
         // TODO Step 5, 6, 7.5-7, 8-9
 
-        // Step 1-4
+        // Step 1
         if node.node_type_id.is_document_fragment() {
+            // Step 2-3
             if node.children().count() == 0 {
                 return;
             }
+
+            // Step 4
             node.children()
                 .for_each(|child| node.remove(child, suppress_observers));
-        }
 
-        // Step 7
-        node.children().for_each(|node| {
-            // Step 7.1
-            Node::adopt(node.as_ref(), parent.get_owner_doc().unwrap());
-
-            // Step 7.2-3
+            // Step 7
+            for node in node.children() {
+                Node::adopt(node.as_ref(), parent.get_owner_doc().unwrap());
+                parent.add_child(node, child.clone());
+            }
+        } else {
+            // Step 7
+            if let Some(document) = parent.get_owner_doc() {
+                Node::adopt(node.as_ref(), document);
+            }
             parent.add_child(node, child.clone());
-        });
+        };
     }
 
     // https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity

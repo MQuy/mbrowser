@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use crate::{
     element::Element, inheritance::Castable, node::Node, nodetype::NodeTypeId,
@@ -8,6 +8,8 @@ use html5ever::{LocalName, Prefix};
 
 use crate::document::Document;
 
+#[derive(Clone)]
+#[repr(C)]
 pub struct SVGGraphicsElement {
     svgelement: SVGElement,
 }
@@ -22,7 +24,7 @@ impl SVGGraphicsElement {
         node_type_id: NodeTypeId,
         local_name: LocalName,
         prefix: Option<Prefix>,
-        document: Weak<Document>,
+        document: Rc<Document>,
     ) -> Self {
         Self {
             svgelement: SVGElement::new_inherited(node_type_id, local_name, prefix, document),

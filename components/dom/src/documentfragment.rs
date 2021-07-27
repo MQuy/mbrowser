@@ -1,4 +1,4 @@
-use std::rc::Weak;
+use std::rc::Rc;
 
 use crate::{
     document::Document,
@@ -8,12 +8,13 @@ use crate::{
 };
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct DocumentFragment {
     node: Node,
 }
 
 impl DocumentFragment {
-    pub fn new(document: Weak<Document>) -> Self {
+    pub fn new(document: Rc<Document>) -> Self {
         Self {
             node: Node::new(
                 NodeTypeId::DocumentFragment(DocumentFragmentTypeId::DocumentFragment),

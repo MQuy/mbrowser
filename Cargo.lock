@@ -56,7 +56,6 @@ dependencies = [
  "log",
  "mime",
  "num-traits",
- "string_cache",
  "url",
 ]
 

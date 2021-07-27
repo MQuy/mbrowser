@@ -1,7 +1,4 @@
-use std::{
-    cell::RefCell,
-    rc::{Rc, Weak},
-};
+use std::{cell::RefCell, rc::Rc};
 
 use html5ever::{local_name, ns, LocalName, Namespace, Prefix, QualName};
 
@@ -14,7 +11,7 @@ use crate::{
     htmlhtmlelement::HTMLHtmlElement,
     htmlunknownelement::HTMLUnknownElement,
     inheritance::Castable,
-    node::{document_from_node, Node},
+    node::Node,
     nodetype::{ElementTypeId, NodeTypeId},
     svgelement::SVGElement,
     svgsvgelement::SVGSVGElement,
@@ -23,6 +20,7 @@ use crate::{
 use html5ever::namespace_url;
 
 #[derive(Clone)]
+#[repr(C)]
 pub struct Element {
     node: Node,
     prefix: Option<Prefix>,
@@ -40,7 +38,7 @@ impl Element {
         local_name: LocalName,
         namespace: Namespace,
         prefix: Option<Prefix>,
-        document: Weak<Document>,
+        document: Rc<Document>,
     ) -> Self {
         Element::new_inherited(
             NodeTypeId::Element(ElementTypeId::Element),
@@ -56,7 +54,7 @@ impl Element {
         local_name: LocalName,
         namespace: Namespace,
         prefix: Option<Prefix>,
-        document: Weak<Document>,
+        document: Rc<Document>,
     ) -> Self {
         Self {
             node: Node::new(node_type_id, Some(document)),
@@ -142,7 +140,7 @@ impl Element {
         *self.is.borrow_mut() = Some(is);
     }
 
-    pub fn create(name: QualName, is: Option<LocalName>, document: Weak<Document>) -> Rc<Element> {
+    pub fn create(name: QualName, is: Option<LocalName>, document: Rc<Document>) -> Rc<Element> {
         let prefix = name.prefix.clone();
         match name.ns {
             ns!(html) => create_html_element(name, prefix, is, document),
@@ -172,8 +170,8 @@ impl VirtualMethods for Element {
 
 fn create_svg_element(
     name: QualName,
-    prefix: Option<string_cache::Atom<html5ever::PrefixStaticSet>>,
-    document: Weak<Document>,
+    prefix: Option<Prefix>,
+    document: Rc<Document>,
 ) -> Rc<Element> {
     assert_eq!(name.ns, ns!(svg));
 
@@ -197,13 +195,13 @@ fn create_svg_element(
 // https://dom.spec.whatwg.org/#concept-create-element
 fn create_html_element(
     name: QualName,
-    prefix: Option<string_cache::Atom<html5ever::PrefixStaticSet>>,
-    is: Option<string_cache::Atom<html5ever::LocalNameStaticSet>>,
-    document: Weak<Document>,
+    prefix: Option<Prefix>,
+    is: Option<LocalName>,
+    document: Rc<Document>,
 ) -> Rc<Element> {
     assert_eq!(name.ns, ns!(html));
 
-    let result = create_native_html_element(name.clone(), prefix, document);
+    let result = create_native_html_element(name, prefix, document);
 
     if let Some(is) = is {
         result.set_is(is);
@@ -214,8 +212,8 @@ fn create_html_element(
 
 fn create_native_html_element(
     name: QualName,
-    prefix: Option<string_cache::Atom<html5ever::PrefixStaticSet>>,
-    document: Weak<Document>,
+    prefix: Option<Prefix>,
+    document: Rc<Document>,
 ) -> Rc<Element> {
     assert_eq!(name.ns, ns!(html));
 

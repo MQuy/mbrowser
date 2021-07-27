@@ -4,19 +4,17 @@ use std::{
 };
 
 use encoding_rs::{Encoding, UTF_8};
-use html5ever::{ns, tree_builder::QuirksMode, LocalName, Namespace};
+use html5ever::tree_builder::QuirksMode;
 use mime::Mime;
 
 use crate::{
-    customelementregistry::CustomElementDefinition,
     htmlbaseelement::HTMLBaseElement,
     inheritance::{Castable, DerivedFrom},
     node::Node,
     url::BrowserUrl,
 };
-use html5ever::namespace_url;
-
 #[derive(Clone)]
+#[repr(C)]
 pub struct Document {
     node: Node,
     content_type: Mime,
