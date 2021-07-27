@@ -1,6 +1,6 @@
 ### Overview
 
-![flow](blob:https://imgur.com/ad0a24e0-55c2-426b-86ef-c774ce2fce0e)
+![flow](https://i.imgur.com/HYGPbI4.png)
 
 - when visiting a website, browser makes a DNS lookup and a HTTP Get request.
 - the content (HTML file) is parsed. When parsers finds non-blocking requests such as images, the browser will request those requests and continue parsing (the same for CSS file), but `<script>` tags without `async`, `defer` attribute will block rendering and pause the parsing of HTML. DOM tree is constructed.
@@ -17,4 +17,3 @@
   ```
   min (10*MSS, max (2*MSS, 14600)) // ~ 14KB
   ```
--
