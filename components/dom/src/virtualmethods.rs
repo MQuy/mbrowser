@@ -1,20 +1,19 @@
 use std::rc::Rc;
 
-use crate::{document::Document, inheritance::Castable};
+use crate::document::Document;
+use crate::inheritance::Castable;
 use html5ever::LocalName;
 
-use crate::{
-    attr::AttrValue,
-    element::Element,
-    htmlbodyelement::HTMLBodyElement,
-    htmlelement::HTMLElement,
-    node::Node,
-    nodetype::{
-        ElementTypeId, HTMLElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId,
-    },
-    svgelement::SVGElement,
-    svgsvgelement::SVGSVGElement,
+use crate::attr::AttrValue;
+use crate::element::Element;
+use crate::htmlbodyelement::HTMLBodyElement;
+use crate::htmlelement::HTMLElement;
+use crate::node::Node;
+use crate::nodetype::{
+    ElementTypeId, HTMLElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId,
 };
+use crate::svgelement::SVGElement;
+use crate::svgsvgelement::SVGSVGElement;
 
 /// Trait to allow DOM nodes to opt-in to overriding (or adding to) common
 /// behaviours. Replicates the effect of C++ virtual methods.
@@ -66,16 +65,16 @@ pub fn vtable_for(node: &Node) -> &dyn VirtualMethods {
     match node.get_node_type_id() {
         NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLBodyElement)) => {
             node.downcast::<HTMLBodyElement>() as &dyn VirtualMethods
-        }
+        },
         NodeTypeId::Element(ElementTypeId::SVGElement(SVGElementTypeId::SVGGraphicsElement(
             SVGGraphicsElementTypeId::SVGSVGElement,
         ))) => node.downcast::<SVGSVGElement>() as &dyn VirtualMethods,
         NodeTypeId::Element(ElementTypeId::SVGElement(SVGElementTypeId::SVGElement)) => {
             node.downcast::<SVGElement>() as &dyn VirtualMethods
-        }
+        },
         NodeTypeId::Element(ElementTypeId::Element) => {
             node.downcast::<Element>() as &dyn VirtualMethods
-        }
+        },
         NodeTypeId::Element(_) => node.downcast::<HTMLElement>() as &dyn VirtualMethods,
         _ => node as &dyn VirtualMethods,
     }

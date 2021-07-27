@@ -1,17 +1,14 @@
 use std::rc::Rc;
 
-use html5ever::{local_name, namespace_url};
-use html5ever::{ns, LocalName, Prefix};
+use html5ever::{local_name, namespace_url, ns, LocalName, Prefix};
 
 use crate::attr::AttrValue;
+use crate::document::Document;
+use crate::element::Element;
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::node::Node;
+use crate::nodetype::{ElementTypeId, NodeTypeId};
 use crate::virtualmethods::VirtualMethods;
-use crate::{
-    document::Document,
-    element::Element,
-    inheritance::{Castable, DerivedFrom},
-    node::Node,
-    nodetype::{ElementTypeId, NodeTypeId},
-};
 
 #[derive(Clone)]
 #[repr(C)]

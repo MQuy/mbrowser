@@ -1,16 +1,12 @@
-use std::{
-    cell::RefCell,
-    ops::Deref,
-    rc::{Rc, Weak},
-};
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
 
-use crate::{
-    document::Document,
-    error::{Error, ErrorResult, Fallible},
-    inheritance::{Castable, DerivedFrom},
-    nodetype::{CharacterDataTypeId, NodeTypeId},
-    virtualmethods::{vtable_for, VirtualMethods},
-};
+use crate::document::Document;
+use crate::error::{Error, ErrorResult, Fallible};
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
+use crate::virtualmethods::{vtable_for, VirtualMethods};
 
 #[derive(Clone)]
 pub struct Node {
@@ -110,14 +106,14 @@ impl Node {
                         new_child
                             .prev_sibling
                             .replace(Some(Rc::downgrade(prev_sibling)));
-                    }
+                    },
                     None => {
                         self.first_child.replace(Some(new_child.clone()));
-                    }
+                    },
                 }
                 before.prev_sibling.replace(Some(Rc::downgrade(&new_child)));
                 new_child.next_sibling.replace(Some(Rc::downgrade(before)));
-            }
+            },
             None => {
                 match self.get_last_child() {
                     Some(ref last_child) => {
@@ -127,13 +123,13 @@ impl Node {
                         new_child
                             .prev_sibling
                             .replace(Some(Rc::downgrade(last_child)));
-                    }
+                    },
                     None => {
                         self.first_child.replace(Some(new_child.clone()));
-                    }
+                    },
                 };
                 self.last_child.replace(Some(new_child.clone()));
-            }
+            },
         }
     }
     // https://dom.spec.whatwg.org/#dom-node-appendchild
@@ -281,12 +277,12 @@ impl Node {
                 if parent.node_type_id.is_document() {
                     return Err(Error::HierarchyRequest);
                 }
-            }
+            },
             NodeTypeId::DocumentType => {
                 if !parent.node_type_id.is_document() {
                     return Err(Error::HierarchyRequest);
                 }
-            }
+            },
             _ => (),
         }
 
@@ -327,11 +323,11 @@ impl Node {
                                     return Err(Error::HierarchyRequest);
                                 }
                             }
-                        }
+                        },
                         _ => return Err(Error::HierarchyRequest),
                     }
-                }
-                NodeTypeId::Element(_) => {}
+                },
+                NodeTypeId::Element(_) => {},
                 NodeTypeId::DocumentType => {
                     if parent
                         .children()
@@ -347,7 +343,7 @@ impl Node {
                             {
                                 return Err(Error::HierarchyRequest);
                             }
-                        }
+                        },
                         None => {
                             if parent
                                 .children()
@@ -355,9 +351,9 @@ impl Node {
                             {
                                 return Err(Error::HierarchyRequest);
                             }
-                        }
+                        },
                     }
-                }
+                },
                 _ => (),
             }
         }
@@ -423,10 +419,10 @@ impl Node {
                 prev_sibling
                     .next_sibling
                     .replace(Some(Rc::downgrade(&child.get_next_sibling().unwrap())));
-            }
+            },
             None => {
                 self.first_child.replace(child.get_next_sibling());
-            }
+            },
         }
 
         match child.get_next_sibling() {
@@ -434,10 +430,10 @@ impl Node {
                 next_sibling
                     .prev_sibling
                     .replace(Some(Rc::downgrade(&child.get_prev_sibling().unwrap())));
-            }
+            },
             None => {
                 self.last_child.replace(child.get_prev_sibling());
-            }
+            },
         }
         child.prev_sibling.replace(None);
         child.next_sibling.replace(None);

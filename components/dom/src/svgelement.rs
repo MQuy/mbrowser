@@ -2,14 +2,12 @@ use std::rc::Rc;
 
 use html5ever::{ns, LocalName, Prefix};
 
-use crate::{
-    document::Document,
-    element::Element,
-    inheritance::{Castable, DerivedFrom},
-    node::Node,
-    nodetype::{ElementTypeId, NodeTypeId, SVGElementTypeId},
-    virtualmethods::VirtualMethods,
-};
+use crate::document::Document;
+use crate::element::Element;
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::node::Node;
+use crate::nodetype::{ElementTypeId, NodeTypeId, SVGElementTypeId};
+use crate::virtualmethods::VirtualMethods;
 use html5ever::namespace_url;
 
 #[derive(Clone)]

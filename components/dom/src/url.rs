@@ -1,12 +1,10 @@
-use std::{
-    collections::hash_map::DefaultHasher,
-    fmt,
-    hash::Hasher,
-    net::IpAddr,
-    ops::{Index, Range, RangeFrom, RangeFull, RangeTo},
-    path::Path,
-    sync::Arc,
-};
+use std::collections::hash_map::DefaultHasher;
+use std::fmt;
+use std::hash::Hasher;
+use std::net::IpAddr;
+use std::ops::{Index, Range, RangeFrom, RangeFull, RangeTo};
+use std::path::Path;
+use std::sync::Arc;
 
 use url::{Origin, Position, Url};
 

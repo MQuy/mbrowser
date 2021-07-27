@@ -1,12 +1,10 @@
 use std::rc::Rc;
 
-use crate::{
-    characterdata::CharacterData,
-    document::Document,
-    node::Node,
-    nodetype::{CharacterDataTypeId, NodeTypeId, TextTypeId},
-    text::Text,
-};
+use crate::characterdata::CharacterData;
+use crate::document::Document;
+use crate::node::Node;
+use crate::nodetype::{CharacterDataTypeId, NodeTypeId, TextTypeId};
+use crate::text::Text;
 
 #[derive(Clone)]
 #[repr(C)]

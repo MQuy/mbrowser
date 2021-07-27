@@ -1,12 +1,10 @@
 use std::rc::Rc;
 
-use crate::{
-    characterdata::CharacterData,
-    document::Document,
-    inheritance::{Castable, DerivedFrom},
-    node::Node,
-    nodetype::{CharacterDataTypeId, NodeTypeId},
-};
+use crate::characterdata::CharacterData;
+use crate::document::Document;
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::node::Node;
+use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
 
 #[derive(Clone)]
 #[repr(C)]

@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
-use crate::{document::Document, node::Node};
+use crate::document::Document;
+use crate::node::Node;
 
 #[derive(Clone)]
 #[repr(C)]

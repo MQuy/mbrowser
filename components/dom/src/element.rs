@@ -1,26 +1,22 @@
-use std::{
-    cell::{Ref, RefCell},
-    rc::Rc,
-};
+use std::cell::{Ref, RefCell};
+use std::rc::Rc;
 
 use html5ever::{local_name, ns, LocalName, Namespace, Prefix, QualName};
 
-use crate::{
-    attr::{Attr, AttrValue},
-    document::Document,
-    htmlbodyelement::HTMLBodyElement,
-    htmldivelement::HTMLDivElement,
-    htmlelement::HTMLElement,
-    htmlheadelement::HTMLHeadElement,
-    htmlhtmlelement::HTMLHtmlElement,
-    htmlunknownelement::HTMLUnknownElement,
-    inheritance::Castable,
-    node::Node,
-    nodetype::{ElementTypeId, NodeTypeId},
-    svgelement::SVGElement,
-    svgsvgelement::SVGSVGElement,
-    virtualmethods::{vtable_for, VirtualMethods},
-};
+use crate::attr::{Attr, AttrValue};
+use crate::document::Document;
+use crate::htmlbodyelement::HTMLBodyElement;
+use crate::htmldivelement::HTMLDivElement;
+use crate::htmlelement::HTMLElement;
+use crate::htmlheadelement::HTMLHeadElement;
+use crate::htmlhtmlelement::HTMLHtmlElement;
+use crate::htmlunknownelement::HTMLUnknownElement;
+use crate::inheritance::Castable;
+use crate::node::Node;
+use crate::nodetype::{ElementTypeId, NodeTypeId};
+use crate::svgelement::SVGElement;
+use crate::svgsvgelement::SVGSVGElement;
+use crate::virtualmethods::{vtable_for, VirtualMethods};
 use html5ever::namespace_url;
 
 #[derive(Clone)]
@@ -93,7 +89,7 @@ impl Element {
             Some(ref prefix) => {
                 let name = format!("{}:{}", &**prefix, &*qname.local);
                 LocalName::from(name)
-            }
+            },
         };
         let value = self.parse_attribute(&qname.ns, &qname.local, value);
         self.push_new_attribute(qname.local, value, name, qname.ns, prefix);

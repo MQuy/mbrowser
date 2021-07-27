@@ -1,11 +1,9 @@
 use std::rc::Rc;
 
-use crate::{
-    document::Document,
-    inheritance::{Castable, DerivedFrom},
-    node::Node,
-    nodetype::{DocumentFragmentTypeId, NodeTypeId},
-};
+use crate::document::Document;
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::node::Node;
+use crate::nodetype::{DocumentFragmentTypeId, NodeTypeId};
 
 #[derive(Clone)]
 #[repr(C)]

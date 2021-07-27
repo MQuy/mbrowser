@@ -2,13 +2,11 @@ use std::rc::Rc;
 
 use html5ever::{LocalName, Prefix};
 
-use crate::{
-    document::Document,
-    element::Element,
-    htmlelement::HTMLElement,
-    node::Node,
-    nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId},
-};
+use crate::document::Document;
+use crate::element::Element;
+use crate::htmlelement::HTMLElement;
+use crate::node::Node;
+use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 
 #[derive(Clone)]
 #[repr(C)]

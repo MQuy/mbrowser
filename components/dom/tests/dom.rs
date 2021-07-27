@@ -1,14 +1,10 @@
-use dom::{
-    element::Element,
-    inheritance::{upcast, Castable},
-    node::Node,
-    nodetype::NodeTypeId,
-    parser::DomParser,
-};
-use html5ever::{
-    driver,
-    tendril::{StrTendril, TendrilSink},
-};
+use dom::element::Element;
+use dom::inheritance::{upcast, Castable};
+use dom::node::Node;
+use dom::nodetype::NodeTypeId;
+use dom::parser::DomParser;
+use html5ever::driver;
+use html5ever::tendril::{StrTendril, TendrilSink};
 
 #[test]
 fn check_dom() {

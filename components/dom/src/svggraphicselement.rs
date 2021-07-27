@@ -1,9 +1,11 @@
 use std::rc::Rc;
 
-use crate::{
-    element::Element, inheritance::Castable, node::Node, nodetype::NodeTypeId,
-    svgelement::SVGElement, virtualmethods::VirtualMethods,
-};
+use crate::element::Element;
+use crate::inheritance::Castable;
+use crate::node::Node;
+use crate::nodetype::NodeTypeId;
+use crate::svgelement::SVGElement;
+use crate::virtualmethods::VirtualMethods;
 use html5ever::{LocalName, Prefix};
 
 use crate::document::Document;

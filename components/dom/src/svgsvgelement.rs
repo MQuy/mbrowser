@@ -2,17 +2,15 @@ use std::rc::Rc;
 
 use html5ever::{local_name, LocalName, Prefix};
 
-use crate::{
-    attr::AttrValue,
-    document::Document,
-    element::Element,
-    inheritance::Castable,
-    node::Node,
-    nodetype::{ElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId},
-    svgelement::SVGElement,
-    svggraphicselement::SVGGraphicsElement,
-    virtualmethods::VirtualMethods,
-};
+use crate::attr::AttrValue;
+use crate::document::Document;
+use crate::element::Element;
+use crate::inheritance::Castable;
+use crate::node::Node;
+use crate::nodetype::{ElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId};
+use crate::svgelement::SVGElement;
+use crate::svggraphicselement::SVGGraphicsElement;
+use crate::virtualmethods::VirtualMethods;
 
 const DEFAULT_WIDTH: u32 = 300;
 const DEFAULT_HEIGHT: u32 = 150;

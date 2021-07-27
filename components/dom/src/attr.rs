@@ -1,15 +1,14 @@
-use std::{cell::RefCell, rc::Weak};
+use std::cell::RefCell;
+use std::rc::Weak;
 
 use css::values::length::Length;
 use cssparser::{Color, RGBA};
 use html5ever::{LocalName, Namespace, Prefix};
 use num_traits::ToPrimitive;
 
-use crate::{
-    element::Element,
-    str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS},
-    url::BrowserUrl,
-};
+use crate::element::Element;
+use crate::str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS};
+use crate::url::BrowserUrl;
 
 const UNSIGNED_LONG_MAX: u32 = 2147483647;
 // https://dom.spec.whatwg.org/#interface-attr
@@ -250,7 +249,7 @@ pub fn parse_legacy_color(mut input: &str) -> Result<RGBA, ()> {
                 let upper = hex(string[0] as char)?;
                 let lower = hex(string[1] as char)?;
                 Ok((upper << 4) | lower)
-            }
+            },
         }
     }
 }
@@ -274,11 +273,11 @@ fn do_parse_integer<T: Iterator<Item = char>>(input: T) -> Result<i64, ()> {
         Some(&'-') => {
             input.next();
             -1
-        }
+        },
         Some(&'+') => {
             input.next();
             1
-        }
+        },
         Some(_) => 1,
     };
 

@@ -1,22 +1,19 @@
-use std::{fmt::Display, rc::Rc};
+use std::fmt::Display;
+use std::rc::Rc;
 
-use html5ever::{
-    tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
-    Attribute, LocalName, QualName,
-};
+use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
+use html5ever::{Attribute, LocalName, QualName};
 use log::debug;
 
-use crate::{
-    comment::Comment,
-    document::Document,
-    documenttype::DocumentType,
-    element::Element,
-    inheritance::{upcast, Castable},
-    node::Node,
-    not_supported,
-    text::Text,
-    virtualmethods::vtable_for,
-};
+use crate::comment::Comment;
+use crate::document::Document;
+use crate::documenttype::DocumentType;
+use crate::element::Element;
+use crate::inheritance::{upcast, Castable};
+use crate::node::Node;
+use crate::not_supported;
+use crate::text::Text;
+use crate::virtualmethods::vtable_for;
 
 pub struct DomParser {
     pub document: Rc<Document>,
@@ -196,13 +193,13 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
     match child {
         NodeOrText::AppendNode(n) => {
             parent.insert_before(n, reference_child).unwrap();
-        }
+        },
         NodeOrText::AppendText(t) => {
             let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
             parent
                 .insert_before(upcast(Rc::new(text)), reference_child)
                 .unwrap();
-        }
+        },
     }
 }
 

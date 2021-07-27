@@ -124,11 +124,11 @@ pub fn read_exponent<I: Iterator<Item = char>>(mut iter: Peekable<I>) -> Option<
         Some(&'-') => {
             iter.next();
             read_numbers(iter).0.map(|exp| -exp.to_i32().unwrap_or(0))
-        }
+        },
         Some(&'+') => {
             iter.next();
             read_numbers(iter).0.map(|exp| exp.to_i32().unwrap_or(0))
-        }
+        },
         Some(_) => read_numbers(iter).0.map(|exp| exp.to_i32().unwrap_or(0)),
     }
 }

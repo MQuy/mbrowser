@@ -2,17 +2,15 @@ use std::rc::Rc;
 
 use html5ever::{local_name, ns, LocalName, Prefix};
 
-use crate::{
-    attr::AttrValue,
-    document::Document,
-    element::Element,
-    htmlelement::HTMLElement,
-    inheritance::{Castable, DerivedFrom},
-    node::{document_from_node, Node},
-    nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId},
-    url::BrowserUrl,
-    virtualmethods::VirtualMethods,
-};
+use crate::attr::AttrValue;
+use crate::document::Document;
+use crate::element::Element;
+use crate::htmlelement::HTMLElement;
+use crate::inheritance::{Castable, DerivedFrom};
+use crate::node::{document_from_node, Node};
+use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
+use crate::url::BrowserUrl;
+use crate::virtualmethods::VirtualMethods;
 use html5ever::namespace_url;
 
 #[derive(Clone)]
@@ -64,10 +62,10 @@ impl VirtualMethods for HTMLBaseElement {
         match *name {
             local_name!("bgcolor") | local_name!("text") => {
                 AttrValue::from_legacy_color(value.into())
-            }
+            },
             local_name!("background") => {
                 AttrValue::from_resolved_url(&document_from_node(self).base_url(), value.into())
-            }
+            },
             _ => self
                 .super_type()
                 .unwrap()
