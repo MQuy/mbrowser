@@ -12,16 +12,15 @@ use crate::{
     document::Document,
     documenttype::DocumentType,
     element::Element,
-    inheritance::Castable,
-    node::{self, Node},
+    inheritance::{upcast, Castable},
+    node::Node,
     not_supported,
     text::Text,
     virtualmethods::vtable_for,
 };
-use html5ever::namespace_url;
 
 pub struct DomParser {
-    document: Rc<Document>,
+    pub document: Rc<Document>,
     current_line: u64,
 }
 
@@ -53,7 +52,7 @@ impl TreeSink for DomParser {
     }
 
     fn get_document(&mut self) -> Self::Handle {
-        Rc::new(self.document.upcast().clone())
+        upcast(self.document.clone())
     }
 
     fn elem_name<'a>(&'a self, target: &'a Self::Handle) -> html5ever::ExpandedName<'a> {
@@ -71,12 +70,12 @@ impl TreeSink for DomParser {
         _flags: ElementFlags,
     ) -> Self::Handle {
         let element = create_element_for_token(name, attrs, self.document.clone());
-        Rc::new(element.upcast().clone())
+        upcast(element)
     }
 
     fn create_comment(&mut self, text: html5ever::tendril::StrTendril) -> Self::Handle {
         let comment = Comment::new(String::from(text), self.document.clone());
-        Rc::new(comment.upcast::<Node>().clone())
+        upcast(Rc::new(comment))
     }
 
     fn create_pi(
@@ -110,15 +109,14 @@ impl TreeSink for DomParser {
         public_id: html5ever::tendril::StrTendril,
         system_id: html5ever::tendril::StrTendril,
     ) {
-        let doc = &*self.document;
         let doctype = DocumentType::new(
             String::from(name),
             String::from(public_id),
             String::from(system_id),
             self.document.clone(),
         );
-        doc.upcast::<Node>()
-            .append_child(Rc::new(doctype.upcast().clone()))
+        upcast(self.document.clone())
+            .append_child(upcast(Rc::new(doctype)))
             .expect("Appending failed");
     }
 
@@ -203,7 +201,7 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
         NodeOrText::AppendText(t) => {
             let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
             parent
-                .insert_before(Rc::new(text.upcast::<Node>().clone()), reference_child)
+                .insert_before(upcast(Rc::new(text)), reference_child)
                 .unwrap();
         }
     }

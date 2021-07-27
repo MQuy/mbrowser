@@ -13,6 +13,7 @@ pub mod htmlbaseelement;
 pub mod htmlbodyelement;
 pub mod htmldivelement;
 pub mod htmlelement;
+pub mod htmlheadelement;
 pub mod htmlhtmlelement;
 pub mod htmlunknownelement;
 pub mod inheritance;

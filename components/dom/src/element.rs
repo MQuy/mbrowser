@@ -8,6 +8,7 @@ use crate::{
     htmlbodyelement::HTMLBodyElement,
     htmldivelement::HTMLDivElement,
     htmlelement::HTMLElement,
+    htmlheadelement::HTMLHeadElement,
     htmlhtmlelement::HTMLHtmlElement,
     htmlunknownelement::HTMLUnknownElement,
     inheritance::Castable,
@@ -28,6 +29,7 @@ pub struct Element {
     namespace: Namespace,
     is: RefCell<Option<LocalName>>,
     attrs: RefCell<Vec<Rc<Attr>>>,
+    pub number: u32,
 }
 
 impl crate::inheritance::Castable for Element {}
@@ -63,6 +65,7 @@ impl Element {
             prefix,
             is: RefCell::new(None),
             attrs: RefCell::new(Vec::new()),
+            number: 1000,
         }
     }
 
@@ -234,6 +237,7 @@ fn create_native_html_element(
     match name.local {
         local_name!("body") => make!(HTMLBodyElement),
         local_name!("div") => make!(HTMLDivElement),
+        local_name!("head") => make!(HTMLHeadElement),
         local_name!("html") => make!(HTMLHtmlElement),
         _ if is_valid_custom_element_name(&*name.local) => make!(HTMLElement),
         _ => make!(HTMLUnknownElement),
