@@ -1,7 +1,6 @@
 use std::{fmt::Display, rc::Rc};
 
 use html5ever::{
-    ns,
     tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink},
     Attribute, LocalName, QualName,
 };
@@ -34,7 +33,7 @@ impl Default for DomParser {
 }
 
 impl Display for DomParser {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Ok(())
     }
 }

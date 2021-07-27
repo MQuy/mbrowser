@@ -414,7 +414,7 @@ impl Node {
     }
 
     // https://dom.spec.whatwg.org/#concept-node-remove
-    fn remove(&self, child: Rc<Node>, suppress_observers: SuppressObserver) {
+    fn remove(&self, child: Rc<Node>, _suppress_observers: SuppressObserver) {
         assert!(child.get_parent_node().is_some());
 
         // Step 9-11

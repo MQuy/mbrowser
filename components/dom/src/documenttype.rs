@@ -1,4 +1,4 @@
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use crate::{document::Document, node::Node};
 

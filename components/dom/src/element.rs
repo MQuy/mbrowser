@@ -1,4 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{
+    cell::{Ref, RefCell},
+    rc::Rc,
+};
 
 use html5ever::{local_name, ns, LocalName, Namespace, Prefix, QualName};
 
@@ -82,17 +85,18 @@ impl Element {
             attr.local_name == qname.local && attr.namespace == qname.ns && attr.prefix == prefix
         }) {
             attr.value.replace(AttrValue::String(value));
-        } else {
-            let name = match prefix {
-                None => qname.local.clone(),
-                Some(ref prefix) => {
-                    let name = format!("{}:{}", &**prefix, &*qname.local);
-                    LocalName::from(name)
-                }
-            };
-            let value = self.parse_attribute(&qname.ns, &qname.local, value);
-            self.push_new_attribute(qname.local, value, name, qname.ns, prefix);
+            return;
         }
+
+        let name = match prefix {
+            None => qname.local.clone(),
+            Some(ref prefix) => {
+                let name = format!("{}:{}", &**prefix, &*qname.local);
+                LocalName::from(name)
+            }
+        };
+        let value = self.parse_attribute(&qname.ns, &qname.local, value);
+        self.push_new_attribute(qname.local, value, name, qname.ns, prefix);
     }
 
     pub fn push_new_attribute(
@@ -124,6 +128,10 @@ impl Element {
             .iter()
             .find(|attr| attr.local_name == *local_name && attr.namespace == *namespace)
             .map(|attr| attr.clone())
+    }
+
+    pub fn get_attrs(&self) -> Ref<'_, Vec<Rc<Attr>>> {
+        self.attrs.borrow()
     }
 
     pub fn parse_attribute(

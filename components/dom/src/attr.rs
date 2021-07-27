@@ -6,7 +6,6 @@ use html5ever::{LocalName, Namespace, Prefix};
 use num_traits::ToPrimitive;
 
 use crate::{
-    document::Document,
     element::Element,
     str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS},
     url::BrowserUrl,
@@ -39,6 +38,14 @@ impl Attr {
             value: RefCell::new(value),
             owner,
         }
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name.to_string()
+    }
+
+    pub fn get_value(&self) -> String {
+        String::from(&**self.value.borrow())
     }
 }
 
