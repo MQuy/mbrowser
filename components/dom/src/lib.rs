@@ -27,11 +27,3 @@ pub mod svgsvgelement;
 pub mod text;
 pub mod url;
 pub mod virtualmethods;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}

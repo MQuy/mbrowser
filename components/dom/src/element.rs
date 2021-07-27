@@ -28,7 +28,6 @@ pub struct Element {
     namespace: Namespace,
     is: RefCell<Option<LocalName>>,
     attrs: RefCell<Vec<Rc<Attr>>>,
-    pub number: u32,
 }
 
 impl crate::inheritance::Castable for Element {}
@@ -64,7 +63,6 @@ impl Element {
             prefix,
             is: RefCell::new(None),
             attrs: RefCell::new(Vec::new()),
-            number: 1000,
         }
     }
 
@@ -77,10 +75,12 @@ impl Element {
     }
 
     pub fn set_attribute(&self, qname: QualName, value: String, prefix: Option<Prefix>) {
-        if let Some(attr) = self.attrs.borrow().iter().find(|attr| {
-            attr.local_name == qname.local && attr.namespace == qname.ns && attr.prefix == prefix
-        }) {
-            attr.value.replace(AttrValue::String(value));
+        if let Some(attr) =
+            self.attrs.borrow().iter().find(|attr| {
+                *attr.get_local_name() == qname.local && *attr.get_namespace() == qname.ns
+            })
+        {
+            attr.set_value(AttrValue::String(value));
             return;
         }
 
@@ -109,7 +109,7 @@ impl Element {
             name,
             namespace,
             prefix,
-            Rc::downgrade(&Rc::new(self.clone())),
+            Rc::new(self.clone()),
         );
         self.push_attribute(attr);
     }
@@ -122,7 +122,9 @@ impl Element {
         self.attrs
             .borrow()
             .iter()
-            .find(|attr| attr.local_name == *local_name && attr.namespace == *namespace)
+            .find(|attr| {
+                *attr.get_local_name() == *local_name && *attr.get_namespace() == *namespace
+            })
             .map(|attr| attr.clone())
     }
 

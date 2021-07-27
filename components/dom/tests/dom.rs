@@ -7,7 +7,7 @@ use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
 
 #[test]
-fn check_dom() {
+fn check_parser() {
     let sink = DomParser::default();
 
     let mut parser = driver::parse_document(sink, Default::default());

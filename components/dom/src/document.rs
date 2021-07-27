@@ -9,6 +9,7 @@ use crate::htmlbaseelement::HTMLBaseElement;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
 use crate::url::BrowserUrl;
+
 #[derive(Clone)]
 #[repr(C)]
 pub struct Document {

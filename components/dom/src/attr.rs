@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::rc::Weak;
+use std::rc::{Rc, Weak};
 
 use css::values::length::Length;
 use cssparser::{Color, RGBA};
@@ -13,11 +13,11 @@ use crate::url::BrowserUrl;
 const UNSIGNED_LONG_MAX: u32 = 2147483647;
 // https://dom.spec.whatwg.org/#interface-attr
 pub struct Attr {
-    pub local_name: LocalName,
-    pub name: LocalName,
-    pub namespace: Namespace,
-    pub prefix: Option<Prefix>,
-    pub value: RefCell<AttrValue>,
+    local_name: LocalName,
+    name: LocalName,
+    namespace: Namespace,
+    prefix: Option<Prefix>,
+    value: RefCell<AttrValue>,
     owner: Weak<Element>,
 }
 impl Attr {
@@ -27,7 +27,7 @@ impl Attr {
         name: LocalName,
         namespace: Namespace,
         prefix: Option<Prefix>,
-        owner: Weak<Element>,
+        owner: Rc<Element>,
     ) -> Self {
         Attr {
             local_name,
@@ -35,16 +35,40 @@ impl Attr {
             namespace,
             prefix,
             value: RefCell::new(value),
-            owner,
+            owner: Rc::downgrade(&owner),
         }
     }
 
+    #[inline]
     pub fn get_name(&self) -> String {
         self.name.to_string()
     }
 
+    #[inline]
     pub fn get_value(&self) -> String {
         String::from(&**self.value.borrow())
+    }
+
+    pub fn set_value(&self, value: AttrValue) {
+        self.value.replace(value);
+    }
+
+    #[inline]
+    pub fn get_local_name(&self) -> &LocalName {
+        &self.local_name
+    }
+
+    #[inline]
+    pub fn get_prefix(&self) -> Option<&Prefix> {
+        match self.prefix {
+            Some(ref prefix) => Some(prefix),
+            None => None,
+        }
+    }
+
+    #[inline]
+    pub fn get_namespace(&self) -> &Namespace {
+        &self.namespace
     }
 }
 
