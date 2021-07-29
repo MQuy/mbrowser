@@ -9,7 +9,9 @@ use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmldivelement::HTMLDivElement;
 use crate::htmlelement::HTMLElement;
 use crate::htmlheadelement::HTMLHeadElement;
+use crate::htmlheadingelement::{HTMLHeadingElement, HeadingLevel};
 use crate::htmlhtmlelement::HTMLHtmlElement;
+use crate::htmlspanelement::HTMLSpanElement;
 use crate::htmlunknownelement::HTMLUnknownElement;
 use crate::inheritance::Castable;
 use crate::node::Node;
@@ -241,10 +243,21 @@ fn create_native_html_element(
     // Perhaps we should build a perfect hash from those IDs instead.
     // https://html.spec.whatwg.org/multipage/#elements-in-the-dom
     match name.local {
+        local_name!("b") => make!(HTMLElement),
         local_name!("body") => make!(HTMLBodyElement),
         local_name!("div") => make!(HTMLDivElement),
+        local_name!("footer") => make!(HTMLElement),
+        local_name!("h1") => make!(HTMLHeadingElement, HeadingLevel::Heading1),
+        local_name!("h2") => make!(HTMLHeadingElement, HeadingLevel::Heading2),
+        local_name!("h3") => make!(HTMLHeadingElement, HeadingLevel::Heading3),
+        local_name!("h4") => make!(HTMLHeadingElement, HeadingLevel::Heading4),
+        local_name!("h5") => make!(HTMLHeadingElement, HeadingLevel::Heading5),
+        local_name!("h6") => make!(HTMLHeadingElement, HeadingLevel::Heading6),
         local_name!("head") => make!(HTMLHeadElement),
+        local_name!("header") => make!(HTMLElement),
         local_name!("html") => make!(HTMLHtmlElement),
+        local_name!("span") => make!(HTMLSpanElement),
+        local_name!("strong") => make!(HTMLElement),
         _ if is_valid_custom_element_name(&*name.local) => make!(HTMLElement),
         _ => make!(HTMLUnknownElement),
     }

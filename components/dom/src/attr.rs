@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
+use common::url::BrowserUrl;
 use css::values::length::Length;
 use cssparser::{Color, RGBA};
 use html5ever::{LocalName, Namespace, Prefix};
@@ -8,7 +9,6 @@ use num_traits::ToPrimitive;
 
 use crate::element::Element;
 use crate::str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS};
-use crate::url::BrowserUrl;
 
 const UNSIGNED_LONG_MAX: u32 = 2147483647;
 // https://dom.spec.whatwg.org/#interface-attr
@@ -37,6 +37,10 @@ impl Attr {
             value: RefCell::new(value),
             owner: Rc::downgrade(&owner),
         }
+    }
+
+    pub fn get_owner(&self) -> Option<Rc<Element>> {
+        self.owner.upgrade()
     }
 
     #[inline]

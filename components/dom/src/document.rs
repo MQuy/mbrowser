@@ -1,6 +1,7 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use common::url::BrowserUrl;
 use encoding_rs::{Encoding, UTF_8};
 use html5ever::tree_builder::QuirksMode;
 use mime::Mime;
@@ -8,7 +9,6 @@ use mime::Mime;
 use crate::htmlbaseelement::HTMLBaseElement;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
-use crate::url::BrowserUrl;
 
 #[derive(Clone)]
 #[repr(C)]

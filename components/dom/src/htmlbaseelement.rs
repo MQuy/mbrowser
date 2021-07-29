@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use common::url::BrowserUrl;
 use html5ever::{local_name, ns, LocalName, Prefix};
 
 use crate::attr::AttrValue;
@@ -9,7 +10,6 @@ use crate::htmlelement::HTMLElement;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::{document_from_node, Node};
 use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
-use crate::url::BrowserUrl;
 use crate::virtualmethods::VirtualMethods;
 use html5ever::namespace_url;
 

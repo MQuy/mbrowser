@@ -1,3 +1,5 @@
+use super::number::NonNegative;
+use super::percentage::Percentage;
 use super::CSSFloat;
 
 /// An extension to `NoCalcLength` to parse `calc` expressions.
@@ -87,3 +89,48 @@ pub enum ViewportPercentageLength {
 /// HTML5 "character width", as defined in HTML5 § 14.5.4.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CharacterWidth(pub i32);
+
+#[derive(Clone)]
+pub enum LengthPercentage {
+    Length(NoCalcLength),
+    Percentage(Percentage),
+    // Calc(Box<CalcLengthPercentage>),
+}
+
+#[derive(Clone)]
+pub enum GenericLengthPercentageOrAuto<LengthPercent> {
+    LengthPercentage(LengthPercent),
+    Auto,
+}
+
+pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
+pub type NonNegativeLength = NonNegative<Length>;
+
+#[derive(Clone)]
+#[repr(C, u8)]
+pub enum GenericSize<LengthPercent> {
+    LengthPercentage(LengthPercent),
+    Auto,
+}
+
+pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
+pub type Size = GenericSize<NonNegativeLengthPercentage>;
+
+#[derive(Clone)]
+#[repr(C, u8)]
+pub enum GenericMaxSize<LengthPercent> {
+    LengthPercentage(LengthPercent),
+    None,
+}
+pub type MaxSize = GenericMaxSize<NonNegativeLengthPercentage>;
+
+#[derive(Clone)]
+#[repr(C, u8)]
+pub enum GenericLengthPercentageOrNormal<LengthPercent> {
+    LengthPercentage(LengthPercent),
+    Normal,
+}
+pub type NonNegativeLengthPercentageOrNormal =
+    GenericLengthPercentageOrNormal<NonNegativeLengthPercentage>;
+
+pub type NonNegativeLengthOrAuto = GenericLengthPercentageOrAuto<NonNegativeLength>;

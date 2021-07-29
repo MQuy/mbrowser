@@ -5,11 +5,12 @@ use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
 use html5ever::{Attribute, LocalName, QualName};
 use log::debug;
 
+use crate::characterdata::CharacterData;
 use crate::comment::Comment;
 use crate::document::Document;
 use crate::documenttype::DocumentType;
 use crate::element::Element;
-use crate::inheritance::{upcast, Castable};
+use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
 use crate::not_supported;
 use crate::text::Text;
@@ -195,10 +196,21 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
             parent.insert_before(n, reference_child).unwrap();
         },
         NodeOrText::AppendText(t) => {
-            let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
-            parent
-                .insert_before(upcast(Rc::new(text)), reference_child)
-                .unwrap();
+            // https://html.spec.whatwg.org/multipage/#insert-a-character
+            let text = reference_child
+                .clone()
+                .and_then(|node| node.get_prev_sibling())
+                .or_else(|| parent.get_last_child())
+                .and_then(|node| Some(downcast::<Node, Text>(node)));
+
+            if let Some(ref text) = text {
+                text.upcast::<CharacterData>().append_data(&t);
+            } else {
+                let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
+                parent
+                    .insert_before(upcast(Rc::new(text)), reference_child)
+                    .unwrap();
+            }
         },
     }
 }

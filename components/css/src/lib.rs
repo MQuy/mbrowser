@@ -1,9 +1,4 @@
+pub mod declaration;
+pub mod declaration_block;
+pub mod properties;
 pub mod values;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
