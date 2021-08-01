@@ -1,3 +1,15 @@
+use core::fmt;
+use std::borrow::Borrow;
+use std::fmt::Write;
+
+use cssparser::{match_ignore_ascii_case, CowRcStr, ParseError, SourceLocation};
+use html5ever::LocalNameStaticSet;
+use selectors::parser::SelectorParseErrorKind;
+use string_cache::Atom;
+
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use cssparser::_cssparser_internal_to_lowercase;
+
 pub mod animation;
 pub mod border;
 pub mod color;
@@ -14,5 +26,44 @@ pub mod url;
 /// A CSS float value.
 pub type CSSFloat = f32;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct CustomIdent(pub String);
+
+impl CustomIdent {
+    /// Parse an already-tokenizer identifier
+    pub fn from_ident<'i>(
+        location: SourceLocation,
+        ident: &CowRcStr<'i>,
+        excluding: &[&str],
+    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>> {
+        let valid = match_ignore_ascii_case! { ident,
+            "initial" | "inherit" | "unset" | "default" | "revert" => false,
+            _ => true
+        };
+        if !valid {
+            return Err(
+                location.new_custom_error(SelectorParseErrorKind::UnexpectedIdent(ident.clone()))
+            );
+        }
+        if excluding.iter().any(|s| ident.eq_ignore_ascii_case(s)) {
+            Err(location.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+        } else {
+            Ok(CustomIdent(ident.to_string()))
+        }
+    }
+}
+
+impl cssparser::ToCss for CustomIdent {
+    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+    where
+        W: Write,
+    {
+        todo!()
+    }
+}
+
+impl From<&str> for CustomIdent {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}

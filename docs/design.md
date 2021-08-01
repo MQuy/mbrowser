@@ -17,3 +17,7 @@
   ```
   min (10*MSS, max (2*MSS, 14600)) // ~ 14KB
   ```
+
+### References
+
+- https://www.html5rocks.com/en/tutorials/internals/howbrowserswork

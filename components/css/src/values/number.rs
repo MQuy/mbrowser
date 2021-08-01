@@ -1,14 +1,14 @@
 use super::CSSFloat;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct Number {
     value: CSSFloat,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct NonNegative<T>(pub T);
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, PartialOrd)]
 pub struct GreaterThanOrEqualToOne<T>(pub T);
 
 pub type PositiveInteger = GreaterThanOrEqualToOne<Integer>;
