@@ -3,7 +3,6 @@ use std::{fmt, mem};
 use cssparser::ToCss;
 
 use super::select_impl::SelectorImpl;
-use crate::declaration::PropertyFlags;
 
 /// A pseudo-element, both public and private.
 ///

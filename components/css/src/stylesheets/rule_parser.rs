@@ -10,7 +10,7 @@ use selectors::SelectorList;
 use crate::declaration_block::parse_property_declaration_list;
 use crate::media_queries::media_list::MediaList;
 use crate::parser::Parse;
-use crate::properties::animation_name::KeyframesName;
+use crate::properties::longhands::animation_name::KeyframesName;
 use crate::selectors::select_impl::SelectorImpl;
 use crate::selectors::selector_parser::SelectorParser;
 use crate::str::starts_with_ignore_ascii_case;
@@ -315,11 +315,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
                 Ok(AtRuleType::WithBlock(AtRuleBlockPrelude::Keyframes(name, prefix)))
             },
             "page" => {
-                if cfg!(feature = "gecko") {
-                    Ok(AtRuleType::WithBlock(AtRuleBlockPrelude::Page))
-                } else {
-                    Err(input.new_custom_error(StyleParseErrorKind::UnsupportedAtRule(name.clone())))
-                }
+                Ok(AtRuleType::WithBlock(AtRuleBlockPrelude::Page))
             },
             _ => Err(input.new_custom_error(StyleParseErrorKind::UnsupportedAtRule(name.clone())))
         }

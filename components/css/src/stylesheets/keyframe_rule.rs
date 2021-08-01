@@ -1,7 +1,6 @@
-use cssparser::{Parser, RuleListParser, SourceLocation};
+use cssparser::{Parser, SourceLocation};
 
 use crate::declaration_block::DeclarationBlock;
-use crate::properties::animation_name::KeyframesName;
 
 use super::rule_parser::VendorPrefix;
 use super::stylesheet::ParserContext;

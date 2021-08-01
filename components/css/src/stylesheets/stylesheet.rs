@@ -158,6 +158,12 @@ impl<'a> ParserContext<'a> {
             namespaces: Some(namespaces),
         }
     }
+
+    /// Returns whether CSS error reporting is enabled.
+    #[inline]
+    pub fn error_reporting_enabled(&self) -> bool {
+        false
+    }
 }
 
 #[allow(missing_docs)]
