@@ -5,16 +5,20 @@ use cssparser::{
     ParseError, Parser,
 };
 use selectors::SelectorList;
+use smallbitvec::SmallBitVec;
 
-use crate::declaration::{Declaration, Importance};
-use crate::property_id::PropertyId;
+use crate::declaration::{DeclarationProperty, Importance};
+use crate::properties::longhand_id::LonghandIdSet;
+use crate::properties::property_id::PropertyId;
 use crate::selectors::select_impl::SelectorImpl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
 pub struct DeclarationBlock {
-    declarations: Vec<Declaration>,
+    declarations: Vec<DeclarationProperty>,
+    declarations_importance: SmallBitVec,
+    longhands: LonghandIdSet,
 }
 
 impl DeclarationBlock {
@@ -22,6 +26,8 @@ impl DeclarationBlock {
     pub fn new() -> Self {
         DeclarationBlock {
             declarations: Vec::new(),
+            declarations_importance: SmallBitVec::new(),
+            longhands: LonghandIdSet::new(),
         }
     }
 
@@ -29,7 +35,7 @@ impl DeclarationBlock {
     /// block. It returns true when the declaration is a non-custom longhand
     /// and it doesn't exist in the block, and returns false otherwise.
     #[inline]
-    fn is_definitely_new(&self, decl: &Declaration) -> bool {
+    fn is_definitely_new(&self, decl: &DeclarationProperty) -> bool {
         decl.id()
             .as_longhand()
             .map_or(false, |id| !self.longhands.contains(id))
@@ -40,7 +46,7 @@ impl DeclarationBlock {
     /// Returns whether the declaration has changed.
     ///
     /// This is only used for parsing and internal use.
-    pub fn push(&mut self, declaration: Declaration, importance: Importance) -> bool {
+    pub fn push(&mut self, declaration: DeclarationProperty, importance: Importance) -> bool {
         if !self.is_definitely_new(&declaration) {
             let mut index_to_remove = None;
             for (i, slot) in self.declarations.iter_mut().enumerate() {
@@ -69,7 +75,7 @@ impl DeclarationBlock {
             }
         }
 
-        if let PropertyDeclarationId::Longhand(id) = declaration.id() {
+        if let PropertyId::Longhand(id) = declaration.id() {
             self.longhands.insert(id);
         }
         self.declarations.push(declaration);
@@ -81,7 +87,11 @@ impl DeclarationBlock {
     ///
     /// See the documentation of `push` to see what impact `source` has when the
     /// property is already there.
-    pub fn extend(&mut self, mut drain: Drain<Declaration>, importance: Importance) -> bool {
+    pub fn extend(
+        &mut self,
+        mut drain: Drain<DeclarationProperty>,
+        importance: Importance,
+    ) -> bool {
         let push_calls_count = drain.len();
 
         // With deduplication the actual length increase may be less than this.
@@ -96,20 +106,19 @@ impl DeclarationBlock {
         })
     }
 
-    pub fn drain(&mut self) -> Drain<Declaration> {
-        self.declarations.drain(..)
-    }
-
-    /// Reset to initial state
     pub fn clear(&mut self) {
         self.declarations.clear();
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.declarations.is_empty()
     }
 }
 
 /// A struct to parse property declarations.
 struct PropertyDeclarationParser<'a, 'b: 'a> {
     context: &'a ParserContext<'b>,
-    declarations: DeclarationBlock,
+    declarations: &'a mut SourcePropertyDeclaration,
     /// The last parsed property id if any.
     last_parsed_property_id: Option<PropertyId>,
 }
@@ -141,7 +150,7 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
             self.last_parsed_property_id = Some(id.clone());
         }
         input.parse_until_before(Delimiter::Bang, |input| {
-            Declaration::parse_into(self.declarations, id, self.context, input)
+            DeclarationProperty::parse_into(self.declarations, id, self.context, input)
         })?;
         let importance = match input.try_parse(parse_important) {
             Ok(()) => Importance::Important,
@@ -160,12 +169,12 @@ pub fn parse_property_declaration_list(
     input: &mut Parser,
     selectors: Option<&SelectorList<SelectorImpl>>,
 ) -> DeclarationBlock {
-    let mut declarations = DeclarationBlock::new();
+    let mut declarations = SourcePropertyDeclaration::new();
     let mut block = DeclarationBlock::new();
     let parser = PropertyDeclarationParser {
         context,
         last_parsed_property_id: None,
-        declarations: DeclarationBlock::new(),
+        declarations: &mut declarations,
     };
     let mut iter = DeclarationListParser::new(input, parser);
     let mut errors = Vec::new();
@@ -194,4 +203,36 @@ pub fn parse_property_declaration_list(
     }
 
     block
+}
+
+pub struct SourcePropertyDeclaration {
+    declarations: Vec<DeclarationProperty>,
+}
+
+impl SourcePropertyDeclaration {
+    /// Create one. It’s big, try not to move it around.
+    #[inline]
+    pub fn new() -> Self {
+        SourcePropertyDeclaration {
+            declarations: Vec::new(),
+        }
+    }
+
+    /// Similar to Vec::drain: leaves this empty when the return value is dropped.
+    pub fn drain(&mut self) -> Drain<DeclarationProperty> {
+        self.declarations.drain(..)
+    }
+
+    /// Reset to initial state
+    pub fn clear(&mut self) {
+        self.declarations.clear();
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.declarations.is_empty()
+    }
+
+    pub fn push(&mut self, declaration: DeclarationProperty) {
+        self.declarations.push(declaration);
+    }
 }

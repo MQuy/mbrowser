@@ -1,7 +1,8 @@
 use core::fmt;
 use std::fmt::Write;
 
-use crate::declaration::PropertyFlags;
+use crate::css_writer::CssWriter;
+use crate::declaration::{DeclarationProperty, PropertyFlags};
 use cssparser::{ParseError, Parser, ToCss};
 
 use crate::declaration::Declaration;
@@ -970,11 +971,11 @@ impl LonghandId {
         }
     }
 
-    fn parse_value<'i, 't>(
+    pub fn parse_value<'i, 't>(
         &self,
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Declaration, ParseError<'i, StyleParseErrorKind<'i>>> {
+    ) -> Result<DeclarationProperty, ParseError<'i, StyleParseErrorKind<'i>>> {
         type ParsePropertyFn =
             for<'i, 't> fn(
                 context: &ParserContext,
@@ -1014,8 +1015,6 @@ impl LonghandId {
             longhands::overflow_wrap::parse_declared,
             longhands::pointer_events::parse_declared,
             longhands::position::parse_declared,
-            longhands::_servo_overflow_clip_box::parse_declared,
-            longhands::_servo_top_layer::parse_declared,
             longhands::table_layout::parse_declared,
             longhands::text_align::parse_declared,
             longhands::text_decoration_line::parse_declared,
@@ -1558,4 +1557,209 @@ impl LonghandId {
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct LonghandIdSet {
     storage: [u32; (179 - 1 + 32) / 32],
+}
+
+impl LonghandIdSet {
+    #[inline]
+    fn reset() -> &'static Self {
+        static RESET: LonghandIdSet = LonghandIdSet {
+            storage: [
+                0x9e41d6df, 0xffffc317, 0xdf6ffff, 0xfff5feb7, 0xffffffff, 0x7ffff,
+            ],
+        };
+
+        &RESET
+    }
+
+    #[inline]
+    fn animatable() -> &'static Self {
+        static ANIMATABLE: LonghandIdSet = LonghandIdSet {
+            storage: [
+                0xfffff7ff, 0x1c9fddfc, 0xffffffe0, 0xffff87ff, 0xffffffff, 0x7ffff,
+            ],
+        };
+
+        &ANIMATABLE
+    }
+
+    #[inline]
+    fn discrete_animatable() -> &'static Self {
+        static DISCRETE_ANIMATABLE: LonghandIdSet = LonghandIdSet {
+            storage: [0xf3e9f3f7, 0x1c9e19fc, 0x13c009e0, 0xc0088, 0x0, 0x0],
+        };
+
+        &DISCRETE_ANIMATABLE
+    }
+
+    #[inline]
+    fn logical() -> &'static Self {
+        static LOGICAL: LonghandIdSet = LonghandIdSet {
+            storage: [0x0, 0x3660000, 0x0, 0x3c500000, 0x6c1b2d1b, 0x36f0],
+        };
+
+        &LOGICAL
+    }
+
+    /// Returns the set of longhands that are ignored when document colors are
+    /// disabled.
+    #[inline]
+    pub fn ignored_when_colors_disabled() -> &'static Self {
+        static IGNORED_WHEN_COLORS_DISABLED: LonghandIdSet = LonghandIdSet {
+            storage: [0x0, 0x0, 0xa0080, 0x40100, 0xfe000000, 0x7],
+        };
+
+        &IGNORED_WHEN_COLORS_DISABLED
+    }
+
+    /// Returns the set of properties that are declared as having no effect on
+    /// Gecko <scrollbar> elements or their descendant scrollbar parts.
+    #[cfg(debug_assertions)]
+    #[cfg(feature = "gecko")]
+    #[inline]
+    pub fn has_no_effect_on_gecko_scrollbars() -> &'static Self {
+        // data.py asserts that has_no_effect_on_gecko_scrollbars is True or
+        // False for properties that are inherited and Gecko pref controlled,
+        // and is None for all other properties.
+
+        static HAS_NO_EFFECT_ON_SCROLLBARS: LonghandIdSet = LonghandIdSet {
+            storage: [0x0, 0x0, 0x0, 0x0, 0x0, 0x0],
+        };
+
+        &HAS_NO_EFFECT_ON_SCROLLBARS
+    }
+
+    /// Returns the set of padding properties for the purpose of disabling
+    /// native appearance.
+    #[inline]
+    pub fn padding_properties() -> &'static Self {
+        static PADDING_PROPERTIES: LonghandIdSet = LonghandIdSet {
+            storage: [0x0, 0x0, 0x0, 0x0, 0xff, 0x0],
+        };
+
+        &PADDING_PROPERTIES
+    }
+
+    /// Returns the set of border properties for the purpose of disabling native
+    /// appearance.
+    #[inline]
+    pub fn border_background_properties() -> &'static Self {
+        static BORDER_BACKGROUND_PROPERTIES: LonghandIdSet = LonghandIdSet {
+            storage: [0x0, 0x1fe00000, 0x80, 0xff000000, 0xfeff0000, 0x3],
+        };
+
+        &BORDER_BACKGROUND_PROPERTIES
+    }
+
+    /// Iterate over the current longhand id set.
+    pub fn iter(&self) -> LonghandIdSetIterator {
+        LonghandIdSetIterator {
+            longhands: self,
+            cur: 0,
+        }
+    }
+
+    /// Returns whether this set contains at least every longhand that `other`
+    /// also contains.
+    pub fn contains_all(&self, other: &Self) -> bool {
+        for (self_cell, other_cell) in self.storage.iter().zip(other.storage.iter()) {
+            if (*self_cell & *other_cell) != *other_cell {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Returns whether this set contains any longhand that `other` also contains.
+    pub fn contains_any(&self, other: &Self) -> bool {
+        for (self_cell, other_cell) in self.storage.iter().zip(other.storage.iter()) {
+            if (*self_cell & *other_cell) != 0 {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Remove all the given properties from the set.
+    #[inline]
+    pub fn remove_all(&mut self, other: &Self) {
+        for (self_cell, other_cell) in self.storage.iter_mut().zip(other.storage.iter()) {
+            *self_cell &= !*other_cell;
+        }
+    }
+
+    /// Create an empty set
+    #[inline]
+    pub fn new() -> LonghandIdSet {
+        LonghandIdSet {
+            storage: [0; (179 - 1 + 32) / 32],
+        }
+    }
+
+    /// Return whether the given property is in the set
+    #[inline]
+    pub fn contains(&self, id: LonghandId) -> bool {
+        let bit = id as usize;
+        (self.storage[bit / 32] & (1 << (bit % 32))) != 0
+    }
+
+    /// Return whether this set contains any reset longhand.
+    #[inline]
+    pub fn contains_any_reset(&self) -> bool {
+        self.contains_any(Self::reset())
+    }
+
+    /// Add the given property to the set
+    #[inline]
+    pub fn insert(&mut self, id: LonghandId) {
+        let bit = id as usize;
+        self.storage[bit / 32] |= 1 << (bit % 32);
+    }
+
+    /// Remove the given property from the set
+    #[inline]
+    pub fn remove(&mut self, id: LonghandId) {
+        let bit = id as usize;
+        self.storage[bit / 32] &= !(1 << (bit % 32));
+    }
+
+    /// Clear all bits
+    #[inline]
+    pub fn clear(&mut self) {
+        for cell in &mut self.storage {
+            *cell = 0
+        }
+    }
+
+    /// Returns whether the set is empty.
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.storage.iter().all(|c| *c == 0)
+    }
+}
+
+/// An iterator over a set of longhand ids.
+pub struct LonghandIdSetIterator<'a> {
+    longhands: &'a LonghandIdSet,
+    cur: usize,
+}
+
+impl<'a> Iterator for LonghandIdSetIterator<'a> {
+    type Item = LonghandId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        use std::mem;
+
+        loop {
+            if self.cur >= 179 {
+                return None;
+            }
+
+            let id: LonghandId = unsafe { mem::transmute(self.cur as u16) };
+            self.cur += 1;
+
+            if self.longhands.contains(id) {
+                return Some(id);
+            }
+        }
+    }
 }

@@ -1,3 +1,11 @@
+use cssparser::{ParseError, Parser};
+
+use crate::declaration_block::{DeclarationBlock, SourcePropertyDeclaration};
+use crate::properties::longhand_id::LonghandId;
+use crate::properties::property_id::{CSSWideKeyword, PropertyId};
+use crate::properties::shorthand_id::ShorthandId;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Integer;
 use crate::{properties, values};
 
@@ -345,6 +353,277 @@ pub enum DeclarationProperty {
     Right(values::length::LengthPercentageOrAuto),
     /// `top`
     Top(values::length::LengthPercentageOrAuto),
+    /// A CSS-wide keyword.
+    CSSWideKeyword(WideKeywordDeclaration),
+}
+
+impl DeclarationProperty {
+    /// Returns a CSS-wide keyword declaration for a given property.
+    #[inline]
+    pub fn css_wide_keyword(id: LonghandId, keyword: CSSWideKeyword) -> Self {
+        Self::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
+    }
+
+    pub fn id(&self) -> PropertyId {
+        match *self {
+            DeclarationProperty::CSSWideKeyword(ref declaration) => {
+                return PropertyId::Longhand(declaration.id);
+            },
+            _ => {},
+        }
+        // This is just fine because DeclarationProperty and LonghandId
+        // have corresponding discriminants.
+        let id = unsafe { *(self as *const _ as *const LonghandId) };
+        debug_assert_eq!(
+            id,
+            match *self {
+                DeclarationProperty::AlignContent(..) => LonghandId::AlignContent,
+                DeclarationProperty::AlignItems(..) => LonghandId::AlignItems,
+                DeclarationProperty::AlignSelf(..) => LonghandId::AlignSelf,
+                DeclarationProperty::BackfaceVisibility(..) => LonghandId::BackfaceVisibility,
+                DeclarationProperty::BorderCollapse(..) => LonghandId::BorderCollapse,
+                DeclarationProperty::BorderImageRepeat(..) => LonghandId::BorderImageRepeat,
+                DeclarationProperty::BoxSizing(..) => LonghandId::BoxSizing,
+                DeclarationProperty::CaptionSide(..) => LonghandId::CaptionSide,
+                DeclarationProperty::Clear(..) => LonghandId::Clear,
+                DeclarationProperty::ColumnCount(..) => LonghandId::ColumnCount,
+                DeclarationProperty::Direction(..) => LonghandId::Direction,
+                DeclarationProperty::Display(..) => LonghandId::Display,
+                DeclarationProperty::EmptyCells(..) => LonghandId::EmptyCells,
+                DeclarationProperty::FlexDirection(..) => LonghandId::FlexDirection,
+                DeclarationProperty::FlexWrap(..) => LonghandId::FlexWrap,
+                DeclarationProperty::Float(..) => LonghandId::Float,
+                DeclarationProperty::FontStretch(..) => LonghandId::FontStretch,
+                DeclarationProperty::FontStyle(..) => LonghandId::FontStyle,
+                DeclarationProperty::FontVariantCaps(..) => LonghandId::FontVariantCaps,
+                DeclarationProperty::FontWeight(..) => LonghandId::FontWeight,
+                DeclarationProperty::ImageRendering(..) => LonghandId::ImageRendering,
+                DeclarationProperty::JustifyContent(..) => LonghandId::JustifyContent,
+                DeclarationProperty::ListStylePosition(..) => LonghandId::ListStylePosition,
+                DeclarationProperty::ListStyleType(..) => LonghandId::ListStyleType,
+                DeclarationProperty::MixBlendMode(..) => LonghandId::MixBlendMode,
+                DeclarationProperty::Opacity(..) => LonghandId::Opacity,
+                DeclarationProperty::Order(..) => LonghandId::Order,
+                DeclarationProperty::OutlineStyle(..) => LonghandId::OutlineStyle,
+                DeclarationProperty::OverflowWrap(..) => LonghandId::OverflowWrap,
+                DeclarationProperty::PointerEvents(..) => LonghandId::PointerEvents,
+                DeclarationProperty::Position(..) => LonghandId::Position,
+                DeclarationProperty::TableLayout(..) => LonghandId::TableLayout,
+                DeclarationProperty::TextAlign(..) => LonghandId::TextAlign,
+                DeclarationProperty::TextDecorationLine(..) => LonghandId::TextDecorationLine,
+                DeclarationProperty::TextJustify(..) => LonghandId::TextJustify,
+                DeclarationProperty::TextRendering(..) => LonghandId::TextRendering,
+                DeclarationProperty::TextTransform(..) => LonghandId::TextTransform,
+                DeclarationProperty::TransformStyle(..) => LonghandId::TransformStyle,
+                DeclarationProperty::UnicodeBidi(..) => LonghandId::UnicodeBidi,
+                DeclarationProperty::Visibility(..) => LonghandId::Visibility,
+                DeclarationProperty::WhiteSpace(..) => LonghandId::WhiteSpace,
+                DeclarationProperty::WordBreak(..) => LonghandId::WordBreak,
+                DeclarationProperty::WritingMode(..) => LonghandId::WritingMode,
+                DeclarationProperty::ZIndex(..) => LonghandId::ZIndex,
+                DeclarationProperty::FlexGrow(..) => LonghandId::FlexGrow,
+                DeclarationProperty::FlexShrink(..) => LonghandId::FlexShrink,
+                DeclarationProperty::OverflowBlock(..) => LonghandId::OverflowBlock,
+                DeclarationProperty::OverflowInline(..) => LonghandId::OverflowInline,
+                DeclarationProperty::OverflowX(..) => LonghandId::OverflowX,
+                DeclarationProperty::OverflowY(..) => LonghandId::OverflowY,
+                DeclarationProperty::BorderBlockEndStyle(..) => LonghandId::BorderBlockEndStyle,
+                DeclarationProperty::BorderBlockStartStyle(..) => LonghandId::BorderBlockStartStyle,
+                DeclarationProperty::BorderBottomStyle(..) => LonghandId::BorderBottomStyle,
+                DeclarationProperty::BorderInlineEndStyle(..) => LonghandId::BorderInlineEndStyle,
+                DeclarationProperty::BorderInlineStartStyle(..) =>
+                    LonghandId::BorderInlineStartStyle,
+                DeclarationProperty::BorderLeftStyle(..) => LonghandId::BorderLeftStyle,
+                DeclarationProperty::BorderRightStyle(..) => LonghandId::BorderRightStyle,
+                DeclarationProperty::BorderTopStyle(..) => LonghandId::BorderTopStyle,
+                DeclarationProperty::AnimationDelay(..) => LonghandId::AnimationDelay,
+                DeclarationProperty::AnimationDirection(..) => LonghandId::AnimationDirection,
+                DeclarationProperty::AnimationDuration(..) => LonghandId::AnimationDuration,
+                DeclarationProperty::AnimationFillMode(..) => LonghandId::AnimationFillMode,
+                DeclarationProperty::AnimationIterationCount(..) =>
+                    LonghandId::AnimationIterationCount,
+                DeclarationProperty::AnimationName(..) => LonghandId::AnimationName,
+                DeclarationProperty::AnimationPlayState(..) => LonghandId::AnimationPlayState,
+                DeclarationProperty::AnimationTimingFunction(..) =>
+                    LonghandId::AnimationTimingFunction,
+                DeclarationProperty::BackgroundAttachment(..) => LonghandId::BackgroundAttachment,
+                DeclarationProperty::BackgroundClip(..) => LonghandId::BackgroundClip,
+                DeclarationProperty::BackgroundImage(..) => LonghandId::BackgroundImage,
+                DeclarationProperty::BackgroundOrigin(..) => LonghandId::BackgroundOrigin,
+                DeclarationProperty::BackgroundPositionX(..) => LonghandId::BackgroundPositionX,
+                DeclarationProperty::BackgroundPositionY(..) => LonghandId::BackgroundPositionY,
+                DeclarationProperty::BackgroundRepeat(..) => LonghandId::BackgroundRepeat,
+                DeclarationProperty::BackgroundSize(..) => LonghandId::BackgroundSize,
+                DeclarationProperty::BoxShadow(..) => LonghandId::BoxShadow,
+                DeclarationProperty::Clip(..) => LonghandId::Clip,
+                DeclarationProperty::Color(..) => LonghandId::Color,
+                DeclarationProperty::ColumnGap(..) => LonghandId::ColumnGap,
+                DeclarationProperty::ColumnWidth(..) => LonghandId::ColumnWidth,
+                DeclarationProperty::Content(..) => LonghandId::Content,
+                DeclarationProperty::Cursor(..) => LonghandId::Cursor,
+                DeclarationProperty::Filter(..) => LonghandId::Filter,
+                DeclarationProperty::FlexBasis(..) => LonghandId::FlexBasis,
+                DeclarationProperty::FontFamily(..) => LonghandId::FontFamily,
+                DeclarationProperty::FontSize(..) => LonghandId::FontSize,
+                DeclarationProperty::LetterSpacing(..) => LonghandId::LetterSpacing,
+                DeclarationProperty::LineHeight(..) => LonghandId::LineHeight,
+                DeclarationProperty::OutlineOffset(..) => LonghandId::OutlineOffset,
+                DeclarationProperty::Perspective(..) => LonghandId::Perspective,
+                DeclarationProperty::PerspectiveOrigin(..) => LonghandId::PerspectiveOrigin,
+                DeclarationProperty::Quotes(..) => LonghandId::Quotes,
+                DeclarationProperty::Rotate(..) => LonghandId::Rotate,
+                DeclarationProperty::Scale(..) => LonghandId::Scale,
+                DeclarationProperty::TextIndent(..) => LonghandId::TextIndent,
+                DeclarationProperty::TextOverflow(..) => LonghandId::TextOverflow,
+                DeclarationProperty::TextShadow(..) => LonghandId::TextShadow,
+                DeclarationProperty::Transform(..) => LonghandId::Transform,
+                DeclarationProperty::TransformOrigin(..) => LonghandId::TransformOrigin,
+                DeclarationProperty::TransitionDelay(..) => LonghandId::TransitionDelay,
+                DeclarationProperty::TransitionDuration(..) => LonghandId::TransitionDuration,
+                DeclarationProperty::TransitionProperty(..) => LonghandId::TransitionProperty,
+                DeclarationProperty::TransitionTimingFunction(..) =>
+                    LonghandId::TransitionTimingFunction,
+                DeclarationProperty::Translate(..) => LonghandId::Translate,
+                DeclarationProperty::VerticalAlign(..) => LonghandId::VerticalAlign,
+                DeclarationProperty::WordSpacing(..) => LonghandId::WordSpacing,
+                DeclarationProperty::BorderImageSource(..) => LonghandId::BorderImageSource,
+                DeclarationProperty::ListStyleImage(..) => LonghandId::ListStyleImage,
+                DeclarationProperty::MaxBlockSize(..) => LonghandId::MaxBlockSize,
+                DeclarationProperty::MaxHeight(..) => LonghandId::MaxHeight,
+                DeclarationProperty::MaxInlineSize(..) => LonghandId::MaxInlineSize,
+                DeclarationProperty::MaxWidth(..) => LonghandId::MaxWidth,
+                DeclarationProperty::BorderBottomLeftRadius(..) =>
+                    LonghandId::BorderBottomLeftRadius,
+                DeclarationProperty::BorderBottomRightRadius(..) =>
+                    LonghandId::BorderBottomRightRadius,
+                DeclarationProperty::BorderEndEndRadius(..) => LonghandId::BorderEndEndRadius,
+                DeclarationProperty::BorderEndStartRadius(..) => LonghandId::BorderEndStartRadius,
+                DeclarationProperty::BorderStartEndRadius(..) => LonghandId::BorderStartEndRadius,
+                DeclarationProperty::BorderStartStartRadius(..) =>
+                    LonghandId::BorderStartStartRadius,
+                DeclarationProperty::BorderTopLeftRadius(..) => LonghandId::BorderTopLeftRadius,
+                DeclarationProperty::BorderTopRightRadius(..) => LonghandId::BorderTopRightRadius,
+                DeclarationProperty::PaddingBlockEnd(..) => LonghandId::PaddingBlockEnd,
+                DeclarationProperty::PaddingBlockStart(..) => LonghandId::PaddingBlockStart,
+                DeclarationProperty::PaddingBottom(..) => LonghandId::PaddingBottom,
+                DeclarationProperty::PaddingInlineEnd(..) => LonghandId::PaddingInlineEnd,
+                DeclarationProperty::PaddingInlineStart(..) => LonghandId::PaddingInlineStart,
+                DeclarationProperty::PaddingLeft(..) => LonghandId::PaddingLeft,
+                DeclarationProperty::PaddingRight(..) => LonghandId::PaddingRight,
+                DeclarationProperty::PaddingTop(..) => LonghandId::PaddingTop,
+                DeclarationProperty::BlockSize(..) => LonghandId::BlockSize,
+                DeclarationProperty::Height(..) => LonghandId::Height,
+                DeclarationProperty::InlineSize(..) => LonghandId::InlineSize,
+                DeclarationProperty::MinBlockSize(..) => LonghandId::MinBlockSize,
+                DeclarationProperty::MinHeight(..) => LonghandId::MinHeight,
+                DeclarationProperty::MinInlineSize(..) => LonghandId::MinInlineSize,
+                DeclarationProperty::MinWidth(..) => LonghandId::MinWidth,
+                DeclarationProperty::Width(..) => LonghandId::Width,
+                DeclarationProperty::BorderBlockEndWidth(..) => LonghandId::BorderBlockEndWidth,
+                DeclarationProperty::BorderBlockStartWidth(..) => LonghandId::BorderBlockStartWidth,
+                DeclarationProperty::BorderBottomWidth(..) => LonghandId::BorderBottomWidth,
+                DeclarationProperty::BorderInlineEndWidth(..) => LonghandId::BorderInlineEndWidth,
+                DeclarationProperty::BorderInlineStartWidth(..) =>
+                    LonghandId::BorderInlineStartWidth,
+                DeclarationProperty::BorderLeftWidth(..) => LonghandId::BorderLeftWidth,
+                DeclarationProperty::BorderRightWidth(..) => LonghandId::BorderRightWidth,
+                DeclarationProperty::BorderTopWidth(..) => LonghandId::BorderTopWidth,
+                DeclarationProperty::OutlineWidth(..) => LonghandId::OutlineWidth,
+                DeclarationProperty::BackgroundColor(..) => LonghandId::BackgroundColor,
+                DeclarationProperty::BorderBlockEndColor(..) => LonghandId::BorderBlockEndColor,
+                DeclarationProperty::BorderBlockStartColor(..) => LonghandId::BorderBlockStartColor,
+                DeclarationProperty::BorderBottomColor(..) => LonghandId::BorderBottomColor,
+                DeclarationProperty::BorderInlineEndColor(..) => LonghandId::BorderInlineEndColor,
+                DeclarationProperty::BorderInlineStartColor(..) =>
+                    LonghandId::BorderInlineStartColor,
+                DeclarationProperty::BorderLeftColor(..) => LonghandId::BorderLeftColor,
+                DeclarationProperty::BorderRightColor(..) => LonghandId::BorderRightColor,
+                DeclarationProperty::BorderTopColor(..) => LonghandId::BorderTopColor,
+                DeclarationProperty::OutlineColor(..) => LonghandId::OutlineColor,
+                DeclarationProperty::Bottom(..) => LonghandId::Bottom,
+                DeclarationProperty::InsetBlockEnd(..) => LonghandId::InsetBlockEnd,
+                DeclarationProperty::InsetBlockStart(..) => LonghandId::InsetBlockStart,
+                DeclarationProperty::InsetInlineEnd(..) => LonghandId::InsetInlineEnd,
+                DeclarationProperty::InsetInlineStart(..) => LonghandId::InsetInlineStart,
+                DeclarationProperty::Left(..) => LonghandId::Left,
+                DeclarationProperty::MarginBlockEnd(..) => LonghandId::MarginBlockEnd,
+                DeclarationProperty::MarginBlockStart(..) => LonghandId::MarginBlockStart,
+                DeclarationProperty::MarginBottom(..) => LonghandId::MarginBottom,
+                DeclarationProperty::MarginInlineEnd(..) => LonghandId::MarginInlineEnd,
+                DeclarationProperty::MarginInlineStart(..) => LonghandId::MarginInlineStart,
+                DeclarationProperty::MarginLeft(..) => LonghandId::MarginLeft,
+                DeclarationProperty::MarginRight(..) => LonghandId::MarginRight,
+                DeclarationProperty::MarginTop(..) => LonghandId::MarginTop,
+                DeclarationProperty::Right(..) => LonghandId::Right,
+                DeclarationProperty::Top(..) => LonghandId::Top,
+                _ => id,
+            }
+        );
+        PropertyId::Longhand(id)
+    }
+
+    /// The `context` parameter controls this:
+    ///
+    /// <https://drafts.csswg.org/css-animations/#keyframes>
+    /// > The <declaration-list> inside of <keyframe-block> accepts any CSS property
+    /// > except those defined in this specification,
+    /// > but does accept the `animation-play-state` property and interprets it specially.
+    ///
+    /// This will not actually parse Importance values, and will always set things
+    /// to Importance::Normal. Parsing Importance values is the job of DeclarationPropertyParser,
+    /// we only set them here so that we don't have to reallocate
+    pub fn parse_into<'i, 't>(
+        declarations: &mut SourcePropertyDeclaration,
+        id: PropertyId,
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>> {
+        assert!(declarations.is_empty());
+        debug_assert!(id.allowed_in(context), "{:?}", id);
+
+        let non_custom_id = id.non_custom_id();
+        let start = input.state();
+        match id {
+            PropertyId::Custom(property_name) => {
+                todo!()
+            },
+            PropertyId::LonghandAlias(id, _) | PropertyId::Longhand(id) => {
+                input.skip_whitespace(); // Unnecessary for correctness, but may help try() rewind less.
+                input
+                    .try_parse(CSSWideKeyword::parse)
+                    .map(|keyword| DeclarationProperty::css_wide_keyword(id, keyword))
+                    .or_else(|()| {
+                        input.look_for_var_or_env_functions();
+                        input.parse_entirely(|input| id.parse_value(context, input))
+                    })
+                    .map(|declaration| declarations.push(declaration))?;
+            },
+            PropertyId::ShorthandAlias(id, _) | PropertyId::Shorthand(id) => {
+                input.skip_whitespace(); // Unnecessary for correctness, but may help try() rewind less.
+                if let Ok(keyword) = input.try_parse(CSSWideKeyword::parse) {
+                    if id == ShorthandId::All {
+                        todo!()
+                    } else {
+                        for longhand in id.longhands() {
+                            declarations
+                                .push(DeclarationProperty::css_wide_keyword(longhand, keyword));
+                        }
+                    }
+                } else {
+                    input.look_for_var_or_env_functions();
+                    // Not using parse_entirely here: each
+                    // all::parse_into function needs to do so
+                    // *before* pushing to `declarations`.
+                    id.parse_into(declarations, context, input);
+                }
+            },
+        }
+        debug_assert!(
+            non_custom_id.is_some(),
+            "Custom properties should've returned earlier"
+        );
+        Ok(())
+    }
 }
 
 /// A declaration [importance][importance].
@@ -367,16 +646,6 @@ impl Importance {
             Importance::Important => true,
         }
     }
-}
-
-#[derive(Clone)]
-pub struct Declaration {
-    property_name: DeclarationProperty,
-    important: Importance,
-}
-
-impl Declaration {
-    pub fn id(&self) {}
 }
 
 bitflags! {
@@ -413,4 +682,11 @@ bitflags! {
         /// This shorthand property is accessible from getComputedStyle.
         const SHORTHAND_IN_GETCS = 0;
     }
+}
+
+#[derive(Clone, PartialEq)]
+pub struct WideKeywordDeclaration {
+    id: LonghandId,
+    /// The CSS-wide keyword.
+    pub keyword: CSSWideKeyword,
 }

@@ -1,6 +1,12 @@
-use crate::properties::longhands;
+use core::fmt;
+
+use cssparser::{ascii_case_insensitive_phf_map, match_ignore_ascii_case};
+
+use crate::properties::{custom_properties, longhands};
 use crate::stylesheets::css_rule::CssRuleType;
 use crate::stylesheets::origin::Origin;
+use crate::stylesheets::stylesheet::ParserContext;
+use cssparser::_cssparser_internal_to_lowercase;
 
 use super::longhand_id::LonghandId;
 use super::shorthand_id::ShorthandId;
@@ -19,6 +25,317 @@ pub enum PropertyId {
     ShorthandAlias(ShorthandId, AliasId),
     /// A custom property.
     Custom(String),
+}
+
+impl PropertyId {
+    /// Returns a given property from the given name, _regardless of whether it
+    /// is enabled or not_, or Err(()) for unknown properties.
+    fn parse_unchecked(property_name: &str) -> Result<Self, ()> {
+        // A special id for css use counters.
+        // ShorthandAlias is not used in the Servo build.
+        // That's why we need to allow dead_code.
+        #[allow(dead_code)]
+        pub enum StaticId {
+            Longhand(LonghandId),
+            Shorthand(ShorthandId),
+            LonghandAlias(LonghandId, AliasId),
+            ShorthandAlias(ShorthandId, AliasId),
+        }
+        ascii_case_insensitive_phf_map! {
+            static_id -> StaticId = {
+                "align-content" => StaticId::Longhand(LonghandId::AlignContent),
+                "align-items" => StaticId::Longhand(LonghandId::AlignItems),
+                "align-self" => StaticId::Longhand(LonghandId::AlignSelf),
+                "aspect-ratio" => StaticId::Longhand(LonghandId::AspectRatio),
+                "backface-visibility" => StaticId::Longhand(LonghandId::BackfaceVisibility),
+                "border-collapse" => StaticId::Longhand(LonghandId::BorderCollapse),
+                "border-image-repeat" => StaticId::Longhand(LonghandId::BorderImageRepeat),
+                "box-sizing" => StaticId::Longhand(LonghandId::BoxSizing),
+                "caption-side" => StaticId::Longhand(LonghandId::CaptionSide),
+                "clear" => StaticId::Longhand(LonghandId::Clear),
+                "column-count" => StaticId::Longhand(LonghandId::ColumnCount),
+                "direction" => StaticId::Longhand(LonghandId::Direction),
+                "display" => StaticId::Longhand(LonghandId::Display),
+                "empty-cells" => StaticId::Longhand(LonghandId::EmptyCells),
+                "flex-direction" => StaticId::Longhand(LonghandId::FlexDirection),
+                "flex-wrap" => StaticId::Longhand(LonghandId::FlexWrap),
+                "float" => StaticId::Longhand(LonghandId::Float),
+                "font-stretch" => StaticId::Longhand(LonghandId::FontStretch),
+                "font-style" => StaticId::Longhand(LonghandId::FontStyle),
+                "font-variant-caps" => StaticId::Longhand(LonghandId::FontVariantCaps),
+                "font-weight" => StaticId::Longhand(LonghandId::FontWeight),
+                "image-rendering" => StaticId::Longhand(LonghandId::ImageRendering),
+                "justify-content" => StaticId::Longhand(LonghandId::JustifyContent),
+                "list-style-position" => StaticId::Longhand(LonghandId::ListStylePosition),
+                "list-style-type" => StaticId::Longhand(LonghandId::ListStyleType),
+                "mix-blend-mode" => StaticId::Longhand(LonghandId::MixBlendMode),
+                "opacity" => StaticId::Longhand(LonghandId::Opacity),
+                "order" => StaticId::Longhand(LonghandId::Order),
+                "outline-style" => StaticId::Longhand(LonghandId::OutlineStyle),
+                "overflow-wrap" => StaticId::Longhand(LonghandId::OverflowWrap),
+                "word-wrap" => {
+                    StaticId::LonghandAlias(
+                        LonghandId::OverflowWrap,
+                        AliasId::WordWrap,
+                    )
+                },
+                "pointer-events" => StaticId::Longhand(LonghandId::PointerEvents),
+                "position" => StaticId::Longhand(LonghandId::Position),
+                "-servo-overflow-clip-box" => StaticId::Longhand(LonghandId::ServoOverflowClipBox),
+                "-servo-top-layer" => StaticId::Longhand(LonghandId::ServoTopLayer),
+                "table-layout" => StaticId::Longhand(LonghandId::TableLayout),
+                "text-align" => StaticId::Longhand(LonghandId::TextAlign),
+                "text-decoration-line" => StaticId::Longhand(LonghandId::TextDecorationLine),
+                "text-justify" => StaticId::Longhand(LonghandId::TextJustify),
+                "text-rendering" => StaticId::Longhand(LonghandId::TextRendering),
+                "text-transform" => StaticId::Longhand(LonghandId::TextTransform),
+                "transform-style" => StaticId::Longhand(LonghandId::TransformStyle),
+                "unicode-bidi" => StaticId::Longhand(LonghandId::UnicodeBidi),
+                "visibility" => StaticId::Longhand(LonghandId::Visibility),
+                "white-space" => StaticId::Longhand(LonghandId::WhiteSpace),
+                "word-break" => StaticId::Longhand(LonghandId::WordBreak),
+                "writing-mode" => StaticId::Longhand(LonghandId::WritingMode),
+                "z-index" => StaticId::Longhand(LonghandId::ZIndex),
+                "flex-grow" => StaticId::Longhand(LonghandId::FlexGrow),
+                "flex-shrink" => StaticId::Longhand(LonghandId::FlexShrink),
+                "overflow-block" => StaticId::Longhand(LonghandId::OverflowBlock),
+                "overflow-inline" => StaticId::Longhand(LonghandId::OverflowInline),
+                "overflow-x" => StaticId::Longhand(LonghandId::OverflowX),
+                "overflow-y" => StaticId::Longhand(LonghandId::OverflowY),
+                "border-block-end-style" => StaticId::Longhand(LonghandId::BorderBlockEndStyle),
+                "border-block-start-style" => StaticId::Longhand(LonghandId::BorderBlockStartStyle),
+                "border-bottom-style" => StaticId::Longhand(LonghandId::BorderBottomStyle),
+                "border-inline-end-style" => StaticId::Longhand(LonghandId::BorderInlineEndStyle),
+                "border-inline-start-style" => StaticId::Longhand(LonghandId::BorderInlineStartStyle),
+                "border-left-style" => StaticId::Longhand(LonghandId::BorderLeftStyle),
+                "border-right-style" => StaticId::Longhand(LonghandId::BorderRightStyle),
+                "border-top-style" => StaticId::Longhand(LonghandId::BorderTopStyle),
+                "animation-delay" => StaticId::Longhand(LonghandId::AnimationDelay),
+                "animation-direction" => StaticId::Longhand(LonghandId::AnimationDirection),
+                "animation-duration" => StaticId::Longhand(LonghandId::AnimationDuration),
+                "animation-fill-mode" => StaticId::Longhand(LonghandId::AnimationFillMode),
+                "animation-iteration-count" => StaticId::Longhand(LonghandId::AnimationIterationCount),
+                "animation-name" => StaticId::Longhand(LonghandId::AnimationName),
+                "animation-play-state" => StaticId::Longhand(LonghandId::AnimationPlayState),
+                "animation-timing-function" => StaticId::Longhand(LonghandId::AnimationTimingFunction),
+                "background-attachment" => StaticId::Longhand(LonghandId::BackgroundAttachment),
+                "background-clip" => StaticId::Longhand(LonghandId::BackgroundClip),
+                "background-image" => StaticId::Longhand(LonghandId::BackgroundImage),
+                "background-origin" => StaticId::Longhand(LonghandId::BackgroundOrigin),
+                "background-position-x" => StaticId::Longhand(LonghandId::BackgroundPositionX),
+                "background-position-y" => StaticId::Longhand(LonghandId::BackgroundPositionY),
+                "background-repeat" => StaticId::Longhand(LonghandId::BackgroundRepeat),
+                "background-size" => StaticId::Longhand(LonghandId::BackgroundSize),
+                "border-image-outset" => StaticId::Longhand(LonghandId::BorderImageOutset),
+                "border-image-slice" => StaticId::Longhand(LonghandId::BorderImageSlice),
+                "border-image-width" => StaticId::Longhand(LonghandId::BorderImageWidth),
+                "border-spacing" => StaticId::Longhand(LonghandId::BorderSpacing),
+                "box-shadow" => StaticId::Longhand(LonghandId::BoxShadow),
+                "clip" => StaticId::Longhand(LonghandId::Clip),
+                "color" => StaticId::Longhand(LonghandId::Color),
+                "column-gap" => StaticId::Longhand(LonghandId::ColumnGap),
+                "column-width" => StaticId::Longhand(LonghandId::ColumnWidth),
+                "content" => StaticId::Longhand(LonghandId::Content),
+                "counter-increment" => StaticId::Longhand(LonghandId::CounterIncrement),
+                "counter-reset" => StaticId::Longhand(LonghandId::CounterReset),
+                "cursor" => StaticId::Longhand(LonghandId::Cursor),
+                "filter" => StaticId::Longhand(LonghandId::Filter),
+                "flex-basis" => StaticId::Longhand(LonghandId::FlexBasis),
+                "font-family" => StaticId::Longhand(LonghandId::FontFamily),
+                "font-size" => StaticId::Longhand(LonghandId::FontSize),
+                "letter-spacing" => StaticId::Longhand(LonghandId::LetterSpacing),
+                "line-height" => StaticId::Longhand(LonghandId::LineHeight),
+                "outline-offset" => StaticId::Longhand(LonghandId::OutlineOffset),
+                "perspective" => StaticId::Longhand(LonghandId::Perspective),
+                "perspective-origin" => StaticId::Longhand(LonghandId::PerspectiveOrigin),
+                "quotes" => StaticId::Longhand(LonghandId::Quotes),
+                "rotate" => StaticId::Longhand(LonghandId::Rotate),
+                "scale" => StaticId::Longhand(LonghandId::Scale),
+                "text-indent" => StaticId::Longhand(LonghandId::TextIndent),
+                "text-overflow" => StaticId::Longhand(LonghandId::TextOverflow),
+                "text-shadow" => StaticId::Longhand(LonghandId::TextShadow),
+                "transform" => StaticId::Longhand(LonghandId::Transform),
+                "transform-origin" => StaticId::Longhand(LonghandId::TransformOrigin),
+                "transition-delay" => StaticId::Longhand(LonghandId::TransitionDelay),
+                "transition-duration" => StaticId::Longhand(LonghandId::TransitionDuration),
+                "transition-property" => StaticId::Longhand(LonghandId::TransitionProperty),
+                "transition-timing-function" => StaticId::Longhand(LonghandId::TransitionTimingFunction),
+                "translate" => StaticId::Longhand(LonghandId::Translate),
+                "vertical-align" => StaticId::Longhand(LonghandId::VerticalAlign),
+                "word-spacing" => StaticId::Longhand(LonghandId::WordSpacing),
+                "border-image-source" => StaticId::Longhand(LonghandId::BorderImageSource),
+                "list-style-image" => StaticId::Longhand(LonghandId::ListStyleImage),
+                "max-block-size" => StaticId::Longhand(LonghandId::MaxBlockSize),
+                "max-height" => StaticId::Longhand(LonghandId::MaxHeight),
+                "max-inline-size" => StaticId::Longhand(LonghandId::MaxInlineSize),
+                "max-width" => StaticId::Longhand(LonghandId::MaxWidth),
+                "border-bottom-left-radius" => StaticId::Longhand(LonghandId::BorderBottomLeftRadius),
+                "border-bottom-right-radius" => StaticId::Longhand(LonghandId::BorderBottomRightRadius),
+                "border-end-end-radius" => StaticId::Longhand(LonghandId::BorderEndEndRadius),
+                "border-end-start-radius" => StaticId::Longhand(LonghandId::BorderEndStartRadius),
+                "border-start-end-radius" => StaticId::Longhand(LonghandId::BorderStartEndRadius),
+                "border-start-start-radius" => StaticId::Longhand(LonghandId::BorderStartStartRadius),
+                "border-top-left-radius" => StaticId::Longhand(LonghandId::BorderTopLeftRadius),
+                "border-top-right-radius" => StaticId::Longhand(LonghandId::BorderTopRightRadius),
+                "padding-block-end" => StaticId::Longhand(LonghandId::PaddingBlockEnd),
+                "padding-block-start" => StaticId::Longhand(LonghandId::PaddingBlockStart),
+                "padding-bottom" => StaticId::Longhand(LonghandId::PaddingBottom),
+                "padding-inline-end" => StaticId::Longhand(LonghandId::PaddingInlineEnd),
+                "padding-inline-start" => StaticId::Longhand(LonghandId::PaddingInlineStart),
+                "padding-left" => StaticId::Longhand(LonghandId::PaddingLeft),
+                "padding-right" => StaticId::Longhand(LonghandId::PaddingRight),
+                "padding-top" => StaticId::Longhand(LonghandId::PaddingTop),
+                "block-size" => StaticId::Longhand(LonghandId::BlockSize),
+                "height" => StaticId::Longhand(LonghandId::Height),
+                "inline-size" => StaticId::Longhand(LonghandId::InlineSize),
+                "min-block-size" => StaticId::Longhand(LonghandId::MinBlockSize),
+                "min-height" => StaticId::Longhand(LonghandId::MinHeight),
+                "min-inline-size" => StaticId::Longhand(LonghandId::MinInlineSize),
+                "min-width" => StaticId::Longhand(LonghandId::MinWidth),
+                "width" => StaticId::Longhand(LonghandId::Width),
+                "border-block-end-width" => StaticId::Longhand(LonghandId::BorderBlockEndWidth),
+                "border-block-start-width" => StaticId::Longhand(LonghandId::BorderBlockStartWidth),
+                "border-bottom-width" => StaticId::Longhand(LonghandId::BorderBottomWidth),
+                "border-inline-end-width" => StaticId::Longhand(LonghandId::BorderInlineEndWidth),
+                "border-inline-start-width" => StaticId::Longhand(LonghandId::BorderInlineStartWidth),
+                "border-left-width" => StaticId::Longhand(LonghandId::BorderLeftWidth),
+                "border-right-width" => StaticId::Longhand(LonghandId::BorderRightWidth),
+                "border-top-width" => StaticId::Longhand(LonghandId::BorderTopWidth),
+                "outline-width" => StaticId::Longhand(LonghandId::OutlineWidth),
+                "background-color" => StaticId::Longhand(LonghandId::BackgroundColor),
+                "border-block-end-color" => StaticId::Longhand(LonghandId::BorderBlockEndColor),
+                "border-block-start-color" => StaticId::Longhand(LonghandId::BorderBlockStartColor),
+                "border-bottom-color" => StaticId::Longhand(LonghandId::BorderBottomColor),
+                "border-inline-end-color" => StaticId::Longhand(LonghandId::BorderInlineEndColor),
+                "border-inline-start-color" => StaticId::Longhand(LonghandId::BorderInlineStartColor),
+                "border-left-color" => StaticId::Longhand(LonghandId::BorderLeftColor),
+                "border-right-color" => StaticId::Longhand(LonghandId::BorderRightColor),
+                "border-top-color" => StaticId::Longhand(LonghandId::BorderTopColor),
+                "outline-color" => StaticId::Longhand(LonghandId::OutlineColor),
+                "bottom" => StaticId::Longhand(LonghandId::Bottom),
+                "inset-block-end" => StaticId::Longhand(LonghandId::InsetBlockEnd),
+                "inset-block-start" => StaticId::Longhand(LonghandId::InsetBlockStart),
+                "inset-inline-end" => StaticId::Longhand(LonghandId::InsetInlineEnd),
+                "inset-inline-start" => StaticId::Longhand(LonghandId::InsetInlineStart),
+                "left" => StaticId::Longhand(LonghandId::Left),
+                "margin-block-end" => StaticId::Longhand(LonghandId::MarginBlockEnd),
+                "margin-block-start" => StaticId::Longhand(LonghandId::MarginBlockStart),
+                "margin-bottom" => StaticId::Longhand(LonghandId::MarginBottom),
+                "margin-inline-end" => StaticId::Longhand(LonghandId::MarginInlineEnd),
+                "margin-inline-start" => StaticId::Longhand(LonghandId::MarginInlineStart),
+                "margin-left" => StaticId::Longhand(LonghandId::MarginLeft),
+                "margin-right" => StaticId::Longhand(LonghandId::MarginRight),
+                "margin-top" => StaticId::Longhand(LonghandId::MarginTop),
+                "right" => StaticId::Longhand(LonghandId::Right),
+                "top" => StaticId::Longhand(LonghandId::Top),
+                "background" => StaticId::Shorthand(ShorthandId::Background),
+                "background-position" => StaticId::Shorthand(ShorthandId::BackgroundPosition),
+                "border-color" => StaticId::Shorthand(ShorthandId::BorderColor),
+                "border-style" => StaticId::Shorthand(ShorthandId::BorderStyle),
+                "border-width" => StaticId::Shorthand(ShorthandId::BorderWidth),
+                "border-top" => StaticId::Shorthand(ShorthandId::BorderTop),
+                "border-right" => StaticId::Shorthand(ShorthandId::BorderRight),
+                "border-bottom" => StaticId::Shorthand(ShorthandId::BorderBottom),
+                "border-left" => StaticId::Shorthand(ShorthandId::BorderLeft),
+                "border-block-start" => StaticId::Shorthand(ShorthandId::BorderBlockStart),
+                "border-block-end" => StaticId::Shorthand(ShorthandId::BorderBlockEnd),
+                "border-inline-start" => StaticId::Shorthand(ShorthandId::BorderInlineStart),
+                "border-inline-end" => StaticId::Shorthand(ShorthandId::BorderInlineEnd),
+                "border" => StaticId::Shorthand(ShorthandId::Border),
+                "border-radius" => StaticId::Shorthand(ShorthandId::BorderRadius),
+                "border-image" => StaticId::Shorthand(ShorthandId::BorderImage),
+                "border-block-width" => StaticId::Shorthand(ShorthandId::BorderBlockWidth),
+                "border-block-style" => StaticId::Shorthand(ShorthandId::BorderBlockStyle),
+                "border-block-color" => StaticId::Shorthand(ShorthandId::BorderBlockColor),
+                "border-inline-width" => StaticId::Shorthand(ShorthandId::BorderInlineWidth),
+                "border-inline-style" => StaticId::Shorthand(ShorthandId::BorderInlineStyle),
+                "border-inline-color" => StaticId::Shorthand(ShorthandId::BorderInlineColor),
+                "border-block" => StaticId::Shorthand(ShorthandId::BorderBlock),
+                "border-inline" => StaticId::Shorthand(ShorthandId::BorderInline),
+                "overflow" => StaticId::Shorthand(ShorthandId::Overflow),
+                "transition" => StaticId::Shorthand(ShorthandId::Transition),
+                "animation" => StaticId::Shorthand(ShorthandId::Animation),
+                "columns" => StaticId::Shorthand(ShorthandId::Columns),
+                "font" => StaticId::Shorthand(ShorthandId::Font),
+                "font-variant" => StaticId::Shorthand(ShorthandId::FontVariant),
+                "list-style" => StaticId::Shorthand(ShorthandId::ListStyle),
+                "margin" => StaticId::Shorthand(ShorthandId::Margin),
+                "margin-block" => StaticId::Shorthand(ShorthandId::MarginBlock),
+                "margin-inline" => StaticId::Shorthand(ShorthandId::MarginInline),
+                "outline" => StaticId::Shorthand(ShorthandId::Outline),
+                "padding" => StaticId::Shorthand(ShorthandId::Padding),
+                "padding-block" => StaticId::Shorthand(ShorthandId::PaddingBlock),
+                "padding-inline" => StaticId::Shorthand(ShorthandId::PaddingInline),
+                "flex-flow" => StaticId::Shorthand(ShorthandId::FlexFlow),
+                "flex" => StaticId::Shorthand(ShorthandId::Flex),
+                "inset" => StaticId::Shorthand(ShorthandId::Inset),
+                "inset-block" => StaticId::Shorthand(ShorthandId::InsetBlock),
+                "inset-inline" => StaticId::Shorthand(ShorthandId::InsetInline),
+                "text-decoration" => StaticId::Shorthand(ShorthandId::TextDecoration),
+                "all" => StaticId::Shorthand(ShorthandId::All),
+            }
+        }
+
+        if let Some(id) = static_id(property_name) {
+            return Ok(match *id {
+                StaticId::Longhand(id) => PropertyId::Longhand(id),
+                StaticId::Shorthand(id) => PropertyId::Shorthand(id),
+                StaticId::LonghandAlias(id, alias) => PropertyId::LonghandAlias(id, alias),
+                StaticId::ShorthandAlias(id, alias) => PropertyId::ShorthandAlias(id, alias),
+            });
+        }
+
+        let name = custom_properties::parse_name(property_name)?;
+        Ok(PropertyId::Custom(name.to_string()))
+    }
+
+    /// Parses a property name, and returns an error if it's unknown or isn't
+    /// allowed in this context.
+    #[inline]
+    pub fn parse(name: &str, context: &ParserContext) -> Result<Self, ()> {
+        let id = Self::parse_unchecked(name)?;
+
+        if !id.allowed_in(context) {
+            return Err(());
+        }
+
+        Ok(id)
+    }
+
+    /// Returns longhand id if it is, None otherwise.
+    #[inline]
+    pub fn as_longhand(&self) -> Option<LonghandId> {
+        match *self {
+            PropertyId::Longhand(id) => Some(id),
+            _ => None,
+        }
+    }
+
+    pub fn allowed_in(&self, context: &ParserContext) -> bool {
+        let id = match self.non_custom_id() {
+            // Custom properties are allowed everywhere
+            None => return true,
+            Some(id) => id,
+        };
+        id.allowed_in(context)
+    }
+
+    /// Returns the `NonCustomPropertyId` corresponding to this property id.
+    pub fn non_custom_id(&self) -> Option<NonCustomPropertyId> {
+        Some(match *self {
+            PropertyId::Custom(_) => return None,
+            PropertyId::Shorthand(shorthand_id) => shorthand_id.into(),
+            PropertyId::Longhand(longhand_id) => longhand_id.into(),
+            PropertyId::ShorthandAlias(_, alias_id) => alias_id.into(),
+            PropertyId::LonghandAlias(_, alias_id) => alias_id.into(),
+        })
+    }
+}
+
+impl fmt::Debug for PropertyId {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        self.to_css(&mut CssWriter::new(formatter))
+    }
 }
 
 /// A longhand or shorthand property.
@@ -333,247 +650,11 @@ impl NonCustomPropertyId {
             ],
         };
 
-        let passes_pref_check = || {
-            static PREF_NAME: [Option<&str>; 225] = [
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                Some("layout.columns.enabled"),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                Some("layout.writing-mode.enabled"),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                Some("layout.columns.enabled"),
-                Some("layout.columns.enabled"),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                Some("layout.columns.enabled"),
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-                None,
-            ];
-            let pref = match PREF_NAME[self.0] {
-                None => return true,
-                Some(pref) => pref,
-            };
-
-            prefs::pref_map().get(pref).as_bool().unwrap_or(false)
-        };
-
         if ALWAYS_ENABLED.contains(self) {
             return true;
         }
 
-        if EXPERIMENTAL.contains(self) && passes_pref_check() {
+        if EXPERIMENTAL.contains(self) {
             return true;
         }
 
@@ -609,7 +690,7 @@ impl NonCustomPropertyId {
         }
     }
 
-    fn allowed_in(self, context: &ParserContext) -> bool {
+    pub fn allowed_in(self, context: &ParserContext) -> bool {
         if !self.allowed_in_rule(context.rule_type()) {
             return false;
         }
@@ -617,7 +698,7 @@ impl NonCustomPropertyId {
         self.allowed_in_ignoring_rule_type(context)
     }
 
-    fn allowed_in_ignoring_rule_type(self, context: &ParserContext) -> bool {
+    pub fn allowed_in_ignoring_rule_type(self, context: &ParserContext) -> bool {
         // The semantics of these are kinda hard to reason about, what follows
         // is a description of the different combinations that can happen with
         // these three sets.
@@ -1202,5 +1283,47 @@ impl From<AliasId> for NonCustomPropertyId {
     #[inline]
     fn from(id: AliasId) -> Self {
         NonCustomPropertyId(id as usize + 224)
+    }
+}
+
+/// An enum to represent a CSS Wide keyword.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum CSSWideKeyword {
+    /// The `initial` keyword.
+    Initial,
+    /// The `inherit` keyword.
+    Inherit,
+    /// The `unset` keyword.
+    Unset,
+    /// The `revert` keyword.
+    Revert,
+}
+
+impl CSSWideKeyword {
+    pub fn to_str(&self) -> &'static str {
+        match *self {
+            CSSWideKeyword::Initial => "initial",
+            CSSWideKeyword::Inherit => "inherit",
+            CSSWideKeyword::Unset => "unset",
+            CSSWideKeyword::Revert => "revert",
+        }
+    }
+}
+
+impl CSSWideKeyword {
+    pub fn parse(input: &mut Parser) -> Result<Self, ()> {
+        let keyword = {
+            let ident = input.expect_ident().map_err(|_| ())?;
+            match_ignore_ascii_case! { ident,
+                // If modifying this set of keyword, also update values::CustomIdent::from_ident
+                "initial" => CSSWideKeyword::Initial,
+                "inherit" => CSSWideKeyword::Inherit,
+                "unset" => CSSWideKeyword::Unset,
+                "revert" => CSSWideKeyword::Revert,
+                _ => return Err(()),
+            }
+        };
+        input.expect_exhausted().map_err(|_| ())?;
+        Ok(keyword)
     }
 }

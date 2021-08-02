@@ -1,8 +1,9 @@
 use core::fmt;
 use std::fmt::Write;
 
+use crate::css_writer::CssWriter;
 use crate::declaration::PropertyFlags;
-use crate::declaration_block::DeclarationBlock;
+use crate::declaration_block::{DeclarationBlock, SourcePropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use cssparser::{ParseError, Parser, ToCss};
@@ -11,6 +12,7 @@ use crate::declaration::Declaration;
 
 use super::longhand_id::LonghandId;
 use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
+use super::shorthands;
 
 /// An identifier for a given shorthand property.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -1013,9 +1015,9 @@ impl ShorthandId {
         IDL_NAME_SORT_ORDER[self as usize]
     }
 
-    fn parse_into<'i, 't>(
+    pub fn parse_into<'i, 't>(
         &self,
-        declarations: &mut DeclarationBlock,
+        declarations: &mut SourcePropertyDeclaration,
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>> {
