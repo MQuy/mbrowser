@@ -1,6 +1,6 @@
-use cssparser::{ParseError, Parser};
+use cssparser::Parser;
 
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
 
@@ -61,7 +61,7 @@ impl MediaQuery {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>> {
+    ) -> Result<Self, ParseError<'i>> {
         todo!()
     }
 }

@@ -1,14 +1,13 @@
 use core::fmt;
 use std::fmt::Write;
 
-use crate::css_writer::CssWriter;
-use crate::declaration::{DeclarationProperty, PropertyFlags};
-use cssparser::{ParseError, Parser, ToCss};
+use crate::css_writer::{CssWriter, ToCss};
+use crate::parser::ParseError;
+use crate::properties::declaration::PropertyDeclaration;
+use cssparser::Parser;
 
-use crate::declaration::Declaration;
 use crate::properties::longhands;
 use crate::properties::shorthand_id::ShorthandId;
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
@@ -400,12 +399,6 @@ impl LonghandId {
         NonCustomPropertyId::from(*self).name()
     }
 
-    /// Returns whether the longhand property is inherited by default.
-    #[inline]
-    pub fn inherited(self) -> bool {
-        !LonghandIdSet::reset().contains(self)
-    }
-
     fn shorthands(&self) -> NonCustomPropertyIterator<ShorthandId> {
         // first generate longhand to shorthands lookup map
         //
@@ -785,7 +778,6 @@ impl LonghandId {
         static TOP: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Inset];
 
         NonCustomPropertyIterator {
-            filter: NonCustomPropertyId::from(*self).enabled_for_all_content(),
             iter: match *self {
                 LonghandId::AlignContent => ALIGN_CONTENT,
                 LonghandId::AlignItems => ALIGN_ITEMS,
@@ -975,13 +967,12 @@ impl LonghandId {
         &self,
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<DeclarationProperty, ParseError<'i, StyleParseErrorKind<'i>>> {
-        type ParsePropertyFn =
-            for<'i, 't> fn(
-                context: &ParserContext,
-                input: &mut Parser<'i, 't>,
-            )
-                -> Result<Declaration, ParseError<'i, StyleParseErrorKind<'i>>>;
+    ) -> Result<PropertyDeclaration, ParseError<'i>> {
+        type ParsePropertyFn = for<'i, 't> fn(
+            context: &ParserContext,
+            input: &mut Parser<'i, 't>,
+        )
+            -> Result<PropertyDeclaration, ParseError<'i>>;
         static PARSE_PROPERTY: [ParsePropertyFn; 179] = [
             longhands::align_content::parse_declared,
             longhands::align_items::parse_declared,
@@ -1163,394 +1154,6 @@ impl LonghandId {
         ];
         (PARSE_PROPERTY[*self as usize])(context, input)
     }
-
-    /// Returns whether this property is animatable.
-    #[inline]
-    pub fn is_animatable(self) -> bool {
-        LonghandIdSet::animatable().contains(self)
-    }
-
-    /// Returns whether this property is animatable in a discrete way.
-    #[inline]
-    pub fn is_discrete_animatable(self) -> bool {
-        LonghandIdSet::discrete_animatable().contains(self)
-    }
-
-    /// Converts from a LonghandId to an adequate nsCSSPropertyID.
-    #[cfg(feature = "gecko")]
-    #[inline]
-    pub fn to_nscsspropertyid(self) -> nsCSSPropertyID {
-        NonCustomPropertyId::from(self).to_nscsspropertyid()
-    }
-
-    #[cfg(feature = "gecko")]
-    #[allow(non_upper_case_globals)]
-    /// Returns a longhand id from Gecko's nsCSSPropertyID.
-    pub fn from_nscsspropertyid(id: nsCSSPropertyID) -> Result<Self, ()> {
-        match PropertyId::from_nscsspropertyid(id) {
-            Ok(PropertyId::Longhand(id)) | Ok(PropertyId::LonghandAlias(id, _)) => Ok(id),
-            _ => Err(()),
-        }
-    }
-
-    /// Return whether this property is logical.
-    #[inline]
-    pub fn is_logical(self) -> bool {
-        LonghandIdSet::logical().contains(self)
-    }
-
-    /// Returns PropertyFlags for given longhand property.
-    #[inline(always)]
-    pub fn flags(self) -> PropertyFlags {
-        // TODO(emilio): This can be simplified further as Rust gains more
-        // constant expression support.
-        const FLAGS: [u16; 179] = [
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | 0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits
-                | PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            0,
-            PropertyFlags::APPLIES_TO_CUE.bits | 0,
-            0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | PropertyFlags::ABSPOS_CB.bits | 0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_PLACEHOLDER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_PLACEHOLDER.bits | 0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | 0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | PropertyFlags::FIXPOS_CB.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_CUE.bits | 0,
-            PropertyFlags::APPLIES_TO_PLACEHOLDER.bits | PropertyFlags::APPLIES_TO_CUE.bits | 0,
-            0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            0,
-            0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | PropertyFlags::FIXPOS_CB.bits | 0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_MARKER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits | PropertyFlags::FIXPOS_CB.bits | 0,
-            0,
-            0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits
-                | PropertyFlags::FIXPOS_CB.bits
-                | PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | 0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits
-                | PropertyFlags::FIXPOS_CB.bits
-                | PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | 0,
-            0,
-            PropertyFlags::APPLIES_TO_PLACEHOLDER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits
-                | PropertyFlags::FIXPOS_CB.bits
-                | PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | 0,
-            0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::APPLIES_TO_MARKER.bits | 0,
-            PropertyFlags::CREATES_STACKING_CONTEXT.bits
-                | PropertyFlags::FIXPOS_CB.bits
-                | PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_CUE.bits | 0,
-            PropertyFlags::CAN_ANIMATE_ON_COMPOSITOR.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LINE.bits
-                | PropertyFlags::APPLIES_TO_FIRST_LETTER.bits
-                | PropertyFlags::APPLIES_TO_PLACEHOLDER.bits
-                | PropertyFlags::APPLIES_TO_CUE.bits
-                | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_CUE.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            PropertyFlags::APPLIES_TO_FIRST_LETTER.bits | 0,
-            0,
-            0,
-        ];
-        PropertyFlags::from_bits_truncate(FLAGS[self as usize])
-    }
-
-    /// Only a few properties are allowed to depend on the visited state of
-    /// links. When cascading visited styles, we can save time by only
-    /// processing these properties.
-    fn is_visited_dependent(&self) -> bool {
-        matches!(
-            *self,
-            LonghandId::BackgroundColor
-                | LonghandId::BorderTopColor
-                | LonghandId::BorderRightColor
-                | LonghandId::BorderBottomColor
-                | LonghandId::BorderLeftColor
-                | LonghandId::OutlineColor
-                | LonghandId::Color
-        )
-    }
-
-    /// Returns true if the property is one that is ignored when document
-    /// colors are disabled.
-    #[inline]
-    fn ignored_when_document_colors_disabled(self) -> bool {
-        LonghandIdSet::ignored_when_colors_disabled().contains(self)
-    }
-
-    /// The computed value of some properties depends on the (sometimes
-    /// computed) value of *other* properties.
-    ///
-    /// So we classify properties into "early" and "other", such that the only
-    /// dependencies can be from "other" to "early".
-    ///
-    /// Unfortunately, it’s not easy to check that this classification is
-    /// correct.
-    fn is_early_property(&self) -> bool {
-        matches!(
-            *self,
-            // Needed to compute the first available font, in order to
-            // compute font-relative units correctly.
-            LonghandId::FontSize |
-            LonghandId::FontWeight |
-            LonghandId::FontStretch |
-            LonghandId::FontStyle |
-            LonghandId::FontFamily |
-
-            // Needed to properly compute the writing mode, to resolve logical
-            // properties, and similar stuff.
-            LonghandId::WritingMode |
-            LonghandId::Direction
-        )
-    }
 }
 
 /// A set of longhand properties
@@ -1560,133 +1163,6 @@ pub struct LonghandIdSet {
 }
 
 impl LonghandIdSet {
-    #[inline]
-    fn reset() -> &'static Self {
-        static RESET: LonghandIdSet = LonghandIdSet {
-            storage: [
-                0x9e41d6df, 0xffffc317, 0xdf6ffff, 0xfff5feb7, 0xffffffff, 0x7ffff,
-            ],
-        };
-
-        &RESET
-    }
-
-    #[inline]
-    fn animatable() -> &'static Self {
-        static ANIMATABLE: LonghandIdSet = LonghandIdSet {
-            storage: [
-                0xfffff7ff, 0x1c9fddfc, 0xffffffe0, 0xffff87ff, 0xffffffff, 0x7ffff,
-            ],
-        };
-
-        &ANIMATABLE
-    }
-
-    #[inline]
-    fn discrete_animatable() -> &'static Self {
-        static DISCRETE_ANIMATABLE: LonghandIdSet = LonghandIdSet {
-            storage: [0xf3e9f3f7, 0x1c9e19fc, 0x13c009e0, 0xc0088, 0x0, 0x0],
-        };
-
-        &DISCRETE_ANIMATABLE
-    }
-
-    #[inline]
-    fn logical() -> &'static Self {
-        static LOGICAL: LonghandIdSet = LonghandIdSet {
-            storage: [0x0, 0x3660000, 0x0, 0x3c500000, 0x6c1b2d1b, 0x36f0],
-        };
-
-        &LOGICAL
-    }
-
-    /// Returns the set of longhands that are ignored when document colors are
-    /// disabled.
-    #[inline]
-    pub fn ignored_when_colors_disabled() -> &'static Self {
-        static IGNORED_WHEN_COLORS_DISABLED: LonghandIdSet = LonghandIdSet {
-            storage: [0x0, 0x0, 0xa0080, 0x40100, 0xfe000000, 0x7],
-        };
-
-        &IGNORED_WHEN_COLORS_DISABLED
-    }
-
-    /// Returns the set of properties that are declared as having no effect on
-    /// Gecko <scrollbar> elements or their descendant scrollbar parts.
-    #[cfg(debug_assertions)]
-    #[cfg(feature = "gecko")]
-    #[inline]
-    pub fn has_no_effect_on_gecko_scrollbars() -> &'static Self {
-        // data.py asserts that has_no_effect_on_gecko_scrollbars is True or
-        // False for properties that are inherited and Gecko pref controlled,
-        // and is None for all other properties.
-
-        static HAS_NO_EFFECT_ON_SCROLLBARS: LonghandIdSet = LonghandIdSet {
-            storage: [0x0, 0x0, 0x0, 0x0, 0x0, 0x0],
-        };
-
-        &HAS_NO_EFFECT_ON_SCROLLBARS
-    }
-
-    /// Returns the set of padding properties for the purpose of disabling
-    /// native appearance.
-    #[inline]
-    pub fn padding_properties() -> &'static Self {
-        static PADDING_PROPERTIES: LonghandIdSet = LonghandIdSet {
-            storage: [0x0, 0x0, 0x0, 0x0, 0xff, 0x0],
-        };
-
-        &PADDING_PROPERTIES
-    }
-
-    /// Returns the set of border properties for the purpose of disabling native
-    /// appearance.
-    #[inline]
-    pub fn border_background_properties() -> &'static Self {
-        static BORDER_BACKGROUND_PROPERTIES: LonghandIdSet = LonghandIdSet {
-            storage: [0x0, 0x1fe00000, 0x80, 0xff000000, 0xfeff0000, 0x3],
-        };
-
-        &BORDER_BACKGROUND_PROPERTIES
-    }
-
-    /// Iterate over the current longhand id set.
-    pub fn iter(&self) -> LonghandIdSetIterator {
-        LonghandIdSetIterator {
-            longhands: self,
-            cur: 0,
-        }
-    }
-
-    /// Returns whether this set contains at least every longhand that `other`
-    /// also contains.
-    pub fn contains_all(&self, other: &Self) -> bool {
-        for (self_cell, other_cell) in self.storage.iter().zip(other.storage.iter()) {
-            if (*self_cell & *other_cell) != *other_cell {
-                return false;
-            }
-        }
-        true
-    }
-
-    /// Returns whether this set contains any longhand that `other` also contains.
-    pub fn contains_any(&self, other: &Self) -> bool {
-        for (self_cell, other_cell) in self.storage.iter().zip(other.storage.iter()) {
-            if (*self_cell & *other_cell) != 0 {
-                return true;
-            }
-        }
-        false
-    }
-
-    /// Remove all the given properties from the set.
-    #[inline]
-    pub fn remove_all(&mut self, other: &Self) {
-        for (self_cell, other_cell) in self.storage.iter_mut().zip(other.storage.iter()) {
-            *self_cell &= !*other_cell;
-        }
-    }
-
     /// Create an empty set
     #[inline]
     pub fn new() -> LonghandIdSet {
@@ -1694,18 +1170,11 @@ impl LonghandIdSet {
             storage: [0; (179 - 1 + 32) / 32],
         }
     }
-
     /// Return whether the given property is in the set
     #[inline]
     pub fn contains(&self, id: LonghandId) -> bool {
         let bit = id as usize;
         (self.storage[bit / 32] & (1 << (bit % 32))) != 0
-    }
-
-    /// Return whether this set contains any reset longhand.
-    #[inline]
-    pub fn contains_any_reset(&self) -> bool {
-        self.contains_any(Self::reset())
     }
 
     /// Add the given property to the set
@@ -1734,32 +1203,5 @@ impl LonghandIdSet {
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.storage.iter().all(|c| *c == 0)
-    }
-}
-
-/// An iterator over a set of longhand ids.
-pub struct LonghandIdSetIterator<'a> {
-    longhands: &'a LonghandIdSet,
-    cur: usize,
-}
-
-impl<'a> Iterator for LonghandIdSetIterator<'a> {
-    type Item = LonghandId;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        use std::mem;
-
-        loop {
-            if self.cur >= 179 {
-                return None;
-            }
-
-            let id: LonghandId = unsafe { mem::transmute(self.cur as u16) };
-            self.cur += 1;
-
-            if self.longhands.contains(id) {
-                return Some(id);
-            }
-        }
     }
 }

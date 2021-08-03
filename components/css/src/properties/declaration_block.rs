@@ -7,7 +7,7 @@ use cssparser::{
 use selectors::SelectorList;
 use smallbitvec::SmallBitVec;
 
-use crate::declaration::{DeclarationProperty, Importance};
+use crate::properties::declaration::{Importance, PropertyDeclaration};
 use crate::properties::longhand_id::LonghandIdSet;
 use crate::properties::property_id::PropertyId;
 use crate::selectors::select_impl::SelectorImpl;
@@ -15,16 +15,16 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
-pub struct DeclarationBlock {
-    declarations: Vec<DeclarationProperty>,
+pub struct PropertyDeclarationBlock {
+    declarations: Vec<PropertyDeclaration>,
     declarations_importance: SmallBitVec,
     longhands: LonghandIdSet,
 }
 
-impl DeclarationBlock {
+impl PropertyDeclarationBlock {
     #[inline]
     pub fn new() -> Self {
-        DeclarationBlock {
+        PropertyDeclarationBlock {
             declarations: Vec::new(),
             declarations_importance: SmallBitVec::new(),
             longhands: LonghandIdSet::new(),
@@ -35,7 +35,7 @@ impl DeclarationBlock {
     /// block. It returns true when the declaration is a non-custom longhand
     /// and it doesn't exist in the block, and returns false otherwise.
     #[inline]
-    fn is_definitely_new(&self, decl: &DeclarationProperty) -> bool {
+    fn is_definitely_new(&self, decl: &PropertyDeclaration) -> bool {
         decl.id()
             .as_longhand()
             .map_or(false, |id| !self.longhands.contains(id))
@@ -46,7 +46,7 @@ impl DeclarationBlock {
     /// Returns whether the declaration has changed.
     ///
     /// This is only used for parsing and internal use.
-    pub fn push(&mut self, declaration: DeclarationProperty, importance: Importance) -> bool {
+    pub fn push(&mut self, declaration: PropertyDeclaration, importance: Importance) -> bool {
         if !self.is_definitely_new(&declaration) {
             let mut index_to_remove = None;
             for (i, slot) in self.declarations.iter_mut().enumerate() {
@@ -89,7 +89,7 @@ impl DeclarationBlock {
     /// property is already there.
     pub fn extend(
         &mut self,
-        mut drain: Drain<DeclarationProperty>,
+        mut drain: Drain<PropertyDeclaration>,
         importance: Importance,
     ) -> bool {
         let push_calls_count = drain.len();
@@ -150,7 +150,7 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
             self.last_parsed_property_id = Some(id.clone());
         }
         input.parse_until_before(Delimiter::Bang, |input| {
-            DeclarationProperty::parse_into(self.declarations, id, self.context, input)
+            PropertyDeclaration::parse_into(self.declarations, id, self.context, input)
         })?;
         let importance = match input.try_parse(parse_important) {
             Ok(()) => Importance::Important,
@@ -168,9 +168,9 @@ pub fn parse_property_declaration_list(
     context: &ParserContext,
     input: &mut Parser,
     selectors: Option<&SelectorList<SelectorImpl>>,
-) -> DeclarationBlock {
+) -> PropertyDeclarationBlock {
     let mut declarations = SourcePropertyDeclaration::new();
-    let mut block = DeclarationBlock::new();
+    let mut block = PropertyDeclarationBlock::new();
     let parser = PropertyDeclarationParser {
         context,
         last_parsed_property_id: None,
@@ -206,7 +206,7 @@ pub fn parse_property_declaration_list(
 }
 
 pub struct SourcePropertyDeclaration {
-    declarations: Vec<DeclarationProperty>,
+    declarations: Vec<PropertyDeclaration>,
 }
 
 impl SourcePropertyDeclaration {
@@ -219,7 +219,7 @@ impl SourcePropertyDeclaration {
     }
 
     /// Similar to Vec::drain: leaves this empty when the return value is dropped.
-    pub fn drain(&mut self) -> Drain<DeclarationProperty> {
+    pub fn drain(&mut self) -> Drain<PropertyDeclaration> {
         self.declarations.drain(..)
     }
 
@@ -232,7 +232,7 @@ impl SourcePropertyDeclaration {
         self.declarations.is_empty()
     }
 
-    pub fn push(&mut self, declaration: DeclarationProperty) {
+    pub fn push(&mut self, declaration: PropertyDeclaration) {
         self.declarations.push(declaration);
     }
 }

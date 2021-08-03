@@ -1,10 +1,8 @@
-use cssparser::{Delimiter, ParseError, Parser, ParserInput, SourceLocation};
+use cssparser::{Parser, SourceLocation};
 
-use crate::declaration_block::DeclarationBlock;
-use crate::stylesheets::css_rule::CssRuleType;
+use crate::parser::ParseError;
 
 use super::css_rule::CssRule;
-use super::rule_parser::StyleParseErrorKind;
 use super::stylesheet::{Namespaces, ParserContext};
 
 /// An [`@supports`][supports] rule.
@@ -47,9 +45,7 @@ impl SupportsCondition {
     /// Parse a condition
     ///
     /// <https://drafts.csswg.org/css-conditional/#supports_condition>
-    pub fn parse<'i, 't>(
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>> {
+    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
         todo!()
     }
 
@@ -72,17 +68,13 @@ impl SupportsCondition {
 pub struct Declaration(pub String);
 
 /// <https://drafts.csswg.org/css-syntax-3/#typedef-any-value>
-fn consume_any_value<'i, 't>(
-    input: &mut Parser<'i, 't>,
-) -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>> {
+fn consume_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(), ParseError<'i>> {
     input.expect_no_error_token().map_err(|err| err.into())
 }
 
 impl Declaration {
     /// Parse a declaration
-    pub fn parse<'i, 't>(
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Declaration, ParseError<'i, StyleParseErrorKind<'i>>> {
+    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Declaration, ParseError<'i>> {
         let pos = input.position();
         input.expect_ident()?;
         input.expect_colon()?;

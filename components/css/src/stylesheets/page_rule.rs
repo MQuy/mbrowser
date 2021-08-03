@@ -1,6 +1,6 @@
 use cssparser::SourceLocation;
 
-use crate::declaration_block::DeclarationBlock;
+use crate::properties::declaration_block::PropertyDeclarationBlock;
 
 /// A [`@page`][page] rule.
 ///
@@ -14,7 +14,7 @@ use crate::declaration_block::DeclarationBlock;
 #[derive(Clone)]
 pub struct PageRule {
     /// The declaration block this page rule contains.
-    pub block: DeclarationBlock,
+    pub block: PropertyDeclarationBlock,
     /// The source position this rule was found at.
     pub source_location: SourceLocation,
 }

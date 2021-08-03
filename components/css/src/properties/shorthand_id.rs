@@ -1,14 +1,12 @@
 use core::fmt;
 use std::fmt::Write;
 
-use crate::css_writer::CssWriter;
-use crate::declaration::PropertyFlags;
-use crate::declaration_block::{DeclarationBlock, SourcePropertyDeclaration};
+use crate::css_writer::{CssWriter, ToCss};
+use crate::parser::ParseError;
+use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use cssparser::{ParseError, Parser, ToCss};
-
-use crate::declaration::Declaration;
+use cssparser::Parser;
 
 use super::longhand_id::LonghandId;
 use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
@@ -125,22 +123,6 @@ impl ShorthandId {
     #[inline]
     pub fn name(&self) -> &'static str {
         NonCustomPropertyId::from(*self).name()
-    }
-
-    /// Converts from a ShorthandId to an adequate nsCSSPropertyID.
-    #[cfg(feature = "gecko")]
-    #[inline]
-    pub fn to_nscsspropertyid(self) -> nsCSSPropertyID {
-        NonCustomPropertyId::from(self).to_nscsspropertyid()
-    }
-
-    /// Converts from a nsCSSPropertyID to a ShorthandId.
-    #[cfg(feature = "gecko")]
-    #[inline]
-    pub fn from_nscsspropertyid(prop: nsCSSPropertyID) -> Result<Self, ()> {
-        PropertyId::from_nscsspropertyid(prop)?
-            .as_shorthand()
-            .map_err(|_| ())
     }
 
     /// Get the longhand ids that form this shorthand.
@@ -544,7 +526,6 @@ impl ShorthandId {
             LonghandId::TextDecorationLine,
         ];
         NonCustomPropertyIterator {
-            filter: NonCustomPropertyId::from(*self).enabled_for_all_content(),
             iter: match *self {
                 ShorthandId::Background => BACKGROUND,
                 ShorthandId::BackgroundPosition => BACKGROUND_POSITION,
@@ -596,443 +577,23 @@ impl ShorthandId {
         }
     }
 
-    /// Try to serialize the given declarations as this shorthand.
-    ///
-    /// Returns an error if writing to the stream fails, or if the declarations
-    /// do not map to a shorthand.
-    pub fn longhands_to_css<'a, W, I>(
-        &self,
-        declarations: I,
-        dest: &mut CssWriter<W>,
-    ) -> fmt::Result
-    where
-        W: Write,
-        I: Iterator<Item = &'a Declaration>,
-    {
-        match *self {
-            ShorthandId::All => {
-                // No need to try to serialize the declarations as the 'all'
-                // shorthand, since it only accepts CSS-wide keywords (and
-                // variable references), which will be handled in
-                // get_shorthand_appendable_value.
-                Err(fmt::Error)
-            },
-            ShorthandId::Background => {
-                match shorthands::background::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BackgroundPosition => {
-                match shorthands::background_position::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderColor => {
-                match shorthands::border_color::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderStyle => {
-                match shorthands::border_style::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderWidth => {
-                match shorthands::border_width::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderTop => {
-                match shorthands::border_top::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderRight => {
-                match shorthands::border_right::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBottom => {
-                match shorthands::border_bottom::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderLeft => {
-                match shorthands::border_left::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlockStart => {
-                match shorthands::border_block_start::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlockEnd => {
-                match shorthands::border_block_end::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInlineStart => {
-                match shorthands::border_inline_start::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInlineEnd => {
-                match shorthands::border_inline_end::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Border => {
-                match shorthands::border::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderRadius => {
-                match shorthands::border_radius::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderImage => {
-                match shorthands::border_image::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlockWidth => {
-                match shorthands::border_block_width::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlockStyle => {
-                match shorthands::border_block_style::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlockColor => {
-                match shorthands::border_block_color::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInlineWidth => {
-                match shorthands::border_inline_width::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInlineStyle => {
-                match shorthands::border_inline_style::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInlineColor => {
-                match shorthands::border_inline_color::LonghandsToSerialize::from_iter(declarations)
-                {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderBlock => {
-                match shorthands::border_block::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::BorderInline => {
-                match shorthands::border_inline::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Overflow => {
-                match shorthands::overflow::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Transition => {
-                match shorthands::transition::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Animation => {
-                match shorthands::animation::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Columns => {
-                match shorthands::columns::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Font => {
-                match shorthands::font::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::FontVariant => {
-                match shorthands::font_variant::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::ListStyle => {
-                match shorthands::list_style::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Margin => {
-                match shorthands::margin::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::MarginBlock => {
-                match shorthands::margin_block::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::MarginInline => {
-                match shorthands::margin_inline::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Outline => {
-                match shorthands::outline::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Padding => {
-                match shorthands::padding::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::PaddingBlock => {
-                match shorthands::padding_block::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::PaddingInline => {
-                match shorthands::padding_inline::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::FlexFlow => {
-                match shorthands::flex_flow::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Flex => {
-                match shorthands::flex::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::Inset => {
-                match shorthands::inset::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::InsetBlock => {
-                match shorthands::inset_block::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::InsetInline => {
-                match shorthands::inset_inline::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-            ShorthandId::TextDecoration => {
-                match shorthands::text_decoration::LonghandsToSerialize::from_iter(declarations) {
-                    Ok(longhands) => longhands.to_css(dest),
-                    Err(_) => Err(fmt::Error),
-                }
-            },
-        }
-    }
-
-    /// Finds and returns an appendable value for the given declarations.
-    ///
-    /// Returns the optional appendable value.
-    pub fn get_shorthand_appendable_value<'a, I>(
-        self,
-        declarations: I,
-    ) -> Option<AppendableValue<'a, I::IntoIter>>
-    where
-        I: IntoIterator<Item = &'a Declaration>,
-        I::IntoIter: Clone,
-    {
-        let declarations = declarations.into_iter();
-
-        // Only cloning iterators (a few pointers each) not declarations.
-        let mut declarations2 = declarations.clone();
-        let mut declarations3 = declarations.clone();
-
-        let first_declaration = declarations2.next()?;
-
-        // https://drafts.csswg.org/css-variables/#variables-in-shorthands
-        if let Some(css) = first_declaration.with_variables_from_shorthand(self) {
-            if declarations2.all(|d| d.with_variables_from_shorthand(self) == Some(css)) {
-                return Some(AppendableValue::Css {
-                    css,
-                    with_variables: true,
-                });
-            }
-            return None;
-        }
-
-        // Check whether they are all the same CSS-wide keyword.
-        if let Some(keyword) = first_declaration.get_css_wide_keyword() {
-            if declarations2.all(|d| d.get_css_wide_keyword() == Some(keyword)) {
-                return Some(AppendableValue::Css {
-                    css: keyword.to_str(),
-                    with_variables: false,
-                });
-            }
-            return None;
-        }
-
-        // Check whether all declarations can be serialized as part of shorthand.
-        if declarations3.all(|d| d.may_serialize_as_part_of_shorthand()) {
-            return Some(AppendableValue::DeclarationsForShorthand(
-                self,
-                declarations,
-            ));
-        }
-
-        None
-    }
-
-    /// Returns PropertyFlags for the given shorthand property.
-    #[inline]
-    pub fn flags(self) -> PropertyFlags {
-        const FLAGS: [u16; 45] = [
-            0,
-            PropertyFlags::SHORTHAND_IN_GETCS.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::SHORTHAND_IN_GETCS.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::SHORTHAND_IN_GETCS.bits | 0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            PropertyFlags::SHORTHAND_IN_GETCS.bits | 0,
-            0,
-        ];
-        PropertyFlags::from_bits_truncate(FLAGS[self as usize])
-    }
-
-    /// Returns whether this property is a legacy shorthand.
-    #[inline]
-    pub fn is_legacy_shorthand(self) -> bool {
-        self.flags().contains(PropertyFlags::IS_LEGACY_SHORTHAND)
-    }
-
-    /// Returns the order in which this property appears relative to other
-    /// shorthands in idl-name-sorting order.
-    #[inline]
-    pub fn idl_name_sort_order(self) -> u32 {
-        static IDL_NAME_SORT_ORDER: [u32; 45] = [
-            2, 3, 12, 23, 25, 24, 22, 11, 20, 8, 7, 17, 16, 4, 21, 13, 10, 9, 6, 19, 18, 15, 5, 14,
-            39, 44, 1, 26, 29, 30, 34, 35, 36, 37, 38, 40, 41, 42, 28, 27, 31, 32, 33, 43, 0,
-        ];
-        IDL_NAME_SORT_ORDER[self as usize]
-    }
-
     pub fn parse_into<'i, 't>(
         &self,
         declarations: &mut SourcePropertyDeclaration,
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>> {
+    ) -> Result<(), ParseError<'i>> {
         type ParseIntoFn = for<'i, 't> fn(
-            declarations: &mut DeclarationBlock,
+            declarations: &mut SourcePropertyDeclaration,
             context: &ParserContext,
             input: &mut Parser<'i, 't>,
-        )
-            -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>>;
+        ) -> Result<(), ParseError<'i>>;
 
         fn unreachable<'i, 't>(
-            _: &mut DeclarationBlock,
+            _: &mut SourcePropertyDeclaration,
             _: &ParserContext,
             _: &mut Parser<'i, 't>,
-        ) -> Result<(), ParseError<'i, StyleParseErrorKind<'i>>> {
+        ) -> Result<(), ParseError<'i>> {
             unreachable!()
         }
 

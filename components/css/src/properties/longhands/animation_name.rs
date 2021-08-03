@@ -1,7 +1,6 @@
-use cssparser::{ParseError, Parser, Token};
+use cssparser::{Parser, Token};
 
-use crate::parser::Parse;
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::parser::{Parse, ParseError};
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
 
@@ -21,7 +20,7 @@ impl Parse for KeyframesName {
     fn parse<'i, 't>(
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>> {
+    ) -> Result<Self, ParseError<'i>> {
         let location = input.current_source_location();
         match *input.next()? {
             Token::Ident(ref s) => Ok(KeyframesName::Ident(CustomIdent::from_ident(

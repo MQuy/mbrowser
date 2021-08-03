@@ -1,12 +1,10 @@
 use core::fmt;
-use std::borrow::Borrow;
 use std::fmt::Write;
 
-use cssparser::{match_ignore_ascii_case, CowRcStr, ParseError, SourceLocation};
-use html5ever::LocalNameStaticSet;
+use cssparser::{match_ignore_ascii_case, CowRcStr, SourceLocation};
 use selectors::parser::SelectorParseErrorKind;
-use string_cache::Atom;
 
+use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use cssparser::_cssparser_internal_to_lowercase;
 
@@ -35,7 +33,7 @@ impl CustomIdent {
         location: SourceLocation,
         ident: &CowRcStr<'i>,
         excluding: &[&str],
-    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>> {
+    ) -> Result<Self, ParseError<'i>> {
         let valid = match_ignore_ascii_case! { ident,
             "initial" | "inherit" | "unset" | "default" | "revert" => false,
             _ => true
@@ -65,5 +63,11 @@ impl cssparser::ToCss for CustomIdent {
 impl From<&str> for CustomIdent {
     fn from(value: &str) -> Self {
         Self(value.to_string())
+    }
+}
+
+impl ToString for CustomIdent {
+    fn to_string(&self) -> String {
+        self.0
     }
 }

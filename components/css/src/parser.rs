@@ -1,7 +1,9 @@
-use cssparser::{ParseError, Parser};
+use cssparser::Parser;
 
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+
+pub type ParseError<'i> = cssparser::ParseError<'i, StyleParseErrorKind<'i>>;
 
 /// A trait to abstract parsing of a specified value given a `ParserContext` and
 /// CSS input.
@@ -23,5 +25,5 @@ pub trait Parse: Sized {
     fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i, StyleParseErrorKind<'i>>>;
+    ) -> Result<Self, ParseError<'i>>;
 }

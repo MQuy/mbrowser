@@ -7,9 +7,9 @@ use html5ever::{Namespace, Prefix};
 use selectors::parser::SelectorParseErrorKind;
 use selectors::SelectorList;
 
-use crate::declaration_block::parse_property_declaration_list;
 use crate::media_queries::media_list::MediaList;
 use crate::parser::Parse;
+use crate::properties::declaration_block::parse_property_declaration_list;
 use crate::properties::longhands::animation_name::KeyframesName;
 use crate::selectors::select_impl::SelectorImpl;
 use crate::selectors::selector_parser::SelectorParser;

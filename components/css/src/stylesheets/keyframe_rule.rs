@@ -1,6 +1,7 @@
 use cssparser::{Parser, SourceLocation};
 
-use crate::declaration_block::DeclarationBlock;
+use crate::properties::declaration_block::PropertyDeclarationBlock;
+use crate::properties::longhands::animation_name::KeyframesName;
 
 use super::rule_parser::VendorPrefix;
 use super::stylesheet::ParserContext;
@@ -28,7 +29,7 @@ pub struct Keyframe {
     /// The declaration block that was declared inside this keyframe.
     ///
     /// Note that `!important` rules in keyframes don't apply, but we keep this
-    pub block: DeclarationBlock,
+    pub block: PropertyDeclarationBlock,
 
     /// The line and column of the rule's source code.
     pub source_location: SourceLocation,
@@ -36,7 +37,7 @@ pub struct Keyframe {
 
 struct KeyframeListParser<'a> {
     context: &'a ParserContext<'a>,
-    declarations: &'a mut DeclarationBlock,
+    declarations: &'a mut PropertyDeclarationBlock,
 }
 
 /// Parses a keyframe list from CSS input.
