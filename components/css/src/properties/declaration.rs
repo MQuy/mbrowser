@@ -14,17 +14,19 @@ pub enum PropertyDeclaration {
     /// `align-content`
     AlignContent(properties::longhands::align_content::AlignContent),
     /// `align-items`
-    AlignItems(properties::longhands::align_items::SpecifiedValue),
+    AlignItems(properties::longhands::align_items::AlignItems),
     /// `align-self`
-    AlignSelf(properties::longhands::align_self::SpecifiedValue),
+    AlignSelf(properties::longhands::align_self::AlignSelf),
+    /// `aspect-ratio`
+    AspectRatio(properties::longhands::aspect_ratio::AspectRatio),
     /// `backface-visibility`
-    BackfaceVisibility(properties::longhands::backface_visibility::SpecifiedValue),
+    BackfaceVisibility(properties::longhands::backface_visibility::BackfaceVisibility),
     /// `border-collapse`
-    BorderCollapse(properties::longhands::border_collapse::SpecifiedValue),
+    BorderCollapse(properties::longhands::border_collapse::BorderCollapse),
     /// `border-image-repeat`
     BorderImageRepeat(properties::longhands::border_image_repeat::BorderImageRepeat),
     /// `box-sizing`
-    BoxSizing(properties::longhands::box_sizing::SpecifiedValue),
+    BoxSizing(properties::longhands::box_sizing::BoxSizing),
     /// `caption-side`
     CaptionSide(properties::longhands::caption_side::CaptionSide),
     /// `clear`
@@ -32,15 +34,15 @@ pub enum PropertyDeclaration {
     /// `column-count`
     ColumnCount(properties::longhands::column_count::ColumnCount),
     /// `direction`
-    Direction(properties::longhands::direction::SpecifiedValue),
+    Direction(properties::longhands::direction::Direction),
     /// `display`
     Display(properties::longhands::display::Display),
     /// `empty-cells`
-    EmptyCells(properties::longhands::empty_cells::SpecifiedValue),
+    EmptyCells(properties::longhands::empty_cells::EmptyCells),
     /// `flex-direction`
-    FlexDirection(properties::longhands::flex_direction::SpecifiedValue),
+    FlexDirection(properties::longhands::flex_direction::FlexDirection),
     /// `flex-wrap`
-    FlexWrap(properties::longhands::flex_wrap::SpecifiedValue),
+    FlexWrap(properties::longhands::flex_wrap::FlexWrap),
     /// `float`
     Float(properties::longhands::float::Float),
     /// `font-stretch`
@@ -52,15 +54,15 @@ pub enum PropertyDeclaration {
     /// `font-weight`
     FontWeight(properties::longhands::font_weight::FontWeight),
     /// `image-rendering`
-    ImageRendering(properties::longhands::image_rendering::SpecifiedValue),
+    ImageRendering(properties::longhands::image_rendering::ImageRendering),
     /// `justify-content`
-    JustifyContent(properties::longhands::justify_content::SpecifiedValue),
+    JustifyContent(properties::longhands::justify_content::JustifyContent),
     /// `list-style-position`
-    ListStylePosition(properties::longhands::list_style_position::SpecifiedValue),
+    ListStylePosition(properties::longhands::list_style_position::ListStylePosition),
     /// `list-style-type`
-    ListStyleType(properties::longhands::list_style_type::SpecifiedValue),
+    ListStyleType(properties::longhands::list_style_type::ListStyleType),
     /// `mix-blend-mode`
-    MixBlendMode(properties::longhands::mix_blend_mode::SpecifiedValue),
+    MixBlendMode(properties::longhands::mix_blend_mode::MixBlendMode),
     /// `opacity`
     Opacity(properties::longhands::opacity::Opacity),
     /// `order`
@@ -70,33 +72,33 @@ pub enum PropertyDeclaration {
     /// `overflow-wrap`
     OverflowWrap(properties::longhands::overflow_wrap::OverflowWrap),
     /// `pointer-events`
-    PointerEvents(properties::longhands::pointer_events::SpecifiedValue),
+    PointerEvents(properties::longhands::pointer_events::PointerEvents),
     /// `position`
-    Position(properties::longhands::position::SpecifiedValue),
+    Position(properties::longhands::position::Position),
     /// `table-layout`
-    TableLayout(properties::longhands::table_layout::SpecifiedValue),
+    TableLayout(properties::longhands::table_layout::TableLayout),
     /// `text-align`
     TextAlign(properties::longhands::text_align::TextAlign),
     /// `text-decoration-line`
     TextDecorationLine(properties::longhands::text_decoration_line::TextDecorationLine),
     /// `text-justify`
-    TextJustify(properties::longhands::text_justify::SpecifiedValue),
+    TextJustify(properties::longhands::text_justify::TextJustify),
     /// `text-rendering`
-    TextRendering(properties::longhands::text_rendering::SpecifiedValue),
+    TextRendering(properties::longhands::text_rendering::TextRendering),
     /// `text-transform`
     TextTransform(properties::longhands::text_transform::TextTransform),
     /// `transform-style`
     TransformStyle(properties::longhands::transform_style::TransformStyle),
     /// `unicode-bidi`
-    UnicodeBidi(properties::longhands::unicode_bidi::SpecifiedValue),
+    UnicodeBidi(properties::longhands::unicode_bidi::UnicodeBidi),
     /// `visibility`
-    Visibility(properties::longhands::visibility::SpecifiedValue),
+    Visibility(properties::longhands::visibility::Visibility),
     /// `white-space`
-    WhiteSpace(properties::longhands::white_space::SpecifiedValue),
+    WhiteSpace(properties::longhands::white_space::WhiteSpace),
     /// `word-break`
     WordBreak(properties::longhands::word_break::WordBreak),
     /// `writing-mode`
-    WritingMode(properties::longhands::writing_mode::SpecifiedValue),
+    WritingMode(properties::longhands::writing_mode::WritingMode),
     /// `z-index`
     ZIndex(properties::longhands::z_index::ZIndex),
     /// `flex-grow`
@@ -161,6 +163,8 @@ pub enum PropertyDeclaration {
     BackgroundRepeat(properties::longhands::background_repeat::BackgroundRepeat),
     /// `background-size`
     BackgroundSize(properties::longhands::background_size::BackgroundSize),
+    /// `border-spacing`
+    BorderSpacing(properties::longhands::border_spacing::BorderSpacing),
     /// `box-shadow`
     BoxShadow(properties::longhands::box_shadow::BoxShadow),
     /// `clip`

@@ -1,20 +1,17 @@
-use super::nonts_pseudo_class::NonTSPseudoClassFlag;
 use cssparser::{
-    BasicParseError, BasicParseErrorKind, CowRcStr, ParseError, Parser, SourceLocation, Token,
-    _cssparser_internal_to_lowercase, match_ignore_ascii_case,
+    CowRcStr, ParseError, Parser, SourceLocation, _cssparser_internal_to_lowercase,
+    match_ignore_ascii_case,
 };
 use html5ever::Namespace;
 use selectors::parser::SelectorParseErrorKind;
 
-use crate::str::starts_with_ignore_ascii_case;
+use super::nonts_pseudo_class::{NonTSPseudoClass, NonTSPseudoClassFlag};
+use super::pseudo_element::PseudoElement;
+use super::select_impl::SelectorImpl;
 use crate::stylesheets::origin::Origin;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::Namespaces;
 use crate::values::CustomIdent;
-
-use super::nonts_pseudo_class::NonTSPseudoClass;
-use super::pseudo_element::PseudoElement;
-use super::select_impl::SelectorImpl;
 
 pub struct SelectorParser<'a> {
     /// The origin of the stylesheet we're parsing.
@@ -57,8 +54,8 @@ impl<'a> SelectorParser<'a> {
 }
 
 impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
-    type Impl = SelectorImpl;
     type Error = StyleParseErrorKind<'i>;
+    type Impl = SelectorImpl;
 
     #[inline]
     fn parse_slotted(&self) -> bool {

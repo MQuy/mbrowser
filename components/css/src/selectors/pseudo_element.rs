@@ -1,4 +1,4 @@
-use std::{fmt, mem};
+use std::fmt;
 
 use cssparser::ToCss;
 

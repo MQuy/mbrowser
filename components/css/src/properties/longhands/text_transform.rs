@@ -1,3 +1,9 @@
+use cssparser::Parser;
+
+use crate::parser::ParseError;
+use crate::properties::declaration::PropertyDeclaration;
+use crate::stylesheets::stylesheet::ParserContext;
+
 #[derive(Clone)]
 #[repr(C)]
 pub enum TextTransformCase {
@@ -28,4 +34,18 @@ pub struct TextTransformValue {
 pub enum TextTransform {
     None,
     Transform(TextTransformValue),
+}
+
+pub fn parse<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<TextTransform, ParseError<'i>> {
+    panic!()
+}
+
+pub fn parse_declared<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<PropertyDeclaration, ParseError<'i>> {
+    parse(context, input).map(PropertyDeclaration::TextTransform)
 }

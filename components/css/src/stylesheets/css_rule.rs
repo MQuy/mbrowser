@@ -1,4 +1,4 @@
-use cssparser::{parse_one_rule, Parser, ParserInput, QualifiedRuleParser};
+use cssparser::{parse_one_rule, Parser, ParserInput};
 
 use super::keyframe_rule::KeyframesRule;
 use super::media_rule::MediaRule;

@@ -1,6 +1,7 @@
 use cssparser::{Parser, Token};
 
 use crate::parser::{Parse, ParseError};
+use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
 
@@ -32,4 +33,18 @@ impl Parse for KeyframesName {
             ref t => Err(location.new_unexpected_token_error(t.clone())),
         }
     }
+}
+
+pub fn parse<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<AnimationName, ParseError<'i>> {
+    panic!()
+}
+
+pub fn parse_declared<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<PropertyDeclaration, ParseError<'i>> {
+    parse(context, input).map(PropertyDeclaration::AnimationName)
 }

@@ -1,6 +1,26 @@
+use cssparser::Parser;
+
+use crate::parser::ParseError;
+use crate::properties::declaration::PropertyDeclaration;
+use crate::stylesheets::stylesheet::ParserContext;
+
 #[derive(Clone)]
-pub enum SpecifiedValue {
+pub enum Visibility {
     Visible,
     Hidden,
     Collapse,
+}
+
+pub fn parse<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<Visibility, ParseError<'i>> {
+    panic!()
+}
+
+pub fn parse_declared<'i, 't>(
+    context: &ParserContext,
+    input: &mut Parser<'i, 't>,
+) -> Result<PropertyDeclaration, ParseError<'i>> {
+    parse(context, input).map(PropertyDeclaration::Visibility)
 }

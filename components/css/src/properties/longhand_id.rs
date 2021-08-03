@@ -1,16 +1,15 @@
 use core::fmt;
 use std::fmt::Write;
 
+use cssparser::Parser;
+
+use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
 use crate::css_writer::{CssWriter, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
-use cssparser::Parser;
-
 use crate::properties::longhands;
 use crate::properties::shorthand_id::ShorthandId;
 use crate::stylesheets::stylesheet::ParserContext;
-
-use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
 
 /// An identifier for a given longhand property.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
@@ -973,7 +972,7 @@ impl LonghandId {
             input: &mut Parser<'i, 't>,
         )
             -> Result<PropertyDeclaration, ParseError<'i>>;
-        static PARSE_PROPERTY: [ParsePropertyFn; 179] = [
+        static PARSE_PROPERTY: [ParsePropertyFn; 172] = [
             longhands::align_content::parse_declared,
             longhands::align_items::parse_declared,
             longhands::align_self::parse_declared,
@@ -1006,6 +1005,8 @@ impl LonghandId {
             longhands::overflow_wrap::parse_declared,
             longhands::pointer_events::parse_declared,
             longhands::position::parse_declared,
+            // longhands::_servo_overflow_clip_box::parse_declared,
+            // longhands::_servo_top_layer::parse_declared,
             longhands::table_layout::parse_declared,
             longhands::text_align::parse_declared,
             longhands::text_decoration_line::parse_declared,
@@ -1049,9 +1050,9 @@ impl LonghandId {
             longhands::background_position_y::parse_declared,
             longhands::background_repeat::parse_declared,
             longhands::background_size::parse_declared,
-            longhands::border_image_outset::parse_declared,
-            longhands::border_image_slice::parse_declared,
-            longhands::border_image_width::parse_declared,
+            // longhands::border_image_outset::parse_declared,
+            // longhands::border_image_slice::parse_declared,
+            // longhands::border_image_width::parse_declared,
             longhands::border_spacing::parse_declared,
             longhands::box_shadow::parse_declared,
             longhands::clip::parse_declared,
@@ -1059,8 +1060,8 @@ impl LonghandId {
             longhands::column_gap::parse_declared,
             longhands::column_width::parse_declared,
             longhands::content::parse_declared,
-            longhands::counter_increment::parse_declared,
-            longhands::counter_reset::parse_declared,
+            // longhands::counter_increment::parse_declared,
+            // longhands::counter_reset::parse_declared,
             longhands::cursor::parse_declared,
             longhands::filter::parse_declared,
             longhands::flex_basis::parse_declared,
