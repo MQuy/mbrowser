@@ -163,6 +163,12 @@ pub enum PropertyDeclaration {
     BackgroundRepeat(properties::longhands::background_repeat::BackgroundRepeat),
     /// `background-size`
     BackgroundSize(properties::longhands::background_size::BackgroundSize),
+    /// `border-image-outset`
+    BorderImageOutset(properties::longhands::border_image_outset::BorderImageOutset),
+    /// `border-image-slice`
+    BorderImageSlice(properties::longhands::border_image_slice::BorderImageSlice),
+    /// `border-image-width`
+    BorderImageWidth(properties::longhands::border_image_width::BorderImageWidth),
     /// `border-spacing`
     BorderSpacing(properties::longhands::border_spacing::BorderSpacing),
     /// `box-shadow`
@@ -177,6 +183,10 @@ pub enum PropertyDeclaration {
     ColumnWidth(values::length::NonNegativeLengthOrAuto),
     /// `content`
     Content(properties::longhands::content::Content),
+    /// `counter-increment`
+    CounterIncrement(properties::longhands::counter_increment::CounterIncrement),
+    /// `counter-reset`
+    CounterReset(properties::longhands::counter_reset::CounterSetOrReset),
     /// `cursor`
     Cursor(properties::longhands::cursor::Cursor),
     /// `filter`

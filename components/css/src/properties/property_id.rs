@@ -2,16 +2,17 @@ use core::fmt;
 use std::fmt::Write;
 
 use common::not_reached;
-use cssparser::{ascii_case_insensitive_phf_map, match_ignore_ascii_case, Parser};
+use cssparser::{
+    ascii_case_insensitive_phf_map, match_ignore_ascii_case, Parser,
+    _cssparser_internal_to_lowercase,
+};
 
+use super::longhand_id::LonghandId;
+use super::shorthand_id::ShorthandId;
 use crate::css_writer::{CssWriter, ToCss};
 use crate::properties::custom_properties;
 use crate::stylesheets::css_rule::CssRuleType;
 use crate::stylesheets::stylesheet::ParserContext;
-use cssparser::_cssparser_internal_to_lowercase;
-
-use super::longhand_id::LonghandId;
-use super::shorthand_id::ShorthandId;
 
 /// Servo's representation of a CSS property, that is, either a longhand, a
 /// shorthand, or a custom property.
@@ -67,8 +68,6 @@ impl PropertyId {
                 "overflow-wrap" => StaticId::Longhand(LonghandId::OverflowWrap),
                 "pointer-events" => StaticId::Longhand(LonghandId::PointerEvents),
                 "position" => StaticId::Longhand(LonghandId::Position),
-                "-servo-overflow-clip-box" => StaticId::Longhand(LonghandId::ServoOverflowClipBox),
-                "-servo-top-layer" => StaticId::Longhand(LonghandId::ServoTopLayer),
                 "table-layout" => StaticId::Longhand(LonghandId::TableLayout),
                 "text-align" => StaticId::Longhand(LonghandId::TextAlign),
                 "text-decoration-line" => StaticId::Longhand(LonghandId::TextDecorationLine),
@@ -343,7 +342,7 @@ impl ToCss for PropertyId {
 pub struct NonCustomPropertyId(usize);
 
 /// The length of all the non-custom properties.
-pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 225;
+pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 223;
 
 impl NonCustomPropertyId {
     /// Returns the underlying index, used for use counter.
@@ -387,8 +386,6 @@ impl NonCustomPropertyId {
             "overflow-wrap",
             "pointer-events",
             "position",
-            "-servo-overflow-clip-box",
-            "-servo-top-layer",
             "table-layout",
             "text-align",
             "text-decoration-line",
@@ -598,12 +595,12 @@ impl NonCustomPropertyId {
         static MAP: [u8; NON_CUSTOM_PROPERTY_ID_COUNT] = [
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            5, 5, 5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7,
-            7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            5, 5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7,
+            7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
         ];
         match rule_type {
             CssRuleType::Style => MAP[self.0] & 1 != 0,

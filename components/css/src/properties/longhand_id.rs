@@ -79,300 +79,296 @@ pub enum LonghandId {
     PointerEvents = 30,
     /// position
     Position = 31,
-    /// -servo-overflow-clip-box
-    ServoOverflowClipBox = 32,
-    /// -servo-top-layer
-    ServoTopLayer = 33,
     /// table-layout
-    TableLayout = 34,
+    TableLayout = 32,
     /// text-align
-    TextAlign = 35,
+    TextAlign = 33,
     /// text-decoration-line
-    TextDecorationLine = 36,
+    TextDecorationLine = 34,
     /// text-justify
-    TextJustify = 37,
+    TextJustify = 35,
     /// text-rendering
-    TextRendering = 38,
+    TextRendering = 36,
     /// text-transform
-    TextTransform = 39,
+    TextTransform = 37,
     /// transform-style
-    TransformStyle = 40,
+    TransformStyle = 38,
     /// unicode-bidi
-    UnicodeBidi = 41,
+    UnicodeBidi = 39,
     /// visibility
-    Visibility = 42,
+    Visibility = 40,
     /// white-space
-    WhiteSpace = 43,
+    WhiteSpace = 41,
     /// word-break
-    WordBreak = 44,
+    WordBreak = 42,
     /// writing-mode
-    WritingMode = 45,
+    WritingMode = 43,
     /// z-index
-    ZIndex = 46,
+    ZIndex = 44,
     /// flex-grow
-    FlexGrow = 47,
+    FlexGrow = 45,
     /// flex-shrink
-    FlexShrink = 48,
+    FlexShrink = 46,
     /// overflow-block
-    OverflowBlock = 49,
+    OverflowBlock = 47,
     /// overflow-inline
-    OverflowInline = 50,
+    OverflowInline = 48,
     /// overflow-x
-    OverflowX = 51,
+    OverflowX = 49,
     /// overflow-y
-    OverflowY = 52,
+    OverflowY = 50,
     /// border-block-end-style
-    BorderBlockEndStyle = 53,
+    BorderBlockEndStyle = 51,
     /// border-block-start-style
-    BorderBlockStartStyle = 54,
+    BorderBlockStartStyle = 52,
     /// border-bottom-style
-    BorderBottomStyle = 55,
+    BorderBottomStyle = 53,
     /// border-inline-end-style
-    BorderInlineEndStyle = 56,
+    BorderInlineEndStyle = 54,
     /// border-inline-start-style
-    BorderInlineStartStyle = 57,
+    BorderInlineStartStyle = 55,
     /// border-left-style
-    BorderLeftStyle = 58,
+    BorderLeftStyle = 56,
     /// border-right-style
-    BorderRightStyle = 59,
+    BorderRightStyle = 57,
     /// border-top-style
-    BorderTopStyle = 60,
+    BorderTopStyle = 58,
     /// animation-delay
-    AnimationDelay = 61,
+    AnimationDelay = 59,
     /// animation-direction
-    AnimationDirection = 62,
+    AnimationDirection = 60,
     /// animation-duration
-    AnimationDuration = 63,
+    AnimationDuration = 61,
     /// animation-fill-mode
-    AnimationFillMode = 64,
+    AnimationFillMode = 62,
     /// animation-iteration-count
-    AnimationIterationCount = 65,
+    AnimationIterationCount = 63,
     /// animation-name
-    AnimationName = 66,
+    AnimationName = 64,
     /// animation-play-state
-    AnimationPlayState = 67,
+    AnimationPlayState = 65,
     /// animation-timing-function
-    AnimationTimingFunction = 68,
+    AnimationTimingFunction = 66,
     /// background-attachment
-    BackgroundAttachment = 69,
+    BackgroundAttachment = 67,
     /// background-clip
-    BackgroundClip = 70,
+    BackgroundClip = 68,
     /// background-image
-    BackgroundImage = 71,
+    BackgroundImage = 69,
     /// background-origin
-    BackgroundOrigin = 72,
+    BackgroundOrigin = 70,
     /// background-position-x
-    BackgroundPositionX = 73,
+    BackgroundPositionX = 71,
     /// background-position-y
-    BackgroundPositionY = 74,
+    BackgroundPositionY = 72,
     /// background-repeat
-    BackgroundRepeat = 75,
+    BackgroundRepeat = 73,
     /// background-size
-    BackgroundSize = 76,
+    BackgroundSize = 74,
     /// border-image-outset
-    BorderImageOutset = 77,
+    BorderImageOutset = 75,
     /// border-image-slice
-    BorderImageSlice = 78,
+    BorderImageSlice = 76,
     /// border-image-width
-    BorderImageWidth = 79,
+    BorderImageWidth = 77,
     /// border-spacing
-    BorderSpacing = 80,
+    BorderSpacing = 78,
     /// box-shadow
-    BoxShadow = 81,
+    BoxShadow = 79,
     /// clip
-    Clip = 82,
+    Clip = 80,
     /// color
-    Color = 83,
+    Color = 81,
     /// column-gap
-    ColumnGap = 84,
+    ColumnGap = 82,
     /// column-width
-    ColumnWidth = 85,
+    ColumnWidth = 83,
     /// content
-    Content = 86,
+    Content = 84,
     /// counter-increment
-    CounterIncrement = 87,
+    CounterIncrement = 85,
     /// counter-reset
-    CounterReset = 88,
+    CounterReset = 86,
     /// cursor
-    Cursor = 89,
+    Cursor = 87,
     /// filter
-    Filter = 90,
+    Filter = 88,
     /// flex-basis
-    FlexBasis = 91,
+    FlexBasis = 89,
     /// font-family
-    FontFamily = 92,
+    FontFamily = 90,
     /// font-size
-    FontSize = 93,
+    FontSize = 91,
     /// letter-spacing
-    LetterSpacing = 94,
+    LetterSpacing = 92,
     /// line-height
-    LineHeight = 95,
+    LineHeight = 93,
     /// outline-offset
-    OutlineOffset = 96,
+    OutlineOffset = 94,
     /// perspective
-    Perspective = 97,
+    Perspective = 95,
     /// perspective-origin
-    PerspectiveOrigin = 98,
+    PerspectiveOrigin = 96,
     /// quotes
-    Quotes = 99,
+    Quotes = 97,
     /// rotate
-    Rotate = 100,
+    Rotate = 98,
     /// scale
-    Scale = 101,
+    Scale = 99,
     /// text-indent
-    TextIndent = 102,
+    TextIndent = 100,
     /// text-overflow
-    TextOverflow = 103,
+    TextOverflow = 101,
     /// text-shadow
-    TextShadow = 104,
+    TextShadow = 102,
     /// transform
-    Transform = 105,
+    Transform = 103,
     /// transform-origin
-    TransformOrigin = 106,
+    TransformOrigin = 104,
     /// transition-delay
-    TransitionDelay = 107,
+    TransitionDelay = 105,
     /// transition-duration
-    TransitionDuration = 108,
+    TransitionDuration = 106,
     /// transition-property
-    TransitionProperty = 109,
+    TransitionProperty = 107,
     /// transition-timing-function
-    TransitionTimingFunction = 110,
+    TransitionTimingFunction = 108,
     /// translate
-    Translate = 111,
+    Translate = 109,
     /// vertical-align
-    VerticalAlign = 112,
+    VerticalAlign = 110,
     /// word-spacing
-    WordSpacing = 113,
+    WordSpacing = 111,
     /// border-image-source
-    BorderImageSource = 114,
+    BorderImageSource = 112,
     /// list-style-image
-    ListStyleImage = 115,
+    ListStyleImage = 113,
     /// max-block-size
-    MaxBlockSize = 116,
+    MaxBlockSize = 114,
     /// max-height
-    MaxHeight = 117,
+    MaxHeight = 115,
     /// max-inline-size
-    MaxInlineSize = 118,
+    MaxInlineSize = 116,
     /// max-width
-    MaxWidth = 119,
+    MaxWidth = 117,
     /// border-bottom-left-radius
-    BorderBottomLeftRadius = 120,
+    BorderBottomLeftRadius = 118,
     /// border-bottom-right-radius
-    BorderBottomRightRadius = 121,
+    BorderBottomRightRadius = 119,
     /// border-end-end-radius
-    BorderEndEndRadius = 122,
+    BorderEndEndRadius = 120,
     /// border-end-start-radius
-    BorderEndStartRadius = 123,
+    BorderEndStartRadius = 121,
     /// border-start-end-radius
-    BorderStartEndRadius = 124,
+    BorderStartEndRadius = 122,
     /// border-start-start-radius
-    BorderStartStartRadius = 125,
+    BorderStartStartRadius = 123,
     /// border-top-left-radius
-    BorderTopLeftRadius = 126,
+    BorderTopLeftRadius = 124,
     /// border-top-right-radius
-    BorderTopRightRadius = 127,
+    BorderTopRightRadius = 125,
     /// padding-block-end
-    PaddingBlockEnd = 128,
+    PaddingBlockEnd = 126,
     /// padding-block-start
-    PaddingBlockStart = 129,
+    PaddingBlockStart = 127,
     /// padding-bottom
-    PaddingBottom = 130,
+    PaddingBottom = 128,
     /// padding-inline-end
-    PaddingInlineEnd = 131,
+    PaddingInlineEnd = 129,
     /// padding-inline-start
-    PaddingInlineStart = 132,
+    PaddingInlineStart = 130,
     /// padding-left
-    PaddingLeft = 133,
+    PaddingLeft = 131,
     /// padding-right
-    PaddingRight = 134,
+    PaddingRight = 132,
     /// padding-top
-    PaddingTop = 135,
+    PaddingTop = 133,
     /// block-size
-    BlockSize = 136,
+    BlockSize = 134,
     /// height
-    Height = 137,
+    Height = 135,
     /// inline-size
-    InlineSize = 138,
+    InlineSize = 136,
     /// min-block-size
-    MinBlockSize = 139,
+    MinBlockSize = 137,
     /// min-height
-    MinHeight = 140,
+    MinHeight = 138,
     /// min-inline-size
-    MinInlineSize = 141,
+    MinInlineSize = 139,
     /// min-width
-    MinWidth = 142,
+    MinWidth = 140,
     /// width
-    Width = 143,
+    Width = 141,
     /// border-block-end-width
-    BorderBlockEndWidth = 144,
+    BorderBlockEndWidth = 142,
     /// border-block-start-width
-    BorderBlockStartWidth = 145,
+    BorderBlockStartWidth = 143,
     /// border-bottom-width
-    BorderBottomWidth = 146,
+    BorderBottomWidth = 144,
     /// border-inline-end-width
-    BorderInlineEndWidth = 147,
+    BorderInlineEndWidth = 145,
     /// border-inline-start-width
-    BorderInlineStartWidth = 148,
+    BorderInlineStartWidth = 146,
     /// border-left-width
-    BorderLeftWidth = 149,
+    BorderLeftWidth = 147,
     /// border-right-width
-    BorderRightWidth = 150,
+    BorderRightWidth = 148,
     /// border-top-width
-    BorderTopWidth = 151,
+    BorderTopWidth = 149,
     /// outline-width
-    OutlineWidth = 152,
+    OutlineWidth = 150,
     /// background-color
-    BackgroundColor = 153,
+    BackgroundColor = 151,
     /// border-block-end-color
-    BorderBlockEndColor = 154,
+    BorderBlockEndColor = 152,
     /// border-block-start-color
-    BorderBlockStartColor = 155,
+    BorderBlockStartColor = 153,
     /// border-bottom-color
-    BorderBottomColor = 156,
+    BorderBottomColor = 154,
     /// border-inline-end-color
-    BorderInlineEndColor = 157,
+    BorderInlineEndColor = 155,
     /// border-inline-start-color
-    BorderInlineStartColor = 158,
+    BorderInlineStartColor = 156,
     /// border-left-color
-    BorderLeftColor = 159,
+    BorderLeftColor = 157,
     /// border-right-color
-    BorderRightColor = 160,
+    BorderRightColor = 158,
     /// border-top-color
-    BorderTopColor = 161,
+    BorderTopColor = 159,
     /// outline-color
-    OutlineColor = 162,
+    OutlineColor = 160,
     /// bottom
-    Bottom = 163,
+    Bottom = 161,
     /// inset-block-end
-    InsetBlockEnd = 164,
+    InsetBlockEnd = 162,
     /// inset-block-start
-    InsetBlockStart = 165,
+    InsetBlockStart = 163,
     /// inset-inline-end
-    InsetInlineEnd = 166,
+    InsetInlineEnd = 164,
     /// inset-inline-start
-    InsetInlineStart = 167,
+    InsetInlineStart = 165,
     /// left
-    Left = 168,
+    Left = 166,
     /// margin-block-end
-    MarginBlockEnd = 169,
+    MarginBlockEnd = 167,
     /// margin-block-start
-    MarginBlockStart = 170,
+    MarginBlockStart = 168,
     /// margin-bottom
-    MarginBottom = 171,
+    MarginBottom = 169,
     /// margin-inline-end
-    MarginInlineEnd = 172,
+    MarginInlineEnd = 170,
     /// margin-inline-start
-    MarginInlineStart = 173,
+    MarginInlineStart = 171,
     /// margin-left
-    MarginLeft = 174,
+    MarginLeft = 172,
     /// margin-right
-    MarginRight = 175,
+    MarginRight = 173,
     /// margin-top
-    MarginTop = 176,
+    MarginTop = 174,
     /// right
-    Right = 177,
+    Right = 175,
     /// top
-    Top = 178,
+    Top = 176,
 }
 
 impl ToCss for LonghandId {
@@ -448,8 +444,6 @@ impl LonghandId {
         static OVERFLOW_WRAP: &'static [ShorthandId] = &[ShorthandId::All];
         static POINTER_EVENTS: &'static [ShorthandId] = &[ShorthandId::All];
         static POSITION: &'static [ShorthandId] = &[ShorthandId::All];
-        static _SERVO_OVERFLOW_CLIP_BOX: &'static [ShorthandId] = &[];
-        static _SERVO_TOP_LAYER: &'static [ShorthandId] = &[];
         static TABLE_LAYOUT: &'static [ShorthandId] = &[ShorthandId::All];
         static TEXT_ALIGN: &'static [ShorthandId] = &[ShorthandId::All];
         static TEXT_DECORATION_LINE: &'static [ShorthandId] =
@@ -810,8 +804,6 @@ impl LonghandId {
                 LonghandId::OverflowWrap => OVERFLOW_WRAP,
                 LonghandId::PointerEvents => POINTER_EVENTS,
                 LonghandId::Position => POSITION,
-                LonghandId::ServoOverflowClipBox => _SERVO_OVERFLOW_CLIP_BOX,
-                LonghandId::ServoTopLayer => _SERVO_TOP_LAYER,
                 LonghandId::TableLayout => TABLE_LAYOUT,
                 LonghandId::TextAlign => TEXT_ALIGN,
                 LonghandId::TextDecorationLine => TEXT_DECORATION_LINE,
@@ -972,7 +964,7 @@ impl LonghandId {
             input: &mut Parser<'i, 't>,
         )
             -> Result<PropertyDeclaration, ParseError<'i>>;
-        static PARSE_PROPERTY: [ParsePropertyFn; 172] = [
+        static PARSE_PROPERTY: [ParsePropertyFn; 177] = [
             longhands::align_content::parse_declared,
             longhands::align_items::parse_declared,
             longhands::align_self::parse_declared,
@@ -1005,8 +997,6 @@ impl LonghandId {
             longhands::overflow_wrap::parse_declared,
             longhands::pointer_events::parse_declared,
             longhands::position::parse_declared,
-            // longhands::_servo_overflow_clip_box::parse_declared,
-            // longhands::_servo_top_layer::parse_declared,
             longhands::table_layout::parse_declared,
             longhands::text_align::parse_declared,
             longhands::text_decoration_line::parse_declared,
@@ -1050,9 +1040,9 @@ impl LonghandId {
             longhands::background_position_y::parse_declared,
             longhands::background_repeat::parse_declared,
             longhands::background_size::parse_declared,
-            // longhands::border_image_outset::parse_declared,
-            // longhands::border_image_slice::parse_declared,
-            // longhands::border_image_width::parse_declared,
+            longhands::border_image_outset::parse_declared,
+            longhands::border_image_slice::parse_declared,
+            longhands::border_image_width::parse_declared,
             longhands::border_spacing::parse_declared,
             longhands::box_shadow::parse_declared,
             longhands::clip::parse_declared,
@@ -1060,8 +1050,8 @@ impl LonghandId {
             longhands::column_gap::parse_declared,
             longhands::column_width::parse_declared,
             longhands::content::parse_declared,
-            // longhands::counter_increment::parse_declared,
-            // longhands::counter_reset::parse_declared,
+            longhands::counter_increment::parse_declared,
+            longhands::counter_reset::parse_declared,
             longhands::cursor::parse_declared,
             longhands::filter::parse_declared,
             longhands::flex_basis::parse_declared,
@@ -1171,6 +1161,7 @@ impl LonghandIdSet {
             storage: [0; (179 - 1 + 32) / 32],
         }
     }
+
     /// Return whether the given property is in the set
     #[inline]
     pub fn contains(&self, id: LonghandId) -> bool {
