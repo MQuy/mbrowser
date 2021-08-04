@@ -39,18 +39,6 @@ impl<'a> SelectorParser<'a> {
 
         return false;
     }
-
-    fn is_pseudo_element_enabled(&self, pseudo_element: &PseudoElement) -> bool {
-        if pseudo_element.enabled_in_content() {
-            return true;
-        }
-
-        if self.in_user_agent_stylesheet() && pseudo_element.enabled_in_ua_sheets() {
-            return true;
-        }
-
-        return false;
-    }
 }
 
 impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {

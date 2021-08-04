@@ -394,7 +394,7 @@ impl LonghandId {
         NonCustomPropertyId::from(*self).name()
     }
 
-    fn shorthands(&self) -> NonCustomPropertyIterator<ShorthandId> {
+    pub fn shorthands(&self) -> NonCustomPropertyIterator<ShorthandId> {
         // first generate longhand to shorthands lookup map
         //
         // NOTE(emilio): This currently doesn't exclude the "all" shorthand. It

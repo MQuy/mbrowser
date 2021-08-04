@@ -1,10 +1,9 @@
 use cssparser::{Parser, SourceLocation};
 
-use crate::properties::declaration_block::PropertyDeclarationBlock;
-use crate::properties::longhands::animation_name::KeyframesName;
-
 use super::rule_parser::VendorPrefix;
 use super::stylesheet::ParserContext;
+use crate::properties::declaration_block::PropertyDeclarationBlock;
+use crate::properties::longhands::animation_name::KeyframesName;
 
 /// A [`@keyframes`][keyframes] rule.
 ///
@@ -33,11 +32,6 @@ pub struct Keyframe {
 
     /// The line and column of the rule's source code.
     pub source_location: SourceLocation,
-}
-
-struct KeyframeListParser<'a> {
-    context: &'a ParserContext<'a>,
-    declarations: &'a mut PropertyDeclarationBlock,
 }
 
 /// Parses a keyframe list from CSS input.

@@ -1,12 +1,13 @@
 use core::fmt;
 use std::fmt::Write;
 
-use cssparser::{match_ignore_ascii_case, CowRcStr, SourceLocation};
+use cssparser::{
+    match_ignore_ascii_case, CowRcStr, SourceLocation, _cssparser_internal_to_lowercase,
+};
 use selectors::parser::SelectorParseErrorKind;
 
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use cssparser::_cssparser_internal_to_lowercase;
 
 pub mod animation;
 pub mod border;
@@ -68,6 +69,6 @@ impl From<&str> for CustomIdent {
 
 impl ToString for CustomIdent {
     fn to_string(&self) -> String {
-        self.0
+        self.0.to_string()
     }
 }

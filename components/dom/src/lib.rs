@@ -1,4 +1,3 @@
-pub mod annotation;
 pub mod attr;
 pub mod cdatasection;
 pub mod characterdata;

@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::rc::Rc;
 
+use common::not_supported;
 use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
 use html5ever::{Attribute, LocalName, QualName};
 use log::debug;
@@ -12,7 +13,6 @@ use crate::documenttype::DocumentType;
 use crate::element::Element;
 use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
-use crate::not_supported;
 use crate::text::Text;
 use crate::virtualmethods::vtable_for;
 
@@ -37,8 +37,8 @@ impl Display for DomParser {
 }
 
 impl TreeSink for DomParser {
-    type Output = Self;
     type Handle = Rc<Node>;
+    type Output = Self;
 
     fn finish(self) -> Self::Output {
         self

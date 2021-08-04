@@ -1,4 +1,4 @@
-use cssparser::{Color, Parser};
+use cssparser::Parser;
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -6,6 +6,7 @@ use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands::outline_style::OutlineStyle;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::border::BorderSideWidth;
+use crate::values::color::Color;
 
 pub struct Longhands {
     pub outline_color: Color,

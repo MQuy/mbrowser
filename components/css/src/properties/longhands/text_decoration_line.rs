@@ -34,7 +34,7 @@ pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<TextDecorationLine, ParseError<'i>> {
-    panic!()
+    todo!()
 }
 
 pub fn parse_declared<'i, 't>(

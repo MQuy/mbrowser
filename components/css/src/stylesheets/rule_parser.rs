@@ -1,12 +1,20 @@
+use common::not_supported;
 use cssparser::{
     match_ignore_ascii_case, AtRuleParser, AtRuleType, BasicParseError, BasicParseErrorKind,
     CowRcStr, ParseError, Parser, ParserState, QualifiedRuleParser, RuleListParser, SourcePosition,
-    Token,
+    Token, _cssparser_internal_to_lowercase,
 };
 use html5ever::{Namespace, Prefix};
 use selectors::parser::SelectorParseErrorKind;
 use selectors::SelectorList;
 
+use super::css_rule::{CssRule, CssRuleType};
+use super::keyframe_rule::KeyframesRule;
+use super::media_rule::MediaRule;
+use super::namespace_rule::NamespaceRule;
+use super::style_rule::StyleRule;
+use super::stylesheet::{Namespaces, ParserContext};
+use super::support_rule::{SupportsCondition, SupportsRule};
 use crate::media_queries::media_list::MediaList;
 use crate::parser::Parse;
 use crate::properties::declaration_block::parse_property_declaration_list;
@@ -18,15 +26,6 @@ use crate::stylesheets::keyframe_rule::parse_keyframe_list;
 use crate::stylesheets::page_rule::PageRule;
 use crate::stylesheets::stylesheet::RulesMutateError;
 use crate::values::url::CssUrl;
-use cssparser::_cssparser_internal_to_lowercase;
-
-use super::css_rule::{CssRule, CssRuleType};
-use super::keyframe_rule::KeyframesRule;
-use super::media_rule::MediaRule;
-use super::namespace_rule::NamespaceRule;
-use super::style_rule::StyleRule;
-use super::stylesheet::{Namespaces, ParserContext};
-use super::support_rule::{SupportsCondition, SupportsRule};
 
 #[derive(Clone, Debug)]
 /// Vendor prefix.
@@ -144,10 +143,10 @@ impl<'b> TopLevelRuleParser<'b> {
 }
 
 impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
-    type PreludeNoBlock = AtRuleNonBlockPrelude;
-    type PreludeBlock = AtRuleBlockPrelude;
     type AtRule = (SourcePosition, CssRule);
     type Error = StyleParseErrorKind<'i>;
+    type PreludeBlock = AtRuleBlockPrelude;
+    type PreludeNoBlock = AtRuleNonBlockPrelude;
 
     fn parse_prelude<'t>(
         &mut self,
@@ -215,7 +214,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
                     source_location: start.source_location(),
                 })
             },
-            _ => panic!(),
+            _ => not_supported!(),
         };
 
         (start.position(), rule)
@@ -223,9 +222,9 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
 }
 
 impl<'a, 'i> QualifiedRuleParser<'i> for TopLevelRuleParser<'a> {
+    type Error = StyleParseErrorKind<'i>;
     type Prelude = SelectorList<SelectorImpl>;
     type QualifiedRule = (SourcePosition, CssRule);
-    type Error = StyleParseErrorKind<'i>;
 
     #[inline]
     fn parse_prelude<'t>(
@@ -277,10 +276,10 @@ impl<'a, 'b> NestedRuleParser<'a, 'b> {
 }
 
 impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
-    type PreludeNoBlock = AtRuleNonBlockPrelude;
-    type PreludeBlock = AtRuleBlockPrelude;
     type AtRule = CssRule;
     type Error = StyleParseErrorKind<'i>;
+    type PreludeBlock = AtRuleBlockPrelude;
+    type PreludeNoBlock = AtRuleNonBlockPrelude;
 
     fn parse_prelude<'t>(
         &mut self,
@@ -305,11 +304,6 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
                 } else {
                     None
                 };
-                if cfg!(feature = "servo") &&
-                   prefix.as_ref().map_or(false, |p| matches!(*p, VendorPrefix::Moz)) {
-                    // Servo should not support @-moz-keyframes.
-                    return Err(input.new_custom_error(StyleParseErrorKind::UnsupportedAtRule(name.clone())))
-                }
                 let name = KeyframesName::parse(self.context, input)?;
 
                 Ok(AtRuleType::WithBlock(AtRuleBlockPrelude::Keyframes(name, prefix)))
@@ -375,15 +369,15 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
                     source_location: start.source_location(),
                 }))
             },
-            _ => panic!(),
+            _ => not_supported!(),
         }
     }
 }
 
 impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
+    type Error = StyleParseErrorKind<'i>;
     type Prelude = SelectorList<SelectorImpl>;
     type QualifiedRule = CssRule;
-    type Error = StyleParseErrorKind<'i>;
 
     fn parse_prelude<'t>(
         &mut self,

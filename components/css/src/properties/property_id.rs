@@ -645,7 +645,7 @@ impl From<ShorthandId> for NonCustomPropertyId {
 /// An iterator over all the property ids that are enabled for a given
 /// shorthand, if that shorthand is enabled for all content too.
 pub struct NonCustomPropertyIterator<Item: 'static> {
-    iter: std::slice::Iter<'static, Item>,
+    pub iter: std::slice::Iter<'static, Item>,
 }
 
 impl<Item> Iterator for NonCustomPropertyIterator<Item>

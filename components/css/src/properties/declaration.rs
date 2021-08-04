@@ -1,6 +1,7 @@
 use cssparser::Parser;
 
 use crate::parser::ParseError;
+use crate::properties::custom_properties;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::{CSSWideKeyword, PropertyId};
@@ -628,7 +629,14 @@ impl PropertyDeclaration {
                     // Not using parse_entirely here: each
                     // all::parse_into function needs to do so
                     // *before* pushing to `declarations`.
-                    id.parse_into(declarations, context, input);
+                    id.parse_into(declarations, context, input).or_else(|err| {
+                        while let Ok(_) = input.next() {} // Look for var() after the error.
+                        if !input.seen_var_or_env_functions() {
+                            return Err(err);
+                        }
+
+                        todo!()
+                    })?;
                 }
             },
         }
