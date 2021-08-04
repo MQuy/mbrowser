@@ -1,9 +1,8 @@
 use cssparser::{Parser, SourceLocation};
 
-use crate::parser::ParseError;
-
 use super::css_rule::CssRule;
 use super::stylesheet::{Namespaces, ParserContext};
+use crate::parser::ParseError;
 
 /// An [`@supports`][supports] rule.
 ///
@@ -67,21 +66,7 @@ impl SupportsCondition {
 /// A possibly-invalid property declaration
 pub struct Declaration(pub String);
 
-/// <https://drafts.csswg.org/css-syntax-3/#typedef-any-value>
-fn consume_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(), ParseError<'i>> {
-    input.expect_no_error_token().map_err(|err| err.into())
-}
-
 impl Declaration {
-    /// Parse a declaration
-    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Declaration, ParseError<'i>> {
-        let pos = input.position();
-        input.expect_ident()?;
-        input.expect_colon()?;
-        consume_any_value(input)?;
-        Ok(Declaration(input.slice_from(pos).to_owned()))
-    }
-
     /// Determine if a declaration parses
     ///
     /// <https://drafts.csswg.org/css-conditional-3/#support-definition>

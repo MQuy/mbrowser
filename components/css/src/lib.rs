@@ -2,7 +2,6 @@
 extern crate bitflags;
 
 pub mod css_writer;
-pub mod element_state;
 pub mod error_reporting;
 pub mod media_queries;
 pub mod parser;

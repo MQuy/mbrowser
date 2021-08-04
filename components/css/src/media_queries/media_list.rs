@@ -1,8 +1,7 @@
 use cssparser::{Delimiter, Parser, Token};
 
-use crate::stylesheets::stylesheet::ParserContext;
-
 use super::media_query::MediaQuery;
+use crate::stylesheets::stylesheet::ParserContext;
 
 /// A type that encapsulates a media query list.
 #[derive(Clone)]
@@ -20,31 +19,7 @@ impl MediaList {
     ///
     /// <https://drafts.csswg.org/mediaqueries/#error-handling>
     pub fn parse(context: &ParserContext, input: &mut Parser) -> Self {
-        if input.is_exhausted() {
-            return Self::empty();
-        }
-
-        let mut media_queries = vec![];
-        loop {
-            let start_position = input.position();
-            match input.parse_until_before(Delimiter::Comma, |i| MediaQuery::parse(context, i)) {
-                Ok(mq) => {
-                    media_queries.push(mq);
-                },
-                Err(err) => {
-                    media_queries.push(MediaQuery::never_matching());
-                    todo!()
-                },
-            }
-
-            match input.next() {
-                Ok(&Token::Comma) => {},
-                Ok(_) => unreachable!(),
-                Err(_) => break,
-            }
-        }
-
-        MediaList { media_queries }
+        todo!()
     }
 
     /// Create an empty MediaList.

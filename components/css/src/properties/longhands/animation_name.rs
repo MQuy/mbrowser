@@ -1,6 +1,6 @@
 use cssparser::{Parser, Token};
 
-use crate::parser::{Parse, ParseError};
+use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
@@ -17,21 +17,12 @@ pub struct AnimationName {
     names: Vec<KeyframesName>,
 }
 
-impl Parse for KeyframesName {
-    fn parse<'i, 't>(
+impl KeyframesName {
+    pub fn parse<'i, 't>(
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        let location = input.current_source_location();
-        match *input.next()? {
-            Token::Ident(ref s) => Ok(KeyframesName::Ident(CustomIdent::from_ident(
-                location,
-                s,
-                &["none"],
-            )?)),
-            Token::QuotedString(ref s) => Ok(KeyframesName::QuotedString(s.to_string())),
-            ref t => Err(location.new_unexpected_token_error(t.clone())),
-        }
+        todo!()
     }
 }
 

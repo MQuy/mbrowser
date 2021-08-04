@@ -1,7 +1,6 @@
 use cssparser::Parser;
 
 use crate::parser::ParseError;
-use crate::properties::custom_properties;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::{CSSWideKeyword, PropertyId};
@@ -597,7 +596,6 @@ impl PropertyDeclaration {
         debug_assert!(id.allowed_in(context), "{:?}", id);
 
         let non_custom_id = id.non_custom_id();
-        let start = input.state();
         match id {
             PropertyId::Custom(property_name) => {
                 todo!()

@@ -36,13 +36,7 @@ impl ParseErrorReporter for TestingErrorReporter {
     }
 }
 
-#[test]
-pub fn check_parser() {
-    let css = r"
-    @page {
-        margin-left: 3cm;
-    }
-    ";
+pub fn parse(css: &str) {
     let error_reporter = TestingErrorReporter::new();
     let media = Rc::new(MediaList::empty());
     Stylesheet::from_str(
@@ -53,4 +47,53 @@ pub fn check_parser() {
         QuirksMode::NoQuirks,
         5,
     );
+}
+
+#[test]
+pub fn check_namespace() {
+    let css = r#"@namespace "XML-namespace-URL";"#;
+    parse(css);
+}
+
+#[test]
+pub fn check_style() {
+    let css = r#"
+    div {
+        background-color: red;
+        display: invalid;
+        background-image: linear-gradient(0deg, black, invalid, transparent);
+        invalid: true;
+    }
+    "#;
+    parse(css);
+}
+
+#[test]
+pub fn check_media() {
+    let css = "@media (min-width: 10px invalid 1000px) {}";
+    parse(css);
+}
+#[test]
+pub fn check_supports() {
+    let css = "@supports (color: green) and invalid and (margin: 0) {}";
+    parse(css);
+}
+
+#[test]
+pub fn check_keyframes() {
+    let css = "@keyframes foo { from invalid {} to { margin: 0 invalid 0; } }";
+    parse(css);
+}
+
+#[test]
+pub fn check_page() {
+    let css = r#"
+    @page {
+        background-color: red;
+        display: invalid;
+        background-image: linear-gradient(0deg, black, invalid, transparent);
+        invalid: true;
+    }
+    "#;
+    parse(css);
 }

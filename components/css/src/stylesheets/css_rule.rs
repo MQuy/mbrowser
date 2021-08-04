@@ -3,11 +3,10 @@ use cssparser::{parse_one_rule, Parser, ParserInput};
 use super::keyframe_rule::KeyframesRule;
 use super::media_rule::MediaRule;
 use super::namespace_rule::NamespaceRule;
-use super::origin::Origin;
 use super::page_rule::PageRule;
 use super::rule_parser::{InsertRuleContext, State, TopLevelRuleParser};
 use super::style_rule::StyleRule;
-use super::stylesheet::{Namespaces, ParserContext, QuirksMode, RulesMutateError, Stylesheet};
+use super::stylesheet::{ParserContext, RulesMutateError, Stylesheet};
 use super::support_rule::SupportsRule;
 use crate::error_reporting::ParseErrorReporter;
 
@@ -38,38 +37,6 @@ pub enum CssRuleType {
 }
 
 impl CssRule {
-    pub fn parse(
-        css: &str,
-        stylesheet: &Stylesheet,
-        error_reporter: Option<&dyn ParseErrorReporter>,
-        state: State,
-        insert_rule_context: InsertRuleContext,
-    ) -> Result<Self, RulesMutateError> {
-        let mut input = ParserInput::new(css);
-        let mut input = Parser::new(&mut input);
-
-        let context = ParserContext::new(
-            stylesheet.origin,
-            None,
-            stylesheet.quirks_mode,
-            error_reporter,
-        );
-
-        // nested rules are in the body state
-        let mut rule_parser = TopLevelRuleParser {
-            context,
-            dom_error: None,
-            state,
-            namespaces: &mut *stylesheet.namespaces.borrow_mut(),
-            insert_rule_context: Some(insert_rule_context),
-        };
-
-        match parse_one_rule(&mut input, &mut rule_parser) {
-            Ok((_, rule)) => Ok(rule),
-            Err(_) => Err(rule_parser.dom_error.unwrap_or(RulesMutateError::Syntax)),
-        }
-    }
-
     pub fn rule_state(&self) -> State {
         match *self {
             CssRule::Namespace(..) => State::Namespaces,

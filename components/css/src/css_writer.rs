@@ -1,43 +1,12 @@
 use core::fmt;
-use cssparser::serialize_string;
 use std::fmt::Write;
+
+use cssparser::serialize_string;
 
 /// Serialises a value according to its CSS representation.
 ///
 /// This trait is implemented for `str` and its friends, serialising the string
 /// contents as a CSS quoted string.
-///
-/// This trait is derivable with `#[derive(ToCss)]`, with the following behaviour:
-/// * unit variants get serialised as the `snake-case` representation
-///   of their name;
-/// * unit variants whose name starts with "Moz" or "Webkit" are prepended
-///   with a "-";
-/// * if `#[css(comma)]` is found on a variant, its fields are separated by
-///   commas, otherwise, by spaces;
-/// * if `#[css(function)]` is found on a variant, the variant name gets
-///   serialised like unit variants and its fields are surrounded by parentheses;
-/// * if `#[css(iterable)]` is found on a function variant, that variant needs
-///   to have a single member, and that member needs to be iterable. The
-///   iterable will be serialized as the arguments for the function;
-/// * an iterable field can also be annotated with `#[css(if_empty = "foo")]`
-///   to print `"foo"` if the iterator is empty;
-/// * if `#[css(dimension)]` is found on a variant, that variant needs
-///   to have a single member. The variant would be serialized as a CSS
-///   dimension token, like: <member><identifier>;
-/// * if `#[css(skip)]` is found on a field, the `ToCss` call for that field
-///   is skipped;
-/// * if `#[css(skip_if = "function")]` is found on a field, the `ToCss` call
-///   for that field is skipped if `function` returns true. This function is
-///   provided the field as an argument;
-/// * if `#[css(contextual_skip_if = "function")]` is found on a field, the
-///   `ToCss` call for that field is skipped if `function` returns true. This
-///   function is given all the fields in the current struct or variant as an
-///   argument;
-/// * `#[css(represents_keyword)]` can be used on bool fields in order to
-///   serialize the field name if the field is true, or nothing otherwise.  It
-///   also collects those keywords for `SpecifiedValueInfo`.
-/// * finally, one can put `#[css(derive_debug)]` on the whole type, to
-///   implement `Debug` by a single call to `ToCss::to_css`.
 pub trait ToCss {
     /// Serialize `self` in CSS syntax, writing to `dest`.
     fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result

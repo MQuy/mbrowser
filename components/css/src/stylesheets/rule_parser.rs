@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-
 use common::not_supported;
 use cssparser::{
     match_ignore_ascii_case, AtRuleParser, AtRuleType, BasicParseError, BasicParseErrorKind,
@@ -18,7 +16,7 @@ use super::style_rule::StyleRule;
 use super::stylesheet::{Namespaces, ParserContext};
 use super::support_rule::{SupportsCondition, SupportsRule};
 use crate::media_queries::media_list::MediaList;
-use crate::parser::{Parse, ParseError};
+use crate::parser::ParseError;
 use crate::properties::declaration_block::parse_property_declaration_list;
 use crate::properties::longhands::animation_name::KeyframesName;
 use crate::selectors::select_impl::SelectorImpl;

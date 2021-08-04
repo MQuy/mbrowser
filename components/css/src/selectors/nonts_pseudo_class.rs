@@ -1,11 +1,10 @@
-use crate::element_state::{DocumentState, ElementState};
-use crate::values::CustomIdent;
 use core::fmt;
-use cssparser::{match_ignore_ascii_case, ToCss};
+
+use cssparser::{match_ignore_ascii_case, ToCss, _cssparser_internal_to_lowercase};
 use selectors::visitor::SelectorVisitor;
 
 use super::select_impl::SelectorImpl;
-use cssparser::_cssparser_internal_to_lowercase;
+use crate::values::CustomIdent;
 
 macro_rules! apply_non_ts_list {
     ($apply_macro:ident) => {
@@ -159,33 +158,5 @@ impl NonTSPseudoClass {
     #[inline]
     pub fn is_enabled_in_content(&self) -> bool {
         !self.has_any_flag(NonTSPseudoClassFlag::PSEUDO_CLASS_ENABLED_IN_UA_SHEETS_AND_CHROME)
-    }
-
-    /// Get the state flag associated with a pseudo-class, if any.
-    pub fn state_flag(&self) -> ElementState {
-        macro_rules! flag {
-            (_) => {
-                ElementState::empty()
-            };
-            ($state:ident) => {
-                ElementState::$state
-            };
-        }
-        macro_rules! pseudo_class_state {
-            ([$(($css:expr, $name:ident, $state:tt, $flags:tt),)*]) => {
-                match *self {
-                    $(NonTSPseudoClass::$name => flag!($state),)*
-                    NonTSPseudoClass::Lang(..) => ElementState::empty(),
-                }
-            }
-        }
-        apply_non_ts_list!(pseudo_class_state)
-    }
-
-    /// Get the document state flag associated with a pseudo-class, if any.
-    pub fn document_state_flag(&self) -> DocumentState {
-        match *self {
-            _ => DocumentState::empty(),
-        }
     }
 }

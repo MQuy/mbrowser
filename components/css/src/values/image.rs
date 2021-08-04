@@ -4,5 +4,4 @@ use super::url::CssUrl;
 pub enum Image {
     None,
     Url(CssUrl),
-    // Gradient(Box<G>),
 }

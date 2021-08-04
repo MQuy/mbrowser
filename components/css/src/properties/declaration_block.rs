@@ -2,7 +2,7 @@ use std::vec::Drain;
 
 use cssparser::{
     parse_important, AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Delimiter,
-    ParseErrorKind, Parser,
+    Parser,
 };
 use selectors::SelectorList;
 use smallbitvec::SmallBitVec;
