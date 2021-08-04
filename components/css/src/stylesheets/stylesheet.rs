@@ -1,14 +1,15 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use cssparser::{Parser, ParserInput, RuleListParser};
+use cssparser::{Parser, ParserInput, RuleListParser, SourceLocation};
 use html5ever::{Namespace, Prefix};
-
-use crate::media_queries::media_list::MediaList;
 
 use super::css_rule::{CssRule, CssRuleType};
 use super::origin::Origin;
 use super::rule_parser::{State, TopLevelRuleParser};
+use crate::error_reporting::{ContextualParseError, ParseErrorReporter};
+use crate::media_queries::media_list::MediaList;
 
 /// Which quirks mode is this document in.
 ///
@@ -37,7 +38,7 @@ pub struct Stylesheet {
     pub rules: Vec<CssRule>,
     pub origin: Origin,
     pub quirks_mode: QuirksMode,
-    pub namespaces: Namespaces,
+    pub namespaces: RefCell<Namespaces>,
     pub source_url: Option<String>,
     pub media: Rc<MediaList>,
     pub disabled: bool,
@@ -49,18 +50,19 @@ impl Stylesheet {
         origin: Origin,
         quirks_mode: QuirksMode,
         namespaces: &mut Namespaces,
+        error_reporter: Option<&dyn ParseErrorReporter>,
         line_number_offset: u32,
     ) -> (Vec<CssRule>, Option<String>) {
         let mut rules = Vec::new();
         let mut input = ParserInput::new_with_line_number_offset(css, line_number_offset);
         let mut input = Parser::new(&mut input);
 
-        let context = ParserContext::new(origin, None, quirks_mode);
+        let context = ParserContext::new(origin, None, quirks_mode, error_reporter);
 
         let rule_parser = TopLevelRuleParser {
             context,
+            namespaces,
             state: State::Start,
-            namespaces: namespaces,
             dom_error: None,
             insert_rule_context: None,
         };
@@ -89,10 +91,12 @@ impl Stylesheet {
         let source_url = input.current_source_url().map(String::from);
         (rules, source_url)
     }
+
     pub fn from_str(
         css: &str,
         origin: Origin,
         media: Rc<MediaList>,
+        error_reporter: Option<&dyn ParseErrorReporter>,
         quirks_mode: QuirksMode,
         line_number_offset: u32,
     ) -> Self {
@@ -102,6 +106,7 @@ impl Stylesheet {
             origin,
             quirks_mode,
             &mut namespaces,
+            error_reporter,
             line_number_offset,
         );
 
@@ -110,7 +115,7 @@ impl Stylesheet {
             origin,
             quirks_mode,
             source_url,
-            namespaces,
+            namespaces: RefCell::new(namespaces),
             media,
             disabled: false,
         }
@@ -125,6 +130,8 @@ pub struct ParserContext<'a> {
     pub rule_type: Option<CssRuleType>,
     /// The quirks mode of this stylesheet.
     pub quirks_mode: QuirksMode,
+    /// The active error reporter, or none if error reporting is disabled.
+    pub error_reporter: Option<&'a dyn ParseErrorReporter>,
     /// The currently active namespaces.
     pub namespaces: Option<&'a Namespaces>,
 }
@@ -134,11 +141,13 @@ impl<'a> ParserContext<'a> {
         stylesheet_origin: Origin,
         rule_type: Option<CssRuleType>,
         quirks_mode: QuirksMode,
+        error_reporter: Option<&'a dyn ParseErrorReporter>,
     ) -> Self {
         Self {
             stylesheet_origin,
             rule_type,
             quirks_mode,
+            error_reporter,
             namespaces: None,
         }
     }
@@ -156,6 +165,7 @@ impl<'a> ParserContext<'a> {
             rule_type: Some(rule_type),
             quirks_mode: context.quirks_mode,
             namespaces: Some(namespaces),
+            error_reporter: context.error_reporter,
         }
     }
 
@@ -169,6 +179,16 @@ impl<'a> ParserContext<'a> {
     #[inline]
     pub fn error_reporting_enabled(&self) -> bool {
         false
+    }
+
+    /// Record a CSS parse error with this context’s error reporting.
+    pub fn log_css_error(&self, location: SourceLocation, error: ContextualParseError) {
+        let error_reporter = match self.error_reporter {
+            Some(r) => r,
+            None => return,
+        };
+
+        error_reporter.report_error(location, error)
     }
 }
 

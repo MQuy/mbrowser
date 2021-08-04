@@ -1,8 +1,10 @@
+use std::cell::RefCell;
+
 use common::not_supported;
 use cssparser::{
     match_ignore_ascii_case, AtRuleParser, AtRuleType, BasicParseError, BasicParseErrorKind,
-    CowRcStr, ParseError, Parser, ParserState, QualifiedRuleParser, RuleListParser, SourcePosition,
-    Token, _cssparser_internal_to_lowercase,
+    CowRcStr, Parser, ParserState, QualifiedRuleParser, RuleListParser, SourcePosition, Token,
+    _cssparser_internal_to_lowercase,
 };
 use html5ever::{Namespace, Prefix};
 use selectors::parser::SelectorParseErrorKind;
@@ -16,7 +18,7 @@ use super::style_rule::StyleRule;
 use super::stylesheet::{Namespaces, ParserContext};
 use super::support_rule::{SupportsCondition, SupportsRule};
 use crate::media_queries::media_list::MediaList;
-use crate::parser::Parse;
+use crate::parser::{Parse, ParseError};
 use crate::properties::declaration_block::parse_property_declaration_list;
 use crate::properties::longhands::animation_name::KeyframesName;
 use crate::selectors::select_impl::SelectorImpl;
@@ -152,8 +154,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
         &mut self,
         name: CowRcStr<'i>,
         input: &mut Parser<'i, 't>,
-    ) -> Result<AtRuleType<AtRuleNonBlockPrelude, AtRuleBlockPrelude>, ParseError<'i, Self::Error>>
-    {
+    ) -> Result<AtRuleType<AtRuleNonBlockPrelude, AtRuleBlockPrelude>, ParseError<'i>> {
         match_ignore_ascii_case! { &*name,
             "namespace" => {
                 if !self.check_state(State::Namespaces) {
@@ -185,7 +186,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
         prelude: AtRuleBlockPrelude,
         start: &ParserState,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self::AtRule, ParseError<'i, Self::Error>> {
+    ) -> Result<Self::AtRule, ParseError<'i>> {
         let rule = AtRuleParser::parse_block(&mut self.nested(), prelude, start, input)?;
         self.state = State::Body;
         Ok((start.position(), rule))
@@ -230,7 +231,7 @@ impl<'a, 'i> QualifiedRuleParser<'i> for TopLevelRuleParser<'a> {
     fn parse_prelude<'t>(
         &mut self,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self::Prelude, ParseError<'i, Self::Error>> {
+    ) -> Result<Self::Prelude, ParseError<'i>> {
         QualifiedRuleParser::parse_prelude(&mut self.nested(), input)
     }
 
@@ -240,7 +241,7 @@ impl<'a, 'i> QualifiedRuleParser<'i> for TopLevelRuleParser<'a> {
         prelude: Self::Prelude,
         start: &ParserState,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self::QualifiedRule, ParseError<'i, Self::Error>> {
+    ) -> Result<Self::QualifiedRule, ParseError<'i>> {
         let rule = QualifiedRuleParser::parse_block(&mut self.nested(), prelude, start, input)?;
         Ok((start.position(), rule))
     }
@@ -285,8 +286,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
         &mut self,
         name: CowRcStr<'i>,
         input: &mut Parser<'i, 't>,
-    ) -> Result<AtRuleType<AtRuleNonBlockPrelude, AtRuleBlockPrelude>, ParseError<'i, Self::Error>>
-    {
+    ) -> Result<AtRuleType<AtRuleNonBlockPrelude, AtRuleBlockPrelude>, ParseError<'i>> {
         match_ignore_ascii_case! { &*name,
             "media" => {
                 let media_queries = MediaList::parse(self.context, input);
@@ -320,7 +320,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
         prelude: AtRuleBlockPrelude,
         start: &ParserState,
         input: &mut Parser<'i, 't>,
-    ) -> Result<CssRule, ParseError<'i, Self::Error>> {
+    ) -> Result<CssRule, ParseError<'i>> {
         match prelude {
             AtRuleBlockPrelude::Media(media_queries) => Ok(CssRule::Media(MediaRule {
                 media_queries,
@@ -382,7 +382,7 @@ impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
     fn parse_prelude<'t>(
         &mut self,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self::Prelude, ParseError<'i, Self::Error>> {
+    ) -> Result<Self::Prelude, ParseError<'i>> {
         let selector_parser = SelectorParser {
             stylesheet_origin: self.context.stylesheet_origin,
             namespaces: self.namespaces,
@@ -395,7 +395,7 @@ impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
         selectors: Self::Prelude,
         start: &ParserState,
         input: &mut Parser<'i, 't>,
-    ) -> Result<CssRule, ParseError<'i, Self::Error>> {
+    ) -> Result<CssRule, ParseError<'i>> {
         let context =
             ParserContext::new_with_rule_type(self.context, CssRuleType::Style, self.namespaces);
 
@@ -490,5 +490,30 @@ impl<'i> From<ValueParseErrorKind<'i>> for StyleParseErrorKind<'i> {
 impl<'i> From<SelectorParseErrorKind<'i>> for StyleParseErrorKind<'i> {
     fn from(this: SelectorParseErrorKind<'i>) -> Self {
         StyleParseErrorKind::SelectorError(this)
+    }
+}
+
+impl<'i> StyleParseErrorKind<'i> {
+    /// Create an InvalidValue parse error
+    pub fn new_invalid<S>(name: S, value_error: ParseError<'i>) -> ParseError<'i>
+    where
+        S: Into<CowRcStr<'i>>,
+    {
+        let name = name.into();
+        let variant = match value_error.kind {
+            cssparser::ParseErrorKind::Custom(StyleParseErrorKind::ValueError(e)) => match e {
+                ValueParseErrorKind::InvalidColor(token) => {
+                    StyleParseErrorKind::InvalidColor(name, token)
+                },
+                ValueParseErrorKind::InvalidFilter(token) => {
+                    StyleParseErrorKind::InvalidFilter(name, token)
+                },
+            },
+            _ => StyleParseErrorKind::OtherInvalidValue(name),
+        };
+        cssparser::ParseError {
+            kind: cssparser::ParseErrorKind::Custom(variant),
+            location: value_error.location,
+        }
     }
 }

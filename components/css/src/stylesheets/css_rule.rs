@@ -7,8 +7,9 @@ use super::origin::Origin;
 use super::page_rule::PageRule;
 use super::rule_parser::{InsertRuleContext, State, TopLevelRuleParser};
 use super::style_rule::StyleRule;
-use super::stylesheet::{Namespaces, ParserContext, QuirksMode, RulesMutateError};
+use super::stylesheet::{Namespaces, ParserContext, QuirksMode, RulesMutateError, Stylesheet};
 use super::support_rule::SupportsRule;
+use crate::error_reporting::ParseErrorReporter;
 
 /// A CSS rule.
 /// https://drafts.csswg.org/cssom/#concept-css-rule-type
@@ -39,23 +40,27 @@ pub enum CssRuleType {
 impl CssRule {
     pub fn parse(
         css: &str,
-        origin: Origin,
-        quirks_mode: QuirksMode,
+        stylesheet: &Stylesheet,
+        error_reporter: Option<&dyn ParseErrorReporter>,
         state: State,
-        namespaces: &mut Namespaces,
         insert_rule_context: InsertRuleContext,
     ) -> Result<Self, RulesMutateError> {
         let mut input = ParserInput::new(css);
         let mut input = Parser::new(&mut input);
 
-        let context = ParserContext::new(origin, None, quirks_mode);
+        let context = ParserContext::new(
+            stylesheet.origin,
+            None,
+            stylesheet.quirks_mode,
+            error_reporter,
+        );
 
         // nested rules are in the body state
         let mut rule_parser = TopLevelRuleParser {
             context,
             dom_error: None,
             state,
-            namespaces: namespaces,
+            namespaces: &mut *stylesheet.namespaces.borrow_mut(),
             insert_rule_context: Some(insert_rule_context),
         };
 

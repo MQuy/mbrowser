@@ -2,11 +2,14 @@ use std::vec::Drain;
 
 use cssparser::{
     parse_important, AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Delimiter,
-    ParseError, Parser,
+    ParseErrorKind, Parser,
 };
 use selectors::SelectorList;
 use smallbitvec::SmallBitVec;
 
+use super::longhand_id::LonghandId;
+use crate::error_reporting::ContextualParseError;
+use crate::parser::ParseError;
 use crate::properties::declaration::{Importance, PropertyDeclaration};
 use crate::properties::longhand_id::LonghandIdSet;
 use crate::properties::property_id::PropertyId;
@@ -29,6 +32,12 @@ impl PropertyDeclarationBlock {
             declarations_importance: SmallBitVec::new(),
             longhands: LonghandIdSet::new(),
         }
+    }
+
+    /// Returns whether this block contains a declaration of a given longhand.
+    #[inline]
+    pub fn contains(&self, id: LonghandId) -> bool {
+        self.longhands.contains(id)
     }
 
     /// Returns whether the property is definitely new for this declaration
@@ -125,10 +134,10 @@ struct PropertyDeclarationParser<'a, 'b: 'a> {
 
 /// Default methods reject all at rules.
 impl<'a, 'b, 'i> AtRuleParser<'i> for PropertyDeclarationParser<'a, 'b> {
-    type PreludeNoBlock = ();
-    type PreludeBlock = ();
     type AtRule = Importance;
     type Error = StyleParseErrorKind<'i>;
+    type PreludeBlock = ();
+    type PreludeNoBlock = ();
 }
 
 impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
@@ -139,7 +148,7 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
         &mut self,
         name: CowRcStr<'i>,
         input: &mut Parser<'i, 't>,
-    ) -> Result<Importance, ParseError<'i, Self::Error>> {
+    ) -> Result<Importance, ParseError<'i>> {
         let id = match PropertyId::parse(&name, self.context) {
             Ok(id) => id,
             Err(..) => {
@@ -159,6 +168,63 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
         // In case there is still unparsed text in the declaration, we should roll back.
         input.expect_exhausted()?;
         Ok(importance)
+    }
+}
+
+#[cold]
+fn report_one_css_error<'i>(
+    context: &ParserContext,
+    block: Option<&PropertyDeclarationBlock>,
+    selectors: Option<&SelectorList<SelectorImpl>>,
+    mut error: ParseError<'i>,
+    slice: &str,
+    property: Option<PropertyId>,
+) {
+    debug_assert!(context.error_reporting_enabled());
+
+    fn all_properties_in_block(block: &PropertyDeclarationBlock, property: &PropertyId) -> bool {
+        match *property {
+            PropertyId::Longhand(id) => block.contains(id),
+            PropertyId::Shorthand(id) => id.longhands().all(|longhand| block.contains(longhand)),
+            // NOTE(emilio): We could do this, but it seems of limited utility,
+            // and it's linear on the size of the declaration block, so let's
+            // not.
+            PropertyId::Custom(..) => false,
+        }
+    }
+
+    if let Some(ref property) = property {
+        if let Some(block) = block {
+            if all_properties_in_block(block, property) {
+                return;
+            }
+        }
+        error = match *property {
+            PropertyId::Custom(ref c) => {
+                StyleParseErrorKind::new_invalid(format!("--{}", c), error)
+            },
+            _ => StyleParseErrorKind::new_invalid(property.non_custom_id().unwrap().name(), error),
+        };
+    }
+
+    let location = error.location;
+    let error = ContextualParseError::UnsupportedPropertyDeclaration(slice, error, selectors);
+    context.log_css_error(location, error);
+}
+
+#[cold]
+fn report_css_errors(
+    context: &ParserContext,
+    block: &PropertyDeclarationBlock,
+    selectors: Option<&SelectorList<SelectorImpl>>,
+    errors: &mut Vec<(
+        cssparser::ParseError<StyleParseErrorKind>,
+        &str,
+        Option<PropertyId>,
+    )>,
+) {
+    for (error, slice, property) in errors.drain(..) {
+        report_one_css_error(context, Some(block), selectors, error, slice, property)
     }
 }
 
@@ -199,7 +265,7 @@ pub fn parse_property_declaration_list(
     }
 
     if !errors.is_empty() {
-        todo!()
+        report_css_errors(context, &block, selectors, &mut errors)
     }
 
     block
