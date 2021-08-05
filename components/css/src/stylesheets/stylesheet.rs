@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fmt::Display;
+use std::ops::Add;
 use std::rc::Rc;
 
 use cssparser::{Parser, ParserInput, RuleListParser, SourceLocation};
@@ -8,6 +10,7 @@ use html5ever::{Namespace, Prefix};
 use super::css_rule::{CssRule, CssRuleType};
 use super::origin::Origin;
 use super::rule_parser::{State, TopLevelRuleParser};
+use crate::css_writer::ToCss;
 use crate::error_reporting::{ContextualParseError, ParseErrorReporter};
 use crate::media_queries::media_list::MediaList;
 
@@ -38,7 +41,7 @@ pub struct Stylesheet {
     pub rules: Vec<CssRule>,
     pub origin: Origin,
     pub quirks_mode: QuirksMode,
-    pub namespaces: RefCell<Namespaces>,
+    pub namespaces: Namespaces,
     pub source_url: Option<String>,
     pub media: Rc<MediaList>,
     pub disabled: bool,
@@ -115,10 +118,19 @@ impl Stylesheet {
             origin,
             quirks_mode,
             source_url,
-            namespaces: RefCell::new(namespaces),
+            namespaces,
             media,
             disabled: false,
         }
+    }
+}
+
+impl Display for Stylesheet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.rules
+            .iter()
+            .map(|rule| f.write_str(&rule.to_css_string().add("\n")))
+            .collect()
     }
 }
 

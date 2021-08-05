@@ -1,14 +1,13 @@
-use cssparser::{parse_one_rule, Parser, ParserInput};
+use core::fmt;
 
 use super::keyframe_rule::KeyframesRule;
 use super::media_rule::MediaRule;
 use super::namespace_rule::NamespaceRule;
 use super::page_rule::PageRule;
-use super::rule_parser::{InsertRuleContext, State, TopLevelRuleParser};
+use super::rule_parser::State;
 use super::style_rule::StyleRule;
-use super::stylesheet::{ParserContext, RulesMutateError, Stylesheet};
 use super::support_rule::SupportsRule;
-use crate::error_reporting::ParseErrorReporter;
+use crate::css_writer::ToCss;
 
 /// A CSS rule.
 /// https://drafts.csswg.org/cssom/#concept-css-rule-type
@@ -41,6 +40,22 @@ impl CssRule {
         match *self {
             CssRule::Namespace(..) => State::Namespaces,
             _ => State::Body,
+        }
+    }
+}
+
+impl ToCss for CssRule {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match &self {
+            CssRule::Namespace(namespace) => namespace.to_css(dest),
+            CssRule::Style(_) => todo!(),
+            CssRule::Media(_) => todo!(),
+            CssRule::Keyframes(_) => todo!(),
+            CssRule::Supports(_) => todo!(),
+            CssRule::Page(_) => todo!(),
         }
     }
 }

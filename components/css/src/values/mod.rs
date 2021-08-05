@@ -26,6 +26,10 @@ pub mod url;
 pub type CSSFloat = f32;
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
+pub struct Ident(pub String);
+
+///
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct CustomIdent(pub String);
 
 impl CustomIdent {

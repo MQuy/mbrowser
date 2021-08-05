@@ -36,7 +36,7 @@ impl ParseErrorReporter for TestingErrorReporter {
     }
 }
 
-pub fn parse(css: &str) {
+pub fn parse(css: &str) -> Stylesheet {
     let error_reporter = TestingErrorReporter::new();
     let media = Rc::new(MediaList::empty());
     Stylesheet::from_str(
@@ -46,13 +46,17 @@ pub fn parse(css: &str) {
         Some(&error_reporter),
         QuirksMode::NoQuirks,
         5,
-    );
+    )
 }
 
 #[test]
 pub fn check_namespace() {
-    let css = r#"@namespace "XML-namespace-URL";"#;
-    parse(css);
+    let css = r#"
+    @namespace toto "http://toto.example.org";
+    @namespace "http://example.com/foo";
+    "#;
+    let stylesheet = parse(css);
+    println!("{}", stylesheet);
 }
 
 #[test]

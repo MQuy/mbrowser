@@ -159,17 +159,8 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
                     return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedNamespaceRule))
                 }
 
-                let prefix = input.try_parse(|i| i.expect_ident_cloned())
-                                  .map(|s| Prefix::from(s.as_ref())).ok();
-                let maybe_namespace = match input.expect_url_or_string() {
-                    Ok(url_or_string) => url_or_string,
-                    Err(BasicParseError { kind: BasicParseErrorKind::UnexpectedToken(t), location }) => {
-                        return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedTokenWithinNamespace(t)))
-                    }
-                    Err(e) => return Err(e.into()),
-                };
-                let url = Namespace::from(maybe_namespace.as_ref());
-                let prelude = AtRuleNonBlockPrelude::Namespace(prefix, url);
+                let namespace = NamespaceRule::parse(input)?;
+                let prelude = AtRuleNonBlockPrelude::Namespace(namespace.prefix, namespace.url);
                 return Ok(AtRuleType::WithoutBlock(prelude));
             },
             _ => {}
