@@ -1,5 +1,8 @@
+use std::fmt::Write;
+
 use cssparser::SourceLocation;
 
+use crate::css_writer::ToCss;
 use crate::properties::declaration_block::PropertyDeclarationBlock;
 
 /// A [`@page`][page] rule.
@@ -17,4 +20,13 @@ pub struct PageRule {
     pub block: PropertyDeclarationBlock,
     /// The source position this rule was found at.
     pub source_location: SourceLocation,
+}
+
+impl ToCss for PageRule {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_str(&self.block.to_css_string())
+    }
 }

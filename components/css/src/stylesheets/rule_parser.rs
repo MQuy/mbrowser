@@ -18,13 +18,13 @@ use super::support_rule::{SupportsCondition, SupportsRule};
 use crate::media_queries::media_list::MediaList;
 use crate::parser::ParseError;
 use crate::properties::declaration_block::parse_property_declaration_list;
-use crate::properties::longhands::animation_name::KeyframesName;
 use crate::selectors::select_impl::SelectorImpl;
 use crate::selectors::selector_parser::SelectorParser;
 use crate::str::starts_with_ignore_ascii_case;
 use crate::stylesheets::keyframe_rule::parse_keyframe_list;
 use crate::stylesheets::page_rule::PageRule;
 use crate::stylesheets::stylesheet::RulesMutateError;
+use crate::values::animation::KeyframesName;
 use crate::values::url::CssUrl;
 
 #[derive(Clone, Debug)]
@@ -294,7 +294,6 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
                     None
                 };
                 let name = KeyframesName::parse(self.context, input)?;
-
                 Ok(AtRuleType::WithBlock(AtRuleBlockPrelude::Keyframes(name, prefix)))
             },
             "page" => {

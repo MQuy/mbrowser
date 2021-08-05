@@ -4,7 +4,7 @@ use cssparser::{BasicParseError, BasicParseErrorKind, Parser, SourceLocation};
 use html5ever::{Namespace, Prefix};
 
 use super::rule_parser::StyleParseErrorKind;
-use crate::css_writer::ToCss;
+use crate::css_writer::{CssWriter, ToCss};
 use crate::parser::ParseError;
 
 /// A `@namespace` rule.
@@ -47,13 +47,13 @@ impl NamespaceRule {
 }
 
 impl ToCss for NamespaceRule {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
+        dest.write_str("@namespaces ")?;
         if let Some(prefix) = &self.prefix {
-            dest.write_str(prefix)?;
-            dest.write_str(" ")?;
+            dest.write_str(&std::format!("{} ", prefix))?;
         }
         dest.write_str(&self.url)?;
         Ok(())

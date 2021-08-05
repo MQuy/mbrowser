@@ -85,8 +85,9 @@ pub fn check_supports() {
 
 #[test]
 pub fn check_keyframes() {
-    let css = "@keyframes foo { from invalid {} to { margin: 0 invalid 0; } }";
-    parse(css);
+    let css = "@keyframes foo { from {} to {} }";
+    let stylesheet = parse(css);
+    println!("{}", stylesheet);
 }
 
 #[test]

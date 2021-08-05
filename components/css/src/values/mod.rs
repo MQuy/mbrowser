@@ -2,7 +2,7 @@ use core::fmt;
 use std::fmt::Write;
 
 use cssparser::{
-    match_ignore_ascii_case, CowRcStr, SourceLocation, _cssparser_internal_to_lowercase,
+    CowRcStr, SourceLocation, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
 };
 use selectors::parser::SelectorParseErrorKind;
 
@@ -56,12 +56,12 @@ impl CustomIdent {
     }
 }
 
-impl cssparser::ToCss for CustomIdent {
+impl ToCss for CustomIdent {
     fn to_css<W>(&self, dest: &mut W) -> fmt::Result
     where
         W: Write,
     {
-        todo!()
+        dest.write_str(&self.0)
     }
 }
 
