@@ -28,6 +28,25 @@ pub type CSSFloat = f32;
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Ident(pub String);
 
+impl PartialEq<&str> for Ident {
+    fn eq(&self, other: &&str) -> bool {
+        self.0 == *other
+    }
+}
+
+impl From<&str> for Ident {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+#[macro_export]
+macro_rules! ident {
+    ($arg:tt) => {
+        Ident(String::from($arg))
+    };
+}
+
 ///
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct CustomIdent(pub String);

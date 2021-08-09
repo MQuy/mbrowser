@@ -1,6 +1,10 @@
+use cssparser::Parser;
+
 use super::number::NonNegative;
 use super::percentage::Percentage;
 use super::CSSFloat;
+use crate::parser::ParseError;
+use crate::stylesheets::stylesheet::ParserContext;
 
 /// An extension to `NoCalcLength` to parse `calc` expressions.
 
@@ -11,6 +15,16 @@ use super::CSSFloat;
 pub enum Length {
     /// The internal length type that cannot parse `calc`
     NoCalc(NoCalcLength),
+}
+
+impl Length {
+    #[inline]
+    pub fn parse_non_negative<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 /// A `<length>` without taking `calc` expressions into account

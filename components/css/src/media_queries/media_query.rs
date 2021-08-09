@@ -1,10 +1,10 @@
 use cssparser::Parser;
 
-use crate::parser::ParseError;
-use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::CustomIdent;
-
 use super::media_condition::MediaCondition;
+use crate::parser::ParseError;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::Ident;
 
 /// <https://drafts.csswg.org/mediaqueries/#mq-prefix>
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -19,7 +19,7 @@ pub enum Qualifier {
 
 /// <https://drafts.csswg.org/mediaqueries/#media-types>
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct MediaType(pub CustomIdent);
+pub struct MediaType(pub Ident);
 
 /// <http://dev.w3.org/csswg/mediaqueries-3/#media0>
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -28,6 +28,20 @@ pub enum MediaQueryType {
     All,
     /// A specific media type.
     Concrete(MediaType),
+}
+
+impl MediaQueryType {
+    pub fn parse<'i, 't>(
+        _context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let ident = input.expect_ident()?.to_string();
+        if ident == "all" {
+            Ok(MediaQueryType::All)
+        } else {
+            Ok(MediaQueryType::Concrete(MediaType(Ident(ident))))
+        }
+    }
 }
 
 /// A [media query][mq].
@@ -62,6 +76,34 @@ impl MediaQuery {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| MediaCondition::parse(context, input))
+            .map(|media_condition| MediaQuery {
+                qualifier: None,
+                media_type: MediaQueryType::All,
+                condition: Some(media_condition),
+            })
+            .or_else(|_err| {
+                let qualifier = match input.expect_ident() {
+                    Ok(ident) => match ident.to_string() {
+                        value if value == "not" => Some(Qualifier::Not),
+                        value if value == "only" => Some(Qualifier::Only),
+                        _ => {
+                            return Err(input
+                                .new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken));
+                        },
+                    },
+                    _ => None,
+                };
+                let media_type = MediaQueryType::parse(context, input)?;
+                let condition = input
+                    .try_parse(|input| MediaCondition::parse(context, input))
+                    .ok();
+                Ok(MediaQuery {
+                    qualifier,
+                    media_type,
+                    condition,
+                })
+            })
     }
 }

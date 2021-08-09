@@ -1,4 +1,8 @@
+use cssparser::Parser;
+
 use super::CSSFloat;
+use crate::parser::ParseError;
+use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
 #[repr(u8)]
@@ -42,4 +46,14 @@ pub enum Resolution {
     Dppx(CSSFloat),
     /// Dots per centimeter.
     Dpcm(CSSFloat),
+}
+
+impl Resolution {
+    /// Parse a resolution.
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
