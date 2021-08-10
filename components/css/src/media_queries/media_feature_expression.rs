@@ -1,8 +1,15 @@
+use core::fmt;
+use std::fmt::Write;
+
 use cssparser::{CowRcStr, Parser, ParserState, Token};
 
 use super::media_condition::MediaCondition;
-use super::media_features::MediaFeatureDescription;
-use crate::media_queries::media_features::{Evaluator, MEDIA_FEATURES};
+use super::media_features::{
+    DisplayMode, Enumerated, ForcedColors, Hover, MediaFeatureDescription, OverflowBlock,
+    OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion, Scan,
+};
+use crate::css_writer::{CssWriter, ToCss};
+use crate::media_queries::media_features::{Evaluator, Orientation, MEDIA_FEATURES};
 use crate::parser::ParseError;
 use crate::str::starts_with_ignore_ascii_case;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -82,6 +89,10 @@ pub struct MediaFeatureExpression {
 }
 
 impl MediaFeatureExpression {
+    pub fn feature(&self) -> &'static MediaFeatureDescription {
+        &MEDIA_FEATURES[self.feature_index]
+    }
+
     /// https://drafts.csswg.org/mediaqueries-5/#ref-for-typedef-media-feature
     pub fn parse<'i, 't>(
         context: &ParserContext,
@@ -93,11 +104,14 @@ impl MediaFeatureExpression {
                     MediaFeatureExpression::parse_plain(context, input)?,
                 ))
             })
-            .or_else(|_err: ParseError<'i>| MediaFeatureExpression::parse_range(context, input))
             .or_else(|_err: ParseError<'i>| {
-                Ok(MediaCondition::Feature(
-                    MediaFeatureExpression::parse_boolean(input)?,
-                ))
+                input
+                    .try_parse(|input| MediaFeatureExpression::parse_range(context, input))
+                    .or_else(|_err: ParseError<'i>| {
+                        Ok(MediaCondition::Feature(
+                            MediaFeatureExpression::parse_boolean(input)?,
+                        ))
+                    })
             })
     }
 
@@ -145,7 +159,7 @@ impl MediaFeatureExpression {
             .try_parse(|input| {
                 let (feature_index, feature, range) =
                     MediaFeatureExpression::parse_feature_name(input)?;
-                let operator = Operator::parse(input)?;
+                assert!(range.is_none());
                 let range_operator = MediaFeatureExpression::parse_comparison(input, range)?;
                 let value = MediaExpressionValue::parse(context, input, feature)?;
                 Ok(MediaCondition::Feature(MediaFeatureExpression {
@@ -251,6 +265,7 @@ impl MediaFeatureExpression {
             loop {
                 if Operator::parse(input).is_ok() {
                     if let Ok(feature_range) = MediaFeatureExpression::parse_feature_name(input) {
+                        assert!(feature_range.2.is_none());
                         return Some(feature_range);
                     }
                     break;
@@ -268,6 +283,33 @@ impl MediaFeatureExpression {
         input.reset(&prev_state);
 
         feature_range.map(|feature_range| (feature_range, cur_state))
+    }
+}
+
+impl ToCss for MediaFeatureExpression {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self.range_or_operator {
+            Some(RangeOrOperator::Range(range)) => {
+                dest.write_str(if range == Range::Max { "max-" } else { "min-" })?;
+            },
+            _ => (),
+        }
+        dest.write_str(self.feature().name)?;
+        match self.range_or_operator {
+            Some(RangeOrOperator::Operator(operator)) => match operator {
+                Operator::Equal => dest.write_str(" = ")?,
+                Operator::GreaterThan => dest.write_str(" > ")?,
+                Operator::GreaterThanEqual => dest.write_str(" >= ")?,
+                Operator::LessThan => dest.write_str(" < ")?,
+                Operator::LessThanEqual => dest.write_str(" <= ")?,
+            },
+            Some(RangeOrOperator::Range(_)) => dest.write_str(": ")?,
+            _ => (),
+        };
+        self.value.to_css(dest)
     }
 }
 
@@ -294,6 +336,8 @@ pub enum MediaExpressionValue {
     NumberRatio(Ratio),
     /// A resolution.
     Resolution(Resolution),
+    /// A keyword value.
+    Enumerated(MediaExpressionValueEnumerated),
     /// An identifier.
     Ident(Ident),
 }
@@ -304,7 +348,7 @@ impl MediaExpressionValue {
         input: &mut Parser<'i, 't>,
         description_value: &MediaFeatureDescription,
     ) -> Result<Self, ParseError<'i>> {
-        Ok(match description_value.evaluator {
+        Ok(match &description_value.evaluator {
             Evaluator::Length => {
                 let length = Length::parse_non_negative(context, input)?;
                 MediaExpressionValue::Length(length)
@@ -333,23 +377,139 @@ impl MediaExpressionValue {
                 let resolution = Resolution::parse(context, input)?;
                 MediaExpressionValue::Resolution(resolution)
             },
-            Evaluator::Orientation => todo!(),
-            Evaluator::DisplayMode => todo!(),
-            Evaluator::Scan => todo!(),
-            Evaluator::PrefersReducedMotion => todo!(),
-            Evaluator::PrefersContrast => todo!(),
-            Evaluator::ForcedColors => todo!(),
-            Evaluator::OverflowBlock => todo!(),
-            Evaluator::OverflowInline => todo!(),
-            Evaluator::PrefersColorScheme => todo!(),
-            Evaluator::Pointer => todo!(),
-            Evaluator::AnyPointer => todo!(),
-            Evaluator::Hover => todo!(),
-            Evaluator::AnyHover => todo!(),
+            Evaluator::Enumerated(enumerated) => MediaExpressionValue::Enumerated(
+                MediaExpressionValueEnumerated::parse(input, enumerated)?,
+            ),
             Evaluator::Ident => {
                 let ident = input.expect_ident()?;
                 MediaExpressionValue::Ident(Ident::from(ident.as_ref()))
             },
         })
+    }
+}
+
+impl ToCss for MediaExpressionValue {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
+    where
+        W: Write,
+    {
+        match self {
+            MediaExpressionValue::Length(length) => length.to_css(dest),
+            MediaExpressionValue::Integer(value) => dest.write_str(&std::format!("{}", value)),
+            MediaExpressionValue::BoolInteger(value) => dest.write_str(&std::format!("{}", value)),
+            MediaExpressionValue::Float(value) => dest.write_str(&std::format!("{}", value)),
+            MediaExpressionValue::NumberRatio(ratio) => {
+                dest.write_str(&cssparser::ToCss::to_css_string(ratio))
+            },
+            MediaExpressionValue::Resolution(resolution) => {
+                dest.write_str(&cssparser::ToCss::to_css_string(resolution))
+            },
+            MediaExpressionValue::Enumerated(enumerated) => enumerated.to_css(dest),
+            MediaExpressionValue::Ident(ident) => {
+                dest.write_str(&cssparser::ToCss::to_css_string(ident))
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum MediaExpressionValueEnumerated {
+    Orientation(Orientation),
+    DisplayMode(DisplayMode),
+    Scan(Scan),
+    PrefersReducedMotion(PrefersReducedMotion),
+    PrefersContrast(PrefersContrast),
+    ForcedColors(ForcedColors),
+    OverflowBlock(OverflowBlock),
+    OverflowInline(OverflowInline),
+    PrefersColorScheme(PrefersColorScheme),
+    Pointer(Pointer),
+    AnyPointer(Pointer),
+    Hover(Hover),
+    AnyHover(Hover),
+}
+
+impl MediaExpressionValueEnumerated {
+    fn parse<'i, 't>(
+        input: &mut Parser<'i, 't>,
+        enumerated: &Enumerated,
+    ) -> Result<Self, ParseError<'i>> {
+        Ok(match enumerated {
+            Enumerated::Orientation => {
+                let orientation = Orientation::parse(input)?;
+                MediaExpressionValueEnumerated::Orientation(orientation)
+            },
+            Enumerated::DisplayMode => {
+                let display_mode = DisplayMode::parse(input)?;
+                MediaExpressionValueEnumerated::DisplayMode(display_mode)
+            },
+            Enumerated::Scan => {
+                let scan = Scan::parse(input)?;
+                MediaExpressionValueEnumerated::Scan(scan)
+            },
+            Enumerated::PrefersReducedMotion => {
+                let prefers_reduced_motion = PrefersReducedMotion::parse(input)?;
+                MediaExpressionValueEnumerated::PrefersReducedMotion(prefers_reduced_motion)
+            },
+            Enumerated::PrefersContrast => {
+                let prefers_contrats = PrefersContrast::parse(input)?;
+                MediaExpressionValueEnumerated::PrefersContrast(prefers_contrats)
+            },
+            Enumerated::ForcedColors => {
+                let forced_colors = ForcedColors::parse(input)?;
+                MediaExpressionValueEnumerated::ForcedColors(forced_colors)
+            },
+            Enumerated::OverflowBlock => {
+                let overflow_block = OverflowBlock::parse(input)?;
+                MediaExpressionValueEnumerated::OverflowBlock(overflow_block)
+            },
+            Enumerated::OverflowInline => {
+                let overflow_inline = OverflowInline::parse(input)?;
+                MediaExpressionValueEnumerated::OverflowInline(overflow_inline)
+            },
+            Enumerated::PrefersColorScheme => {
+                let prefers_color_scheme = PrefersColorScheme::parse(input)?;
+                MediaExpressionValueEnumerated::PrefersColorScheme(prefers_color_scheme)
+            },
+            Enumerated::Pointer => {
+                let pointer = Pointer::parse(input)?;
+                MediaExpressionValueEnumerated::Pointer(pointer)
+            },
+            Enumerated::AnyPointer => {
+                let pointer = Pointer::parse(input)?;
+                MediaExpressionValueEnumerated::AnyPointer(pointer)
+            },
+            Enumerated::Hover => {
+                let hover = Hover::parse(input)?;
+                MediaExpressionValueEnumerated::Hover(hover)
+            },
+            Enumerated::AnyHover => {
+                let hover = Hover::parse(input)?;
+                MediaExpressionValueEnumerated::AnyHover(hover)
+            },
+        })
+    }
+}
+
+impl ToCss for MediaExpressionValueEnumerated {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
+    where
+        W: Write,
+    {
+        match self {
+            MediaExpressionValueEnumerated::Orientation(orientation) => orientation.to_css(dest),
+            MediaExpressionValueEnumerated::DisplayMode(mode) => mode.to_css(dest),
+            MediaExpressionValueEnumerated::Scan(scan) => scan.to_css(dest),
+            MediaExpressionValueEnumerated::PrefersReducedMotion(motion) => motion.to_css(dest),
+            MediaExpressionValueEnumerated::PrefersContrast(contrast) => contrast.to_css(dest),
+            MediaExpressionValueEnumerated::ForcedColors(color) => color.to_css(dest),
+            MediaExpressionValueEnumerated::OverflowBlock(block) => block.to_css(dest),
+            MediaExpressionValueEnumerated::OverflowInline(inline) => inline.to_css(dest),
+            MediaExpressionValueEnumerated::PrefersColorScheme(scheme) => scheme.to_css(dest),
+            MediaExpressionValueEnumerated::Pointer(pointer) => pointer.to_css(dest),
+            MediaExpressionValueEnumerated::AnyPointer(pointer) => pointer.to_css(dest),
+            MediaExpressionValueEnumerated::Hover(hover) => hover.to_css(dest),
+            MediaExpressionValueEnumerated::AnyHover(hover) => hover.to_css(dest),
+        }
     }
 }

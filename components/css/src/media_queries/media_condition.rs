@@ -1,6 +1,9 @@
+use std::fmt::Write;
+
 use cssparser::{Parser, Token};
 
 use super::media_feature_expression::MediaFeatureExpression;
+use crate::css_writer::ToCss;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -11,6 +14,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 pub enum Operator {
     And,
     Or,
+}
+
+impl ToCss for Operator {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: Write,
+    {
+        match self {
+            Operator::And => dest.write_str("and"),
+            Operator::Or => dest.write_str("or"),
+        }
+    }
 }
 
 /// Represents a media condition.
@@ -35,8 +50,11 @@ impl MediaCondition {
     ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| MediaCondition::parse_media_not(context, input))
-            .or_else(|_err| MediaCondition::parse_media_and_or(context, input))
-            .or_else(|_err| MediaCondition::parse_in_parens(context, input))
+            .or_else(|_err| {
+                input
+                    .try_parse(|input| MediaCondition::parse_media_and_or(context, input))
+                    .or_else(|_err| MediaCondition::parse_in_parens(context, input))
+            })
     }
 
     pub fn parse_media_not<'i, 't>(
@@ -74,9 +92,10 @@ impl MediaCondition {
         input.parse_nested_block(|input| {
             let media_condition = input
                 .try_parse(|input| MediaCondition::parse(context, input))
-                .or_else(|_err| MediaFeatureExpression::parse(context, input))
-                .or_else(|_err: cssparser::ParseError<StyleParseErrorKind>| {
-                    MediaCondition::parse_general_enclosed(input)
+                .or_else(|_err| {
+                    input
+                        .try_parse(|input| MediaFeatureExpression::parse(context, input))
+                        .or_else(|_err| MediaCondition::parse_general_enclosed(input))
                 })?;
             Ok(MediaCondition::InParens(Box::new(media_condition)))
         })
@@ -90,7 +109,7 @@ impl MediaCondition {
                 input.expect_function()?;
                 input.parse_nested_block(|input| MediaCondition::parse_any_value(input))
             })
-            .or_else(|err: cssparser::ParseError<StyleParseErrorKind>| {
+            .or_else(|_err| {
                 input.expect_ident()?;
                 MediaCondition::parse_any_value(input)
             })?;
@@ -112,6 +131,34 @@ impl MediaCondition {
                 },
                 _ => (),
             }
+        }
+    }
+}
+
+impl ToCss for MediaCondition {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            MediaCondition::Feature(feature) => feature.to_css(dest),
+            MediaCondition::Not(media_condition) => {
+                dest.write_str("not ")?;
+                media_condition.to_css(dest)
+            },
+            MediaCondition::Operation(left, op, right) => {
+                left.to_css(dest)?;
+                dest.write_char(' ')?;
+                op.to_css(dest)?;
+                dest.write_char(' ')?;
+                right.to_css(dest)
+            },
+            MediaCondition::InParens(media_condition) => {
+                dest.write_char('(')?;
+                media_condition.to_css(dest)?;
+                dest.write_char(')')
+            },
+            MediaCondition::GeneralEnclosed => dest.write_str("future expansion"),
         }
     }
 }

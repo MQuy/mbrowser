@@ -1,6 +1,10 @@
+use core::fmt;
+use std::fmt::Write;
+
 use cssparser::Parser;
 
 use super::media_condition::MediaCondition;
+use crate::css_writer::ToCss;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -15,6 +19,18 @@ pub enum Qualifier {
     /// Negate a media query:
     /// <https://drafts.csswg.org/mediaqueries/#mq-not>
     Not,
+}
+
+impl ToCss for Qualifier {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> fmt::Result
+    where
+        W: Write,
+    {
+        match self {
+            Qualifier::Only => dest.write_str("only"),
+            Qualifier::Not => dest.write_str("not"),
+        }
+    }
 }
 
 /// <https://drafts.csswg.org/mediaqueries/#media-types>
@@ -105,5 +121,32 @@ impl MediaQuery {
                     condition,
                 })
             })
+    }
+}
+
+impl ToCss for MediaQuery {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        if let Some(qualifier) = self.qualifier {
+            qualifier.to_css(dest)?;
+            dest.write_char(' ')?;
+        }
+
+        match &self.media_type {
+            MediaQueryType::All => {
+                if self.qualifier.is_some() || self.condition.is_none() {
+                    dest.write_str("all")?;
+                }
+            },
+            MediaQueryType::Concrete(MediaType(ident)) => dest.write_str(&ident.0)?,
+        };
+
+        if self.media_type != MediaQueryType::All || self.qualifier.is_some() {
+            dest.write_str(" and ")?;
+        }
+
+        self.condition.to_css(dest)
     }
 }

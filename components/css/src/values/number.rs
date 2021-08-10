@@ -2,6 +2,7 @@ use cssparser::Parser;
 
 use super::CSSFloat;
 use crate::parser::ParseError;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
@@ -40,7 +41,11 @@ impl Integer {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = input.expect_integer()?;
+        if value < 0 {
+            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+        }
+        Ok(Integer(value))
     }
 
     pub fn value(&self) -> i32 {

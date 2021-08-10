@@ -8,7 +8,7 @@ use selectors::SelectorList;
 use smallbitvec::SmallBitVec;
 
 use super::longhand_id::LonghandId;
-use crate::css_writer::ToCss;
+use crate::css_writer::{CssWriter, ToCss};
 use crate::error_reporting::ContextualParseError;
 use crate::parser::ParseError;
 use crate::properties::declaration::{Importance, PropertyDeclaration};
@@ -126,7 +126,7 @@ impl PropertyDeclarationBlock {
 }
 
 impl ToCss for PropertyDeclarationBlock {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {

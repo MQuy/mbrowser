@@ -1,6 +1,7 @@
 use cssparser::{Delimiter, Parser, Token};
 
 use super::media_query::MediaQuery;
+use crate::css_writer::ToCss;
 use crate::error_reporting::ContextualParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -61,5 +62,17 @@ impl MediaList {
     /// Whether this `MediaList` contains no media queries.
     pub fn is_empty(&self) -> bool {
         self.media_queries.is_empty()
+    }
+}
+
+impl ToCss for MediaList {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.media_queries
+            .iter()
+            .map(|media_query| media_query.to_css(dest))
+            .collect()
     }
 }

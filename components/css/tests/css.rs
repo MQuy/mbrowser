@@ -74,8 +74,9 @@ pub fn check_style() {
 
 #[test]
 pub fn check_media() {
-    let css = "@media (min-width: 10px invalid 1000px) {}";
-    parse(css);
+    let css = "@media (8 <= color) {}";
+    let stylesheet = parse(css);
+    println!("{}", stylesheet);
 }
 #[test]
 pub fn check_supports() {

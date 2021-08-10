@@ -2,7 +2,7 @@ use std::fmt::Write;
 
 use cssparser::SourceLocation;
 
-use crate::css_writer::ToCss;
+use crate::css_writer::{CssWriter, ToCss};
 use crate::properties::declaration_block::PropertyDeclarationBlock;
 
 /// A [`@page`][page] rule.
@@ -23,10 +23,10 @@ pub struct PageRule {
 }
 
 impl ToCss for PageRule {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
-        dest.write_str(&self.block.to_css_string())
+        self.block.to_css(dest)
     }
 }

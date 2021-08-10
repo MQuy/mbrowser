@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use super::number::NonNegativeNumber;
 use super::CSSFloat;
@@ -20,6 +20,15 @@ impl Ratio {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
+impl ToCss for Ratio {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
         todo!()
     }
 }

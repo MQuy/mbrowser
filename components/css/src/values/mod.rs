@@ -40,6 +40,15 @@ impl From<&str> for Ident {
     }
 }
 
+impl ToCss for Ident {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_str(&self.0)
+    }
+}
+
 #[macro_export]
 macro_rules! ident {
     ($arg:tt) => {

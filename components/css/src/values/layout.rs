@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use super::CSSFloat;
 use crate::parser::ParseError;
@@ -54,6 +54,15 @@ impl Resolution {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
+impl ToCss for Resolution {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
         todo!()
     }
 }

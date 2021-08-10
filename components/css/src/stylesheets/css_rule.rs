@@ -52,7 +52,7 @@ impl ToCss for CssRule {
         match &self {
             CssRule::Namespace(namespace) => namespace.to_css(dest),
             CssRule::Style(_) => todo!(),
-            CssRule::Media(_) => todo!(),
+            CssRule::Media(media_rule) => media_rule.to_css(dest),
             CssRule::Keyframes(keyframes) => keyframes.to_css(dest),
             CssRule::Supports(_) => todo!(),
             CssRule::Page(page) => page.to_css(dest),

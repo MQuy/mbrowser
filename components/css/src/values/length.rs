@@ -3,6 +3,7 @@ use cssparser::Parser;
 use super::number::NonNegative;
 use super::percentage::Percentage;
 use super::CSSFloat;
+use crate::css_writer::ToCss;
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -23,6 +24,15 @@ impl Length {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
+impl ToCss for Length {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
         todo!()
     }
 }
