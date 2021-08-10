@@ -1,4 +1,7 @@
-use cssparser::Parser;
+use std::cmp::Ordering;
+use std::fmt::Display;
+
+use cssparser::{Parser, ToCss};
 
 use super::CSSFloat;
 use crate::parser::ParseError;
@@ -11,16 +14,57 @@ pub struct Number {
 }
 
 impl Number {
+    pub fn new(value: CSSFloat) -> Self {
+        Number { value }
+    }
+
     /// Parse a float.
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = input.expect_number()?;
+        Ok(Number { value })
+    }
+
+    pub fn parse_non_negative<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let value = Number::parse(context, input)?;
+        if value < 0 {
+            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+        }
+        Ok(value)
     }
 
     pub fn get(&self) -> f32 {
         self.value
+    }
+}
+
+impl PartialEq<i32> for Number {
+    fn eq(&self, other: &i32) -> bool {
+        self.get() as i32 == *other
+    }
+}
+
+impl PartialOrd<i32> for Number {
+    fn partial_cmp(&self, other: &i32) -> Option<Ordering> {
+        let value = self.get() as i32;
+        if value > *other {
+            Some(Ordering::Greater)
+        } else if value < *other {
+            Some(Ordering::Less)
+        } else {
+            Some(Ordering::Equal)
+        }
+    }
+}
+
+impl Display for Number {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("{}", self.value))
     }
 }
 
@@ -54,3 +98,26 @@ impl Integer {
 }
 
 pub type NonNegativeNumber = NonNegative<Number>;
+
+impl NonNegativeNumber {
+    pub fn new(val: CSSFloat) -> Self {
+        NonNegative::<Number>(Number::new(val.max(0.)))
+    }
+
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let value = Number::parse_non_negative(context, input)?;
+        Ok(NonNegative::<Number>(value))
+    }
+}
+
+impl ToCss for NonNegativeNumber {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!("{}", self.0))
+    }
+}

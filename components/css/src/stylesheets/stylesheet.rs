@@ -78,14 +78,16 @@ impl Stylesheet {
                     None => break,
                 };
                 match result {
-                    Ok((rule_start, rule)) => {
+                    Ok((_rule_start, rule)) => {
                         // Use a fallible push here, and if it fails, just fall
                         // out of the loop.  This will cause the page to be
                         // shown incorrectly, but it's better than OOMing.
                         rules.push(rule)
                     },
                     Err((error, slice)) => {
-                        todo!()
+                        let location = error.location;
+                        let error = ContextualParseError::InvalidRule(slice, error);
+                        iter.parser.context.log_css_error(location, error);
                     },
                 }
             }

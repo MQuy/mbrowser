@@ -1,7 +1,8 @@
-use cssparser::{Parser, ToCss};
+use cssparser::{match_ignore_ascii_case, Parser, ToCss, _cssparser_internal_to_lowercase};
 
 use super::CSSFloat;
 use crate::parser::ParseError;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
@@ -40,8 +41,6 @@ pub struct Size2D<L> {
 pub enum Resolution {
     /// Dots per inch.
     Dpi(CSSFloat),
-    /// An alias unit for dots per pixel.
-    X(CSSFloat),
     /// Dots per pixel.
     Dppx(CSSFloat),
     /// Dots per centimeter.
@@ -51,10 +50,21 @@ pub enum Resolution {
 impl Resolution {
     /// Parse a resolution.
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let token = input.next()?.clone();
+        match token {
+            cssparser::Token::Dimension { value, unit, .. } if value >= 0.0 => {
+                match_ignore_ascii_case! { &unit,
+                    "dpi" => Ok(Resolution::Dpi(value)),
+                    "x" | "dppx"=> Ok(Resolution::Dppx(value)),
+                    "dpcm" => Ok(Resolution::Dpcm(value)),
+                    _ => return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedDimension(unit))),
+                }
+            },
+            ref t => return Err(input.new_unexpected_token_error(t.clone())),
+        }
     }
 }
 
@@ -63,6 +73,11 @@ impl ToCss for Resolution {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        let (unit, value) = match self {
+            Resolution::Dpi(value) => ("dpi", value),
+            Resolution::Dppx(value) => ("dppx", value),
+            Resolution::Dpcm(value) => ("dpcm", value),
+        };
+        dest.write_fmt(format_args!("{}{}", value, unit))
     }
 }

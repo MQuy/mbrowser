@@ -74,7 +74,7 @@ pub fn check_style() {
 
 #[test]
 pub fn check_media() {
-    let css = "@media (8 <= color) {}";
+    let css = "@media (width: 10px) {}";
     let stylesheet = parse(css);
     println!("{}", stylesheet);
 }

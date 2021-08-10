@@ -20,7 +20,14 @@ impl Ratio {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let first_value = NonNegativeNumber::parse(context, input)?;
+        input
+            .try_parse(|input| {
+                input.expect_delim('/')?;
+                let second_value = NonNegativeNumber::parse(context, input)?;
+                Ok(Ratio(first_value.clone(), second_value))
+            })
+            .or_else(|_err: ParseError<'i>| Ok(Ratio(first_value, NonNegativeNumber::new(1.0))))
     }
 }
 
@@ -29,6 +36,8 @@ impl ToCss for Ratio {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        self.0.to_css(dest)?;
+        dest.write_str(" / ")?;
+        self.1.to_css(dest)
     }
 }

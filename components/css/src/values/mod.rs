@@ -22,6 +22,25 @@ pub mod text;
 pub mod time;
 pub mod url;
 
+/// Whether to allow negative lengths or not.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd)]
+pub enum AllowedNumericType {
+    /// Allow all kind of numeric values.
+    All,
+    /// Allow only non-negative numeric values.
+    NonNegative,
+}
+
+impl AllowedNumericType {
+    pub fn is_ok(&self, value: f32) -> bool {
+        match self {
+            AllowedNumericType::All => true,
+            AllowedNumericType::NonNegative => value >= 0.0,
+        }
+    }
+}
+
 /// A CSS float value.
 pub type CSSFloat = f32;
 
