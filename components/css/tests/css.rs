@@ -78,10 +78,12 @@ pub fn check_media() {
     let stylesheet = parse(css);
     println!("{}", stylesheet);
 }
+
 #[test]
 pub fn check_supports() {
-    let css = "@supports (color: green) and invalid and (margin: 0) {}";
-    parse(css);
+    let css = "@supports (color: green) {}";
+    let stylesheet = parse(css);
+    println!("{}", stylesheet);
 }
 
 #[test]

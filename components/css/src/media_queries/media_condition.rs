@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use cssparser::{Parser, Token};
+use cssparser::{BasicParseError, Parser, Token};
 
 use super::media_feature_expression::MediaFeatureExpression;
 use crate::css_writer::ToCss;
@@ -40,7 +40,7 @@ pub enum MediaCondition {
     /// A condition wrapped in parenthesis.
     InParens(Box<MediaCondition>),
     /// A future expansion
-    GeneralEnclosed,
+    GeneralEnclosed(String),
 }
 
 impl MediaCondition {
@@ -95,7 +95,10 @@ impl MediaCondition {
                 .or_else(|_err| {
                     input
                         .try_parse(|input| MediaFeatureExpression::parse(context, input))
-                        .or_else(|_err| MediaCondition::parse_general_enclosed(input))
+                        .or_else(|_err| -> Result<Self, ParseError<'i>> {
+                            let value = MediaCondition::parse_general_enclosed(input)?;
+                            Ok(MediaCondition::GeneralEnclosed(value))
+                        })
                 })?;
             Ok(MediaCondition::InParens(Box::new(media_condition)))
         })
@@ -103,35 +106,16 @@ impl MediaCondition {
 
     pub fn parse_general_enclosed<'i, 't>(
         input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
+    ) -> Result<String, ParseError<'i>> {
         input
             .try_parse(|input| {
                 input.expect_function()?;
-                input.parse_nested_block(|input| MediaCondition::parse_any_value(input))
+                input.parse_nested_block(|input| consume_any_value(input))
             })
             .or_else(|_err| {
                 input.expect_ident()?;
-                MediaCondition::parse_any_value(input)
-            })?;
-        Ok(MediaCondition::GeneralEnclosed)
-    }
-
-    fn parse_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<(), ParseError<'i>> {
-        loop {
-            let token = input.next()?;
-            match token {
-                Token::BadUrl(_)
-                | Token::BadString(_)
-                | Token::CloseParenthesis
-                | Token::CloseSquareBracket
-                | Token::CloseCurlyBracket => {
-                    return Err(
-                        input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken)
-                    );
-                },
-                _ => (),
-            }
-        }
+                consume_any_value(input)
+            })
     }
 }
 
@@ -158,7 +142,16 @@ impl ToCss for MediaCondition {
                 media_condition.to_css(dest)?;
                 dest.write_char(')')
             },
-            MediaCondition::GeneralEnclosed => dest.write_str("future expansion"),
+            MediaCondition::GeneralEnclosed(value) => dest.write_str(value),
         }
     }
+}
+
+/// <https://drafts.csswg.org/css-syntax-3/#typedef-any-value>
+pub fn consume_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<String, ParseError<'i>> {
+    let pos = input.position();
+    input
+        .expect_no_error_token()
+        .map_err(|err| -> ParseError<'i> { err.into() })?;
+    Ok(input.slice_from(pos).to_owned())
 }

@@ -54,7 +54,7 @@ impl ToCss for CssRule {
             CssRule::Style(_) => todo!(),
             CssRule::Media(media_rule) => media_rule.to_css(dest),
             CssRule::Keyframes(keyframes) => keyframes.to_css(dest),
-            CssRule::Supports(_) => todo!(),
+            CssRule::Supports(supports) => supports.to_css(dest),
             CssRule::Page(page) => page.to_css(dest),
         }
     }

@@ -15,6 +15,7 @@ use super::namespace_rule::NamespaceRule;
 use super::style_rule::StyleRule;
 use super::stylesheet::{Namespaces, ParserContext};
 use super::support_rule::{SupportsCondition, SupportsRule};
+use crate::error_reporting::ContextualParseError;
 use crate::media_queries::media_list::MediaList;
 use crate::parser::ParseError;
 use crate::properties::declaration_block::parse_property_declaration_list;
@@ -257,7 +258,9 @@ impl<'a, 'b> NestedRuleParser<'a, 'b> {
             match result {
                 Ok(rule) => rules.push(rule),
                 Err((error, slice)) => {
-                    todo!()
+                    let location = error.location;
+                    let error = ContextualParseError::InvalidRule(slice, error);
+                    self.context.log_css_error(location, error);
                 },
             }
         }
@@ -315,21 +318,11 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
                 rules: self.parse_nested_rules(input, CssRuleType::Media),
                 source_location: start.source_location(),
             })),
-            AtRuleBlockPrelude::Supports(condition) => {
-                let eval_context = ParserContext::new_with_rule_type(
-                    self.context,
-                    CssRuleType::Style,
-                    self.namespaces,
-                );
-
-                let enabled = condition.eval(&eval_context, self.namespaces);
-                Ok(CssRule::Supports(SupportsRule {
-                    condition,
-                    rules: self.parse_nested_rules(input, CssRuleType::Supports),
-                    enabled,
-                    source_location: start.source_location(),
-                }))
-            },
+            AtRuleBlockPrelude::Supports(condition) => Ok(CssRule::Supports(SupportsRule {
+                condition,
+                rules: self.parse_nested_rules(input, CssRuleType::Supports),
+                source_location: start.source_location(),
+            })),
             AtRuleBlockPrelude::Keyframes(name, vendor_prefix) => {
                 let context = ParserContext::new_with_rule_type(
                     self.context,
@@ -435,6 +428,10 @@ pub enum StyleParseErrorKind<'i> {
     UnexpectedCharsetRule,
     /// Unsupported @ rule
     UnsupportedAtRule(CowRcStr<'i>),
+    /// An unexpected value was encountered.
+    UnexpectedValue(CowRcStr<'i>),
+    /// An unexpected token.
+    UnexpectedToken(Token<'i>),
     /// A placeholder for many sources of errors that require more specific variants.
     UnspecifiedError,
     /// An unexpected token was found within a namespace rule.
