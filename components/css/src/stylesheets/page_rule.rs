@@ -27,6 +27,8 @@ impl ToCss for PageRule {
     where
         W: std::fmt::Write,
     {
-        self.block.to_css(dest)
+        dest.write_str("@page {")?;
+        // TODO self.block.to_css(dest)
+        dest.write_str("}")
     }
 }

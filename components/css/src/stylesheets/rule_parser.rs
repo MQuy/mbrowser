@@ -11,7 +11,7 @@ use selectors::SelectorList;
 use super::css_rule::{CssRule, CssRuleType};
 use super::keyframe_rule::KeyframesRule;
 use super::media_rule::MediaRule;
-use super::namespace_rule::NamespaceRule;
+use super::namespace_rule::{NamespaceRule, NamespaceValue};
 use super::style_rule::StyleRule;
 use super::stylesheet::{Namespaces, ParserContext};
 use super::support_rule::{SupportsCondition, SupportsRule};
@@ -56,7 +56,7 @@ pub enum AtRuleNonBlockPrelude {
     /// A @import rule prelude.
     Import(CssUrl, MediaList),
     /// A @namespace rule prelude.
-    Namespace(Option<Prefix>, Namespace),
+    Namespace(Option<Prefix>, NamespaceValue),
 }
 
 /// The current state of the parser.
@@ -161,7 +161,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
                 }
 
                 let namespace = NamespaceRule::parse(input)?;
-                let prelude = AtRuleNonBlockPrelude::Namespace(namespace.prefix, namespace.url);
+                let prelude = AtRuleNonBlockPrelude::Namespace(namespace.prefix, namespace.value);
                 return Ok(AtRuleType::WithoutBlock(prelude));
             },
             _ => {}
@@ -190,18 +190,10 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
     ) -> Self::AtRule {
         let rule = match prelude {
             AtRuleNonBlockPrelude::Namespace(prefix, url) => {
-                let prefix = if let Some(prefix) = prefix {
-                    self.namespaces.prefixes.insert(prefix.clone(), url.clone());
-                    Some(prefix)
-                } else {
-                    self.namespaces.default = Some(url.clone());
-                    None
-                };
-
                 self.state = State::Namespaces;
                 CssRule::Namespace(NamespaceRule {
                     prefix,
-                    url,
+                    value: url,
                     source_location: start.source_location(),
                 })
             },

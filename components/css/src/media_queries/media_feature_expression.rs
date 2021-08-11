@@ -79,6 +79,24 @@ pub enum RangeOrOperator {
     Operator(Operator),
 }
 
+impl RangeOrOperator {
+    pub fn negative(&self) -> Self {
+        match self {
+            RangeOrOperator::Range(range) => RangeOrOperator::Range(match range {
+                Range::Min => Range::Max,
+                Range::Max => Range::Min,
+            }),
+            RangeOrOperator::Operator(operator) => RangeOrOperator::Operator(match operator {
+                Operator::Equal => Operator::Equal,
+                Operator::GreaterThan => Operator::LessThan,
+                Operator::GreaterThanEqual => Operator::LessThanEqual,
+                Operator::LessThan => Operator::GreaterThan,
+                Operator::LessThanEqual => Operator::GreaterThanEqual,
+            }),
+        }
+    }
+}
+
 /// A feature expression contains a reference to the media feature, the value
 /// the media query contained, and the range to evaluate.
 #[derive(Clone, Debug, PartialEq)]
@@ -178,12 +196,16 @@ impl MediaFeatureExpression {
                 }
                 let (feature_range, next_state) = featurable.unwrap();
                 let left_value = MediaExpressionValue::parse(context, input, feature_range.1)?;
+                // 600px < height
+                // -> value = 600px, op = <, name = height
+                // we have to reverse op to keep the expression correct
+                // -> value = 600px, op = >, name = height
                 let left_operator =
                     MediaFeatureExpression::parse_comparison(input, feature_range.2)?;
                 let left_media_condition = MediaCondition::Feature(MediaFeatureExpression {
                     value: Some(left_value),
                     feature_index: feature_range.0,
-                    range_or_operator: Some(left_operator),
+                    range_or_operator: Some(left_operator.negative()),
                 });
                 input.reset(&next_state);
 
@@ -200,9 +222,8 @@ impl MediaFeatureExpression {
                                 range_or_operator: Some(right_operator),
                             });
                         Ok(MediaCondition::Operation(
-                            Box::new(left_media_condition.clone()),
+                            vec![left_media_condition.clone(), right_media_condition],
                             super::media_condition::Operator::And,
-                            Box::new(right_media_condition),
                         ))
                     })
                     .or_else(|_err: ParseError<'i>| Ok(left_media_condition))

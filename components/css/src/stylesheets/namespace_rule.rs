@@ -1,6 +1,7 @@
 use std::fmt::Write;
 
-use cssparser::{BasicParseError, BasicParseErrorKind, Parser, SourceLocation};
+use common::url::BrowserUrl;
+use cssparser::{BasicParseError, BasicParseErrorKind, CowRcStr, Parser, SourceLocation, Token};
 use html5ever::{Namespace, Prefix};
 
 use super::rule_parser::StyleParseErrorKind;
@@ -14,7 +15,7 @@ pub struct NamespaceRule {
     /// The namespace prefix, and `None` if it's the default Namespace
     pub prefix: Option<Prefix>,
     /// The actual namespace url.
-    pub url: Namespace,
+    pub value: NamespaceValue,
     /// The source location this rule was found at.
     pub source_location: SourceLocation,
 }
@@ -26,21 +27,10 @@ impl NamespaceRule {
             .try_parse(|i| i.expect_ident_cloned())
             .map(|s| Prefix::from(s.as_ref()))
             .ok();
-        let maybe_namespace = match input.expect_url_or_string() {
-            Ok(url_or_string) => url_or_string,
-            Err(BasicParseError {
-                kind: BasicParseErrorKind::UnexpectedToken(t),
-                location,
-            }) => {
-                return Err(location
-                    .new_custom_error(StyleParseErrorKind::UnexpectedTokenWithinNamespace(t)))
-            },
-            Err(e) => return Err(e.into()),
-        };
-        let url = Namespace::from(maybe_namespace.as_ref());
+        let value = NamespaceValue::parse(input)?;
         Ok(Self {
             prefix,
-            url,
+            value,
             source_location: input.current_source_location(),
         })
     }
@@ -51,11 +41,60 @@ impl ToCss for NamespaceRule {
     where
         W: std::fmt::Write,
     {
-        dest.write_str("@namespaces ")?;
+        dest.write_str("@namespace ")?;
         if let Some(prefix) = &self.prefix {
-            dest.write_str(&std::format!("{} ", prefix))?;
+            dest.write_fmt(format_args!("{} ", prefix))?;
         }
-        dest.write_str(&self.url)?;
+        dest.write_fmt(format_args!("{};", self.value.to_css_string()))?;
         Ok(())
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum NamespaceValue {
+    String(String),
+    Url(BrowserUrl),
+}
+
+impl NamespaceValue {
+    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+        let location = input.current_source_location();
+        match input.next()? {
+            Token::UnquotedUrl(ref value) => NamespaceValue::parse_string_to_url(value, &location),
+            Token::QuotedString(ref value) => Ok(NamespaceValue::String(value.to_string())),
+            Token::Function(ref name) if name.eq_ignore_ascii_case("url") => input
+                .parse_nested_block(|input| {
+                    let location = input.current_source_location();
+                    let url = input.expect_string()?;
+                    NamespaceValue::parse_string_to_url(url, &location)
+                }),
+            t => {
+                return Err(location.new_custom_error(
+                    StyleParseErrorKind::UnexpectedTokenWithinNamespace(t.clone()),
+                ))
+            },
+        }
+    }
+
+    fn parse_string_to_url<'i>(
+        value: &CowRcStr<'i>,
+        location: &SourceLocation,
+    ) -> Result<Self, ParseError<'i>> {
+        let browser_url = BrowserUrl::parse(value).map_err(|_err| {
+            location.new_custom_error(StyleParseErrorKind::UnexpectedValue(value.clone()))
+        })?;
+        Ok(NamespaceValue::Url(browser_url))
+    }
+}
+
+impl ToCss for NamespaceValue {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
+    where
+        W: Write,
+    {
+        match self {
+            NamespaceValue::String(value) => dest.write_fmt(format_args!("\"{}\"", value)),
+            NamespaceValue::Url(url) => dest.write_fmt(format_args!("url({})", url.as_str())),
+        }
     }
 }

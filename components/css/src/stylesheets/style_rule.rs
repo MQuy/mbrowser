@@ -1,6 +1,7 @@
 use cssparser::SourceLocation;
 use selectors::SelectorList;
 
+use crate::css_writer::ToCss;
 use crate::properties::declaration_block::PropertyDeclarationBlock;
 use crate::selectors::select_impl::SelectorImpl;
 
@@ -13,4 +14,13 @@ pub struct StyleRule {
     pub block: PropertyDeclarationBlock,
     /// The location in the sheet where it was found.
     pub source_location: SourceLocation,
+}
+
+impl ToCss for StyleRule {
+    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
 }

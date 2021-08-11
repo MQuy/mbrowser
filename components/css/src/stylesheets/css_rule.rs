@@ -51,7 +51,7 @@ impl ToCss for CssRule {
     {
         match &self {
             CssRule::Namespace(namespace) => namespace.to_css(dest),
-            CssRule::Style(_) => todo!(),
+            CssRule::Style(style) => style.to_css(dest),
             CssRule::Media(media_rule) => media_rule.to_css(dest),
             CssRule::Keyframes(keyframes) => keyframes.to_css(dest),
             CssRule::Supports(supports) => supports.to_css(dest),

@@ -69,7 +69,7 @@ impl ToCss for Keyframe {
     {
         self.selector.to_css(&mut CssWriter::new(dest))?;
         dest.write_str(" {")?;
-        self.block.to_css(&mut CssWriter::new(dest))?;
+        // self.block.to_css(&mut CssWriter::new(dest))?;
         dest.write_str("\n}")
     }
 }
@@ -82,6 +82,7 @@ impl KeyframeSelector {
     pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
         input
             .parse_comma_separated(|input| {
+                let location = input.current_source_location();
                 let token = input.next()?.clone();
                 match token {
                     Token::Ident(ref ident) if ident.as_ref().eq_ignore_ascii_case("from") => {
@@ -91,9 +92,15 @@ impl KeyframeSelector {
                     Token::Percentage {
                         unit_value: percentage,
                         ..
-                    } if percentage < 0. && percentage <= 1. => Ok(percentage),
-                    _ => Err(input.new_unexpected_token_error(token.clone())),
+                    } if percentage >= 0. && percentage <= 1. => Ok(percentage),
+                    _ => Err(location.new_unexpected_token_error(token.clone())),
                 }
+            })
+            .map(|vec| {
+                let mut newvec = vec.clone();
+                newvec.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                newvec.dedup();
+                newvec
             })
             .map(KeyframeSelector)
     }
@@ -107,8 +114,6 @@ impl ToCss for KeyframeSelector {
         self.0
             .iter()
             .map(|percentage| match *percentage {
-                from if from == 0.0 => dest.write_str("from"),
-                to if to == 100.0 => dest.write_str("to"),
                 value => dest.write_str(&std::format!("{}%", value * 100.0)),
             })
             .collect()

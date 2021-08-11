@@ -25,7 +25,9 @@ impl ToCss for MediaRule {
         W: std::fmt::Write,
     {
         dest.write_str("@media ")?;
-        self.media_queries.to_css(dest)
+        self.media_queries.to_css(dest)?;
+        dest.write_str(" {\n")?;
         // TODO: log for rules
+        dest.write_str("}")
     }
 }

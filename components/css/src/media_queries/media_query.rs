@@ -1,7 +1,7 @@
 use core::fmt;
 use std::fmt::Write;
 
-use cssparser::Parser;
+use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
 use super::media_condition::MediaCondition;
 use crate::css_writer::ToCss;
@@ -100,20 +100,35 @@ impl MediaQuery {
                 condition: Some(media_condition),
             })
             .or_else(|_err| {
-                let qualifier = match input.expect_ident() {
-                    Ok(ident) => match ident.to_string() {
-                        value if value == "not" => Some(Qualifier::Not),
-                        value if value == "only" => Some(Qualifier::Only),
-                        _ => {
-                            return Err(input
-                                .new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken));
-                        },
-                    },
-                    _ => None,
-                };
+                let qualifier = input
+                    .try_parse(|input| -> Result<Qualifier, ParseError<'i>> {
+                        match input.next()? {
+                            Token::Ident(ident) => match ident.to_string() {
+                                value if value == "not" => Ok(Qualifier::Not),
+                                value if value == "only" => Ok(Qualifier::Only),
+                                _ => {
+                                    return Err(input.new_custom_error(
+                                        StyleParseErrorKind::MediaQueryExpectedToken,
+                                    ))
+                                },
+                            },
+                            _ => {
+                                return Err(input.new_custom_error(
+                                    StyleParseErrorKind::MediaQueryExpectedToken,
+                                ))
+                            },
+                        }
+                    })
+                    .ok();
                 let media_type = MediaQueryType::parse(context, input)?;
                 let condition = input
-                    .try_parse(|input| MediaCondition::parse(context, input))
+                    .try_parse(|input| {
+                        match_ignore_ascii_case! { input.expect_ident()?,
+                            "and" => MediaCondition::parse_without_or(context, input),
+                            _ => return Err(input
+                                .new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken)),
+                        }
+                    })
                     .ok();
                 Ok(MediaQuery {
                     qualifier,

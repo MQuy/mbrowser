@@ -6,7 +6,7 @@ use cssparser::{
 
 use super::css_rule::CssRule;
 use crate::css_writer::{CssWriter, ToCss};
-use crate::media_queries::media_condition::{consume_any_value, MediaCondition};
+use crate::media_queries::media_condition::{consume_any_value, parse_general_enclosed};
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 
@@ -81,7 +81,7 @@ impl SupportsCondition {
                     let supports_after_op = SupportsCondition::parse_in_parens(input)?;
                     supports_conditions.push(supports_after_op);
 
-                    let mut leftover = SupportsCondition::parse_and_or(input, op)?;
+                    let mut leftover = SupportsCondition::parse_and_or_repeated(input, op)?;
                     supports_conditions.append(&mut leftover);
 
                     Ok(wrapper(supports_conditions))
@@ -89,7 +89,7 @@ impl SupportsCondition {
             })
     }
 
-    fn parse_and_or<'i, 't>(
+    fn parse_and_or_repeated<'i, 't>(
         input: &mut Parser<'i, 't>,
         expected_op: &str,
     ) -> Result<Vec<Self>, ParseError<'i>> {
@@ -99,8 +99,8 @@ impl SupportsCondition {
                 let location = input.current_source_location();
                 let ident = input.expect_ident()?;
                 match_ignore_ascii_case! { ident,
-                    "and" if expected_op == "and" => ("and", SupportsCondition::And as fn(_) -> _),
-                    "or" if expected_op == "or" => ("or", SupportsCondition::Or as fn(_) -> _),
+                    "and" if expected_op == "and" => (),
+                    "or" if expected_op == "or" => (),
                     _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))),
                 };
                 SupportsCondition::parse_in_parens(input)
@@ -137,7 +137,7 @@ impl SupportsCondition {
                 input
                     .try_parse(|input| SupportsCondition::parse_declaration(input))
                     .or_else(|_err| {
-                        let value = MediaCondition::parse_general_enclosed(input)?;
+                        let value = parse_general_enclosed(input)?;
                         Ok(SupportsCondition::GeneralEnclosed(value))
                     })
             })
