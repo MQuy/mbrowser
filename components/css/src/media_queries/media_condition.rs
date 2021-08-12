@@ -162,10 +162,10 @@ impl MediaCondition {
         input.expect_parenthesis_block()?;
         input.parse_nested_block(|input| {
             let media_condition = input
-                .try_parse(|input| MediaCondition::parse(context, input))
+                .try_parse(|input| MediaFeatureExpression::parse(context, input))
                 .or_else(|_err| {
                     input
-                        .try_parse(|input| MediaFeatureExpression::parse(context, input))
+                        .try_parse(|input| MediaCondition::parse(context, input))
                         .or_else(|_err| -> Result<Self, ParseError<'i>> {
                             let value = parse_general_enclosed(input)?;
                             Ok(MediaCondition::GeneralEnclosed(value))
@@ -221,6 +221,7 @@ pub fn consume_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<String, P
 pub fn parse_general_enclosed<'i, 't>(
     input: &mut Parser<'i, 't>,
 ) -> Result<String, ParseError<'i>> {
+    let position = input.position();
     input
         .try_parse(|input| {
             input.expect_function()?;
@@ -229,5 +230,6 @@ pub fn parse_general_enclosed<'i, 't>(
         .or_else(|_err| {
             input.expect_ident()?;
             consume_any_value(input)
-        })
+        })?;
+    Ok(input.slice_from(position).to_owned())
 }

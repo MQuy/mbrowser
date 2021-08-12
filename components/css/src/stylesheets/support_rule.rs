@@ -29,7 +29,10 @@ impl ToCss for SupportsRule {
         W: Write,
     {
         dest.write_str("@supports ")?;
-        self.condition.to_css(dest)
+        self.condition.to_css(dest)?;
+        dest.write_str(" {\n")?;
+        // TODO write rules
+        dest.write_str("}")
     }
 }
 
@@ -117,25 +120,26 @@ impl SupportsCondition {
     fn parse_not<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
         let location = input.current_source_location();
         let ident = input.expect_ident()?;
-        match_ignore_ascii_case! { ident,
-            "not" => SupportsCondition::parse_in_parens(input),
-            _ => Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))),
-        }
+        let support_condition = match_ignore_ascii_case! { ident,
+            "not" => SupportsCondition::parse_in_parens(input)?,
+            _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))),
+        };
+        Ok(SupportsCondition::Not(Box::new(support_condition)))
     }
 
     fn parse_in_parens<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
         input
-            .try_parse(|input| {
-                input.expect_parenthesis_block()?;
-                input.parse_nested_block(|input| {
-                    Ok(SupportsCondition::Parenthesized(Box::new(
-                        SupportsCondition::parse(input)?,
-                    )))
-                })
-            })
+            .try_parse(|input| SupportsCondition::parse_declaration(input))
             .or_else(|_err| -> Result<Self, ParseError<'i>> {
                 input
-                    .try_parse(|input| SupportsCondition::parse_declaration(input))
+                    .try_parse(|input| {
+                        input.expect_parenthesis_block()?;
+                        input.parse_nested_block(|input| {
+                            Ok(SupportsCondition::Parenthesized(Box::new(
+                                SupportsCondition::parse(input)?,
+                            )))
+                        })
+                    })
                     .or_else(|_err| {
                         let value = parse_general_enclosed(input)?;
                         Ok(SupportsCondition::GeneralEnclosed(value))
@@ -144,8 +148,11 @@ impl SupportsCondition {
     }
 
     fn parse_declaration<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-        let declaration = Declaration::parse(input)?;
-        Ok(SupportsCondition::Declaration(declaration))
+        input.expect_parenthesis_block()?;
+        input.parse_nested_block(|input| {
+            let declaration = Declaration::parse(input)?;
+            Ok(SupportsCondition::Declaration(declaration))
+        })
     }
 }
 
@@ -167,7 +174,7 @@ impl ToCss for SupportsCondition {
                 .enumerate()
                 .map(|(index, support)| {
                     if index != 0 {
-                        dest.write_fmt(format_args!(" {}", op))?;
+                        dest.write_fmt(format_args!(" {} ", op))?;
                     }
                     support.to_css(dest)
                 })
@@ -211,6 +218,6 @@ impl ToCss for Declaration {
     where
         W: std::fmt::Write,
     {
-        dest.write_str(&self.0)
+        dest.write_fmt(format_args!("({})", &self.0))
     }
 }

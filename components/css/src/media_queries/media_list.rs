@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use cssparser::{Delimiter, Parser, Token};
 
 use super::media_query::MediaQuery;
@@ -72,7 +74,13 @@ impl ToCss for MediaList {
     {
         self.media_queries
             .iter()
-            .map(|media_query| media_query.to_css(dest))
+            .enumerate()
+            .map(|(index, media_query)| {
+                if index != 0 {
+                    dest.write_str(", ")?;
+                }
+                media_query.to_css(dest)
+            })
             .collect()
     }
 }
