@@ -14,16 +14,18 @@ pub enum Rotate {
     Rotate3D(Number, Number, Number, Angle),
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<Rotate, ParseError<'i>> {
-    todo!()
+impl Rotate {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Rotate, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::Rotate)
+    Rotate::parse(context, input).map(PropertyDeclaration::Rotate)
 }

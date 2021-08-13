@@ -12,6 +12,15 @@ pub enum AbsoluteFontWeight {
     Bold,
 }
 
+impl AbsoluteFontWeight {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub enum FontWeight {
     Absolute(AbsoluteFontWeight),
@@ -19,16 +28,18 @@ pub enum FontWeight {
     Lighter,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<FontWeight, ParseError<'i>> {
-    todo!()
+impl FontWeight {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FontWeight)
+    FontWeight::parse(context, input).map(PropertyDeclaration::FontWeight)
 }

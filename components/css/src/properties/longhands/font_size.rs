@@ -12,16 +12,18 @@ pub enum FontSize {
     Larger,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<FontSize, ParseError<'i>> {
-    todo!()
+impl FontSize {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<FontSize, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FontSize)
+    FontSize::parse(context, input).map(PropertyDeclaration::FontSize)
 }

@@ -226,6 +226,15 @@ pub enum LengthPercentage {
     // Calc(Box<CalcLengthPercentage>),
 }
 
+impl LengthPercentage {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub enum GenericLengthPercentageOrAuto<LengthPercent> {
     LengthPercentage(LengthPercent),
@@ -233,6 +242,16 @@ pub enum GenericLengthPercentageOrAuto<LengthPercent> {
 }
 
 pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
+
+impl LengthPercentageOrAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 pub type NonNegativeLength = NonNegative<Length>;
 
 #[derive(Clone)]
@@ -243,7 +262,26 @@ pub enum GenericSize<LengthPercent> {
 }
 
 pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
+
+impl NonNegativeLengthPercentage {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 pub type Size = GenericSize<NonNegativeLengthPercentage>;
+
+impl Size {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
 
 #[derive(Clone)]
 #[repr(C, u8)]
@@ -252,6 +290,15 @@ pub enum GenericMaxSize<LengthPercent> {
     None,
 }
 pub type MaxSize = GenericMaxSize<NonNegativeLengthPercentage>;
+
+impl MaxSize {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
 
 #[derive(Clone)]
 #[repr(C, u8)]
@@ -262,4 +309,22 @@ pub enum GenericLengthPercentageOrNormal<LengthPercent> {
 pub type NonNegativeLengthPercentageOrNormal =
     GenericLengthPercentageOrNormal<NonNegativeLengthPercentage>;
 
+impl NonNegativeLengthPercentageOrNormal {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 pub type NonNegativeLengthOrAuto = GenericLengthPercentageOrAuto<NonNegativeLength>;
+
+impl NonNegativeLengthOrAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}

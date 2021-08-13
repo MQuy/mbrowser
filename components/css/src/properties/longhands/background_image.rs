@@ -10,16 +10,19 @@ pub struct BackgroundImage {
     images: Vec<Image>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<BackgroundImage, ParseError<'i>> {
-    todo!()
+impl BackgroundImage {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let images = input.parse_comma_separated(|input| Image::parse(context, input))?;
+        Ok(BackgroundImage { images })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::BackgroundImage)
+    BackgroundImage::parse(context, input).map(PropertyDeclaration::BackgroundImage)
 }

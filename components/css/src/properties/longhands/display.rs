@@ -7,16 +7,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 #[derive(Clone)]
 pub struct Display(u16);
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<Display, ParseError<'i>> {
-    todo!()
+impl Display {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Display, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::Display)
+    Display::parse(context, input).map(PropertyDeclaration::Display)
 }

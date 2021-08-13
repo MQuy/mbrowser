@@ -7,16 +7,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 #[derive(Clone)]
 pub struct CounterIncrement {}
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<CounterIncrement, ParseError<'i>> {
-    todo!()
+impl CounterIncrement {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<CounterIncrement, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::CounterIncrement)
+    CounterIncrement::parse(context, input).map(PropertyDeclaration::CounterIncrement)
 }

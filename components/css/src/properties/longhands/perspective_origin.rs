@@ -7,16 +7,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 #[derive(Clone)]
 pub struct PerspectiveOrigin {}
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<PerspectiveOrigin, ParseError<'i>> {
-    todo!()
+impl PerspectiveOrigin {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<PerspectiveOrigin, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::PerspectiveOrigin)
+    PerspectiveOrigin::parse(context, input).map(PropertyDeclaration::PerspectiveOrigin)
 }

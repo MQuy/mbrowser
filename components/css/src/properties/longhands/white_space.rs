@@ -1,7 +1,8 @@
-use cssparser::Parser;
+use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
 use crate::parser::ParseError;
-use crate::properties::declaration::PropertyDeclaration;
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
@@ -13,16 +14,17 @@ pub enum WhiteSpace {
     PreLine,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<WhiteSpace, ParseError<'i>> {
-    todo!()
+property_keywords_impl! { WhiteSpace,
+    WhiteSpace::Normal, "normal",
+    WhiteSpace::Pre, "pre",
+    WhiteSpace::Nowrap, "nowrap",
+    WhiteSpace::PreWrap, "pre-wrap",
+    WhiteSpace::PreLine, "pre-line",
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::WhiteSpace)
+    WhiteSpace::parse(input).map(PropertyDeclaration::WhiteSpace)
 }

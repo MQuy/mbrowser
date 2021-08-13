@@ -14,16 +14,18 @@ pub enum LineHeight {
     Length(NonNegativeLengthPercentage),
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<LineHeight, ParseError<'i>> {
-    todo!()
+impl LineHeight {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<LineHeight, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::LineHeight)
+    LineHeight::parse(context, input).map(PropertyDeclaration::LineHeight)
 }

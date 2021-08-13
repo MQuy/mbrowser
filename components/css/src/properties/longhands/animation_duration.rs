@@ -10,16 +10,19 @@ pub struct AnimationDuration {
     durations: Vec<Time>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<AnimationDuration, ParseError<'i>> {
-    todo!()
+impl AnimationDuration {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let times = input.parse_comma_separated(|input| Time::parse(context, input))?;
+        Ok(AnimationDuration { durations: times })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::AnimationDuration)
+    AnimationDuration::parse(context, input).map(PropertyDeclaration::AnimationDuration)
 }

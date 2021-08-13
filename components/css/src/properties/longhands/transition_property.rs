@@ -16,16 +16,18 @@ pub struct TransitionProperty {
     properties: Vec<SingleTransitionProperty>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<TransitionProperty, ParseError<'i>> {
-    todo!()
+impl TransitionProperty {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<TransitionProperty, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::TransitionProperty)
+    TransitionProperty::parse(context, input).map(PropertyDeclaration::TransitionProperty)
 }

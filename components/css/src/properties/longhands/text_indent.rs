@@ -9,7 +9,7 @@ pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<LengthPercentage, ParseError<'i>> {
-    todo!()
+    LengthPercentage::parse(context, input)
 }
 
 pub fn parse_declared<'i, 't>(

@@ -30,16 +30,18 @@ bitflags! {
     }
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<TextDecorationLine, ParseError<'i>> {
-    todo!()
+impl TextDecorationLine {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<TextDecorationLine, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::TextDecorationLine)
+    TextDecorationLine::parse(context, input).map(PropertyDeclaration::TextDecorationLine)
 }

@@ -3,29 +3,26 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-
-#[derive(Clone)]
-pub enum Box {
-    BorderBox,
-    PaddingBox,
-    ContentBox,
-}
+use crate::values::layout::Box;
 
 #[derive(Clone)]
 pub struct BackgroundClip {
     boxes: Vec<Box>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<BackgroundClip, ParseError<'i>> {
-    todo!()
+impl BackgroundClip {
+    pub fn parse<'i, 't>(
+        _context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let boxes = input.parse_comma_separated(Box::parse)?;
+        Ok(BackgroundClip { boxes })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::BackgroundClip)
+    BackgroundClip::parse(context, input).map(PropertyDeclaration::BackgroundClip)
 }

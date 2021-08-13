@@ -9,7 +9,7 @@ pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<MaxSize, ParseError<'i>> {
-    todo!()
+    MaxSize::parse(context, input)
 }
 
 pub fn parse_declared<'i, 't>(

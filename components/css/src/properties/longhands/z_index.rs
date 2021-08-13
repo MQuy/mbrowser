@@ -1,3 +1,5 @@
+use std::iter::Zip;
+
 use cssparser::Parser;
 
 use crate::parser::ParseError;
@@ -12,16 +14,18 @@ pub enum ZIndex {
     Auto,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<ZIndex, ParseError<'i>> {
-    todo!()
+impl ZIndex {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<ZIndex, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::ZIndex)
+    ZIndex::parse(context, input).map(PropertyDeclaration::ZIndex)
 }

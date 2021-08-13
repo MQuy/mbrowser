@@ -9,7 +9,7 @@ pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<TimingFunction, ParseError<'i>> {
-    todo!()
+    TimingFunction::parse(context, input)
 }
 
 pub fn parse_declared<'i, 't>(

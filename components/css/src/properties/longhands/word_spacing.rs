@@ -8,16 +8,17 @@ use crate::values::text::Spacing;
 
 pub type WordSpacing = Spacing<LengthPercentage>;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<WordSpacing, ParseError<'i>> {
-    todo!()
+impl WordSpacing {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
-
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::WordSpacing)
+    WordSpacing::parse(context, input).map(PropertyDeclaration::WordSpacing)
 }

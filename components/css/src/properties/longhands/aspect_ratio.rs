@@ -1,10 +1,9 @@
-use crate::values::position::PreferredRatio;
-
 use cssparser::Parser;
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::position::PreferredRatio;
 
 #[derive(Clone)]
 pub struct AspectRatio {
@@ -12,16 +11,18 @@ pub struct AspectRatio {
     pub ratio: PreferredRatio,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<AspectRatio, ParseError<'i>> {
-    todo!()
+impl AspectRatio {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<AspectRatio, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::AspectRatio)
+    AspectRatio::parse(context, input).map(PropertyDeclaration::AspectRatio)
 }

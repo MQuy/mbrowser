@@ -44,6 +44,15 @@ pub enum TimingFunction {
     Steps(Integer, StepPosition),
 }
 
+impl TimingFunction {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub enum KeyframesName {
     Ident(CustomIdent),

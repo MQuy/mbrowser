@@ -8,16 +8,19 @@ use crate::values::number::Number;
 #[derive(Clone)]
 pub struct Opacity(Number);
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<Opacity, ParseError<'i>> {
-    todo!()
+impl Opacity {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Opacity, ParseError<'i>> {
+        let number = Number::parse(context, input)?;
+        Ok(Opacity(number))
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::Opacity)
+    Opacity::parse(context, input).map(PropertyDeclaration::Opacity)
 }

@@ -1,7 +1,8 @@
-use cssparser::Parser;
+use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
 use crate::parser::ParseError;
-use crate::properties::declaration::PropertyDeclaration;
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
@@ -11,6 +12,13 @@ pub enum TextTransformCase {
     Uppercase,
     Lowercase,
     Capitalize,
+}
+
+property_keywords_impl! { TextTransformCase,
+    TextTransformCase::None, "none",
+    TextTransformCase::Uppercase, "uppercase",
+    TextTransformCase::Lowercase, "lowercase",
+    TextTransformCase::Capitalize, "capitalize",
 }
 
 #[derive(Clone)]
@@ -36,16 +44,18 @@ pub enum TextTransform {
     Transform(TextTransformValue),
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<TextTransform, ParseError<'i>> {
-    todo!()
+impl TextTransform {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<TextTransform, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::TextTransform)
+    TextTransform::parse(context, input).map(PropertyDeclaration::TextTransform)
 }

@@ -5,6 +5,7 @@ use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::{CSSWideKeyword, PropertyId};
 use crate::properties::shorthand_id::ShorthandId;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Integer;
 use crate::{properties, values};
@@ -674,3 +675,26 @@ pub struct WideKeywordDeclaration {
     /// The CSS-wide keyword.
     pub keyword: CSSWideKeyword,
 }
+
+macro_rules! property_keywords_impl {
+    ( $input:tt,
+        $($name:path, $value:expr),+,
+        $(,)?
+    ) => {
+        impl $input {
+            pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+                let token = input.next()?;
+                match token {
+                    Token::Ident(ident) => {
+                        match_ignore_ascii_case! { ident,
+                            $($value => Ok($name),)+
+                            _ => Err(input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureValue)),
+                        }
+                    },
+                    _ =>     Err(input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureValue)),
+                }
+            }
+        }
+    };
+}
+pub(crate) use property_keywords_impl;

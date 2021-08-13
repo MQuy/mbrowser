@@ -1,7 +1,8 @@
-use cssparser::{match_ignore_ascii_case, Parser, ToCss, _cssparser_internal_to_lowercase};
+use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
 use super::CSSFloat;
 use crate::parser::ParseError;
+use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -20,6 +21,19 @@ pub enum BorderStyle {
     Double,
 }
 
+property_keywords_impl! { BorderStyle,
+    BorderStyle::Hidden, "hidden",
+    BorderStyle::None, "none",
+    BorderStyle::Inset, "inset",
+    BorderStyle::Groove, "groove",
+    BorderStyle::Outset, "outset",
+    BorderStyle::Ridge, "ridge",
+    BorderStyle::Dotted, "dotted",
+    BorderStyle::Dashed, "dashed",
+    BorderStyle::Solid, "solid",
+    BorderStyle::Double, "double",
+}
+
 #[derive(Clone)]
 #[repr(u8)]
 pub enum Overflow {
@@ -27,6 +41,13 @@ pub enum Overflow {
     Hidden,
     Scroll,
     Auto,
+}
+
+property_keywords_impl! { Overflow,
+    Overflow::Visible, "visible",
+    Overflow::Hidden, "hidden",
+    Overflow::Scroll, "scroll",
+    Overflow::Auto, "auto",
 }
 
 #[derive(Clone)]
@@ -80,4 +101,17 @@ impl ToCss for Resolution {
         };
         dest.write_fmt(format_args!("{}{}", value, unit))
     }
+}
+
+#[derive(Clone)]
+pub enum Box {
+    BorderBox,
+    PaddingBox,
+    ContentBox,
+}
+
+property_keywords_impl! { Box,
+    Box::BorderBox, "border-box",
+    Box::PaddingBox, "padding-box",
+    Box::ContentBox, "content-box",
 }

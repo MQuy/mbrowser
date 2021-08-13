@@ -11,16 +11,18 @@ pub enum ColumnCount {
     Auto,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<ColumnCount, ParseError<'i>> {
-    todo!()
+impl ColumnCount {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<ColumnCount, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::ColumnCount)
+    ColumnCount::parse(context, input).map(PropertyDeclaration::ColumnCount)
 }

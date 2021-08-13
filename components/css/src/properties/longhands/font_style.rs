@@ -13,9 +13,27 @@ pub enum AngleDimension {
     Turn(CSSFloat),
 }
 
+impl AngleDimension {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub struct Angle {
     value: AngleDimension,
+}
+
+impl Angle {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 #[derive(Clone)]
@@ -25,16 +43,18 @@ pub enum FontStyle {
     Oblique(Angle),
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<FontStyle, ParseError<'i>> {
-    todo!()
+impl FontStyle {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FontStyle)
+    FontStyle::parse(context, input).map(PropertyDeclaration::FontStyle)
 }

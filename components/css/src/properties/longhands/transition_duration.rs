@@ -10,16 +10,19 @@ pub struct TransitionDuration {
     delays: Vec<Time>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<TransitionDuration, ParseError<'i>> {
-    todo!()
+impl TransitionDuration {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let delays = input.parse_comma_separated(|input| Time::parse(context, input))?;
+        Ok(TransitionDuration { delays })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::TransitionDuration)
+    TransitionDuration::parse(context, input).map(PropertyDeclaration::TransitionDuration)
 }

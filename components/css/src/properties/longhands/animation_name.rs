@@ -10,16 +10,19 @@ pub struct AnimationName {
     names: Vec<KeyframesName>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<AnimationName, ParseError<'i>> {
-    todo!()
+impl AnimationName {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let names = input.parse_comma_separated(|input| KeyframesName::parse(context, input))?;
+        Ok(AnimationName { names })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::AnimationName)
+    AnimationName::parse(context, input).map(PropertyDeclaration::AnimationName)
 }

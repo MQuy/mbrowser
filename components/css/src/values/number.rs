@@ -92,6 +92,13 @@ impl Integer {
         Ok(Integer(value))
     }
 
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+
     pub fn value(&self) -> i32 {
         self.0
     }

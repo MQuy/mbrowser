@@ -11,10 +11,28 @@ pub enum Translate {
     LengthPercentage(LengthPercentage, LengthPercentageWithLength),
 }
 
+impl Translate {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub struct LengthPercentageWithLength {
     length_percentage: LengthPercentage,
     length: Option<Length>,
+}
+
+impl LengthPercentageWithLength {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 #[derive(Clone)]
@@ -22,16 +40,20 @@ pub struct LengthPercentageComponent {
     length: Vec<LengthPercentageWithLength>,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<Translate, ParseError<'i>> {
-    todo!()
+impl LengthPercentageComponent {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let length = input
+            .parse_comma_separated(|input| LengthPercentageWithLength::parse(context, input))?;
+        Ok(LengthPercentageComponent { length })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::Translate)
+    Translate::parse(context, input).map(PropertyDeclaration::Translate)
 }

@@ -1,3 +1,8 @@
+use cssparser::Parser;
+
+use crate::parser::ParseError;
+use crate::stylesheets::stylesheet::ParserContext;
+
 #[derive(Clone)]
 #[repr(C)]
 pub struct RGBA {
@@ -33,4 +38,13 @@ pub enum Color {
         authored: Option<Box<str>>,
     },
     Complex(GenericColor<RGBA>),
+}
+
+impl Color {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Color, ParseError<'i>> {
+        todo!()
+    }
 }

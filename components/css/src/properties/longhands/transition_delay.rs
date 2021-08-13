@@ -9,16 +9,20 @@ use crate::values::time::Time;
 pub struct TransitionDelay {
     delays: Vec<Time>,
 }
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<TransitionDelay, ParseError<'i>> {
-    todo!()
+
+impl TransitionDelay {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let delays = input.parse_comma_separated(|input| Time::parse(context, input))?;
+        Ok(TransitionDelay { delays })
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::TransitionDelay)
+    TransitionDelay::parse(context, input).map(PropertyDeclaration::TransitionDelay)
 }

@@ -9,16 +9,18 @@ pub enum FlexBasis {
     Content,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<FlexBasis, ParseError<'i>> {
-    todo!()
+impl FlexBasis {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<FlexBasis, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FlexBasis)
+    FlexBasis::parse(context, input).map(PropertyDeclaration::FlexBasis)
 }

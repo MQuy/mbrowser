@@ -9,16 +9,18 @@ use crate::values::length::NonNegativeLength;
 #[derive(Clone)]
 pub struct BorderSpacing(pub Size2D<NonNegativeLength>);
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<BorderSpacing, ParseError<'i>> {
-    todo!()
+impl BorderSpacing {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<BorderSpacing, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::BorderSpacing)
+    BorderSpacing::parse(context, input).map(PropertyDeclaration::BorderSpacing)
 }

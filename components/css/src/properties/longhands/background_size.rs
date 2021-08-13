@@ -15,16 +15,18 @@ pub enum BackgroundSize {
     Contain,
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<BackgroundSize, ParseError<'i>> {
-    todo!()
+impl BackgroundSize {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::BackgroundSize)
+    BackgroundSize::parse(context, input).map(PropertyDeclaration::BackgroundSize)
 }

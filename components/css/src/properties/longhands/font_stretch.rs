@@ -1,7 +1,8 @@
-use cssparser::Parser;
+use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
 use crate::parser::ParseError;
-use crate::properties::declaration::PropertyDeclaration;
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::percentage::Percentage;
 
@@ -18,6 +19,18 @@ pub enum FontStretchKeyword {
     UltraExpanded,
 }
 
+property_keywords_impl! { FontStretchKeyword,
+    FontStretchKeyword::Normal, "normal",
+    FontStretchKeyword::Condensed, "condensed",
+    FontStretchKeyword::UltraCondensed, "ultra-condensed",
+    FontStretchKeyword::ExtraCondensed, "extra-condensed",
+    FontStretchKeyword::SemiCondensed, "semi-condensed",
+    FontStretchKeyword::SemiExpanded, "semi-expanded",
+    FontStretchKeyword::Expanded, "expanded",
+    FontStretchKeyword::ExtraExpanded, "extra-expanded",
+    FontStretchKeyword::UltraExpanded, "ultra-expanded",
+}
+
 #[derive(Clone)]
 #[repr(u8)]
 pub enum FontStretch {
@@ -25,16 +38,18 @@ pub enum FontStretch {
     Keyword(FontStretchKeyword),
 }
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<FontStretch, ParseError<'i>> {
-    todo!()
+impl FontStretch {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<FontStretch, ParseError<'i>> {
+        todo!()
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FontStretch)
+    FontStretch::parse(context, input).map(PropertyDeclaration::FontStretch)
 }
