@@ -243,13 +243,13 @@ pub enum PropertyDeclaration {
     /// `list-style-image`
     ListStyleImage(values::image::Image),
     /// `max-block-size`
-    MaxBlockSize(values::length::MaxSize),
+    MaxBlockSize(values::length::Size),
     /// `max-height`
-    MaxHeight(values::length::MaxSize),
+    MaxHeight(values::length::Size),
     /// `max-inline-size`
-    MaxInlineSize(values::length::MaxSize),
+    MaxInlineSize(values::length::Size),
     /// `max-width`
-    MaxWidth(values::length::MaxSize),
+    MaxWidth(values::length::Size),
     /// `border-bottom-left-radius`
     BorderBottomLeftRadius(values::border::BorderCornerRadius),
     /// `border-bottom-right-radius`

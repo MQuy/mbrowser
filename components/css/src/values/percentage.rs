@@ -1,13 +1,30 @@
-use cssparser::{Parser, ToCss};
+use cssparser::{Parser, ToCss, Token};
 
 use super::number::NonNegativeNumber;
 use super::CSSFloat;
 use crate::parser::ParseError;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone, Debug)]
 pub struct Percentage {
     value: CSSFloat,
+}
+
+impl Percentage {
+    /// https://drafts.csswg.org/css-values/#percentages
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        let token = input.next()?.clone();
+        match token {
+            Token::Dimension {
+                value, ref unit, ..
+            } if unit == &"%" => Ok(Percentage { value }),
+            _ => Err(input.new_custom_error(StyleParseErrorKind::UnexpectedToken(token))),
+        }
+    }
 }
 
 /// A computed <ratio> value.

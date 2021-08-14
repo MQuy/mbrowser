@@ -21,7 +21,7 @@ impl Number {
 
     /// Parse a float.
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let value = input.expect_number()?;
@@ -83,7 +83,7 @@ pub struct Integer(i32);
 impl Integer {
     /// Parse a non-negative integer.
     pub fn parse_non_negative<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let value = input.expect_integer()?;
@@ -94,10 +94,11 @@ impl Integer {
     }
 
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = input.expect_integer()?;
+        Ok(Integer(value))
     }
 
     pub fn value(&self) -> i32 {

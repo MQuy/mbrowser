@@ -223,7 +223,7 @@ impl ToCss for ViewportPercentageLength {
 /// <length-percentage> = [ <length> | <percentage> ]
 #[derive(Clone)]
 pub enum LengthPercentage {
-    Length(NoCalcLength),
+    Length(Length),
     Percentage(Percentage),
 }
 
@@ -232,83 +232,34 @@ impl LengthPercentage {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_internal(context, input, AllowedNumericType::All)
     }
-}
 
-/// ------------ Generic for Length/Percentage/Auto ----------
-#[derive(Clone)]
-pub enum GenericLengthPercentageOrAuto<LengthPercent> {
-    LengthPercentage(LengthPercent),
-    Auto,
-}
-
-pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
-
-impl LengthPercentageOrAuto {
-    pub fn parse<'i, 't>(
+    pub fn parse_non_negative<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_internal(context, input, AllowedNumericType::NonNegative)
     }
-}
 
-/// ------------ Generic for Length/Percentage/Number ----------
-#[derive(Clone)]
-pub enum GenericLengthPercentageNumberOrAuto<LengthPercent, Number> {
-    LengthPercentage(LengthPercent),
-    Number(Number),
-    Auto,
-}
-
-impl<LengthPercentage, Number> GenericLengthPercentageNumberOrAuto<LengthPercentage, Number> {
-    pub fn parse_internal<'i, 't, LP, NP>(
+    pub fn parse_internal<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        length_percentage_parser: LP,
-        number_parser: NP,
-    ) -> Result<Self, ParseError<'i>>
-    where
-        LP: FnOnce(&mut Parser<'i, 't>) -> Result<LengthPercentage, ParseError<'i>>,
-        NP: FnOnce(&mut Parser<'i, 't>) -> Result<Number, ParseError<'i>>,
-    {
+        num_context: AllowedNumericType,
+    ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| {
-                input.expect_ident_matching("auto")?;
-                Ok(Self::Auto)
+                let length = Length::parse(context, input, num_context)?;
+                Ok(LengthPercentage::Length(length))
             })
-            .or_else(|err: ParseError<'i>| {
-                input
-                    .try_parse(|input| {
-                        let length_percentage = length_percentage_parser(input)?;
-                        Ok(Self::LengthPercentage(length_percentage))
-                    })
-                    .or_else(|err: ParseError<'i>| {
-                        let number = number_parser(input)?;
-                        Ok(Self::Number(number))
-                    })
+            .or_else(|_err: ParseError<'i>| {
+                let percentage = Percentage::parse(context, input)?;
+                Ok(LengthPercentage::Percentage(percentage))
             })
     }
 }
 
-pub type NonNegativeLengthPercentageNumberOrAuto =
-    GenericLengthPercentageNumberOrAuto<NonNegativeLength, NonNegativeNumber>;
-
-impl NonNegativeLengthPercentageNumberOrAuto {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        Self::parse_internal(
-            context,
-            input,
-            |input| NonNegativeLength::parse(context, input),
-            |input| NonNegativeNumber::parse(context, input),
-        )
-    }
-}
-
+/// value = <length [0, ∞]>
 pub type NonNegativeLength = NonNegative<Length>;
 
 impl NonNegativeLength {
@@ -321,6 +272,7 @@ impl NonNegativeLength {
     }
 }
 
+/// value = <length [0, ∞]> | <percentage>
 pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
 
 impl NonNegativeLengthPercentage {
@@ -328,29 +280,164 @@ impl NonNegativeLengthPercentage {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let length_percentage = LengthPercentage::parse_non_negative(context, input)?;
+        Ok(Self(length_percentage))
     }
 }
 
-pub type Size = GenericLengthPercentageOrAuto<NonNegativeLengthPercentage>;
+/// Generic for Length/Percentage/Auto
+#[derive(Clone)]
+pub enum GenericLengthPercentageOrAuto<LengthPercent> {
+    LengthPercentage(LengthPercent),
+    Auto,
+}
+
+impl<LP> GenericLengthPercentageOrAuto<LP> {
+    pub fn parse_with<'i, 't, LPP>(
+        input: &mut Parser<'i, 't>,
+        length_percentage_parser: LPP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        LPP: FnOnce(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length_percentage = length_percentage_parser(input)?;
+                Ok(Self::LengthPercentage(length_percentage))
+            })
+    }
+}
+
+/// value = <length> | <percentage> | auto
+pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
+
+impl LengthPercentageOrAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| LengthPercentage::parse(context, input))
+    }
+}
+
+/// Generic for Length/Percentage/Number/Auto
+#[derive(Clone)]
+pub enum GenericLengthPercentageNumberOrAuto<LengthPercent, Number> {
+    LengthPercentage(LengthPercent),
+    Number(Number),
+    Auto,
+}
+
+impl<LP, N> GenericLengthPercentageNumberOrAuto<LP, N> {
+    pub fn parse_with<'i, 't, LPP, NP>(
+        input: &mut Parser<'i, 't>,
+        length_percentage_parser: LPP,
+        number_parser: NP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        LPP: FnOnce(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+        NP: FnOnce(&mut Parser<'i, 't>) -> Result<N, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                input
+                    .try_parse(|input| {
+                        let length_percentage = length_percentage_parser(input)?;
+                        Ok(Self::LengthPercentage(length_percentage))
+                    })
+                    .or_else(|_err: ParseError<'i>| {
+                        let number = number_parser(input)?;
+                        Ok(Self::Number(number))
+                    })
+            })
+    }
+}
+
+/// value = <length [0, ∞]> | <percentage> | <number [0, ∞]> | auto
+pub type NonNegativeLengthPercentageNumberOrAuto =
+    GenericLengthPercentageNumberOrAuto<NonNegativeLength, NonNegativeNumber>;
+
+impl NonNegativeLengthPercentageNumberOrAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(
+            input,
+            |input| NonNegativeLength::parse(context, input),
+            |input| NonNegativeNumber::parse(context, input),
+        )
+    }
+}
+
+#[derive(Clone)]
+pub enum ExtremumLength<LengthPercent> {
+    MaxContent,
+    MinContent,
+    FitContent(LengthPercent),
+}
+
+#[derive(Clone)]
+pub enum GenericSize<LengthPercent> {
+    Auto,
+    LengthPercentage(LengthPercent),
+    ExtremumLength(ExtremumLength<LengthPercent>),
+}
+
+impl<LP> GenericSize<LP> {
+    pub fn parse_with<'i, 't, F>(
+        input: &mut Parser<'i, 't>,
+        item_parser: F,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        F: Fn(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                input
+                    .try_parse(|input| {
+                        let length_percentage = item_parser(input)?;
+                        Ok(Self::LengthPercentage(length_percentage))
+                    })
+                    .or_else(|_err: ParseError<'i>| {
+                        let location = input.current_source_location();
+                        let ident = input.expect_ident()?;
+                        Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
+                            "max-content" => ExtremumLength::MaxContent,
+                            "min-content" => ExtremumLength::MinContent,
+                            "fit-content" => {
+                                let length_percentage = item_parser(input)?;
+                                ExtremumLength::FitContent(length_percentage)
+                            },
+                            _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+                        }))
+                    })
+            })
+    }
+}
+
+pub type Size = GenericSize<NonNegativeLengthPercentage>;
 
 impl Size {
-    pub fn parse_size<'i, 't>(
+    pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
-    }
-}
-
-pub type MaxSize = GenericLengthPercentageOrAuto<NonNegativeLengthPercentage>;
-
-impl MaxSize {
-    pub fn parse_max_size<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(input, |input| {
+            NonNegativeLengthPercentage::parse(context, input)
+        })
     }
 }
 
@@ -361,6 +448,26 @@ pub enum GenericLengthPercentageOrNormal<LengthPercent> {
     Normal,
 }
 
+impl<LP> GenericLengthPercentageOrNormal<LP> {
+    pub fn parse_with<'i, 't, F>(
+        input: &mut Parser<'i, 't>,
+        item_parser: F,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        F: Fn(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("normal")?;
+                Ok(Self::Normal)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length_percent = item_parser(input)?;
+                Ok(Self::LengthPercentage(length_percent))
+            })
+    }
+}
+
 pub type NonNegativeLengthPercentageOrNormal =
     GenericLengthPercentageOrNormal<NonNegativeLengthPercentage>;
 
@@ -369,7 +476,9 @@ impl NonNegativeLengthPercentageOrNormal {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(input, |input| {
+            NonNegativeLengthPercentage::parse(context, input)
+        })
     }
 }
 
@@ -380,25 +489,50 @@ impl NonNegativeLengthOrAuto {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(input, |input| NonNegativeLength::parse(context, input))
     }
 }
 
-#[repr(C, u8)]
 #[derive(Clone)]
-pub enum GenericLengthOrNumber<L, N> {
+pub enum GenericLengthOrNumber<N, L> {
     Number(N),
     Length(L),
 }
 
-pub type NonNegativeLengthOrNumber = GenericLengthOrNumber<NonNegativeLength, NonNegativeNumber>;
+impl<N, L> GenericLengthOrNumber<N, L> {
+    pub fn parse_with<'i, 't, LP, NP>(
+        input: &mut Parser<'i, 't>,
+        number_parser: NP,
+        length_parser: LP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        NP: FnOnce(&mut Parser<'i, 't>) -> Result<N, ParseError<'i>>,
+        LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                let number = number_parser(input)?;
+                Ok(Self::Number(number))
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length = length_parser(input)?;
+                Ok(Self::Length(length))
+            })
+    }
+}
+
+pub type NonNegativeLengthOrNumber = GenericLengthOrNumber<NonNegativeNumber, NonNegativeLength>;
 
 impl NonNegativeLengthOrNumber {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(
+            input,
+            |input| NonNegativeNumber::parse(context, input),
+            |input| NonNegativeLength::parse(context, input),
+        )
     }
 }
 
