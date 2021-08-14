@@ -93,13 +93,9 @@ impl MediaCondition {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        let ident = input.expect_ident()?.to_string();
-        if ident == "not" {
-            let media_condition = MediaCondition::parse_in_parens(context, input)?;
-            Ok(MediaCondition::Not(Box::new(media_condition)))
-        } else {
-            Err(input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken))
-        }
+        input.expect_ident_matching("not")?;
+        let media_condition = MediaCondition::parse_in_parens(context, input)?;
+        Ok(MediaCondition::Not(Box::new(media_condition)))
     }
 
     fn parse_media_and_or<'i, 't>(

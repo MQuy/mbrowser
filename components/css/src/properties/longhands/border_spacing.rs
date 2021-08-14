@@ -3,18 +3,16 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::Size2D;
-use crate::values::length::NonNegativeLength;
+use crate::values::length::{NonNegativeLength, Pair};
 
-#[derive(Clone)]
-pub struct BorderSpacing(pub Size2D<NonNegativeLength>);
+pub type BorderSpacing = Pair<NonNegativeLength>;
 
 impl BorderSpacing {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<BorderSpacing, ParseError<'i>> {
-        todo!()
+        Pair::parse_pair(input, |input| NonNegativeLength::parse(context, input))
     }
 }
 

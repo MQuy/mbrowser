@@ -50,13 +50,6 @@ property_keywords_impl! { Overflow,
     Overflow::Auto, "auto",
 }
 
-#[derive(Clone)]
-#[repr(C)]
-pub struct Size2D<L> {
-    pub width: L,
-    pub height: L,
-}
-
 /// A specified resolution.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Resolution {

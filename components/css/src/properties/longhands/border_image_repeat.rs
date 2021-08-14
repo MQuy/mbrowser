@@ -4,6 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::length::Pair;
 
 #[derive(Clone)]
 pub enum BorderImageRepeatKeyword {
@@ -20,15 +21,15 @@ property_keywords_impl! { BorderImageRepeatKeyword,
     BorderImageRepeatKeyword::Space, "space",
 }
 
-#[derive(Clone)]
-pub struct BorderImageRepeat(pub BorderImageRepeatKeyword, pub BorderImageRepeatKeyword);
+pub type BorderImageRepeat = Pair<BorderImageRepeatKeyword>;
 
 impl BorderImageRepeat {
+    /// https://drafts.csswg.org/css-backgrounds/#the-border-image-repeat
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        BorderImageRepeat::parse_pair(input, |input| BorderImageRepeatKeyword::parse(input))
     }
 }
 

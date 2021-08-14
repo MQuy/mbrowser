@@ -8,6 +8,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://www.w3.org/TR/css-values-4/#numbers
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct Number {
     value: CSSFloat,

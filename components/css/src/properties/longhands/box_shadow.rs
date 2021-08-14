@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::Parser;
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -11,8 +11,8 @@ pub enum BoxShadow {
 
 impl BoxShadow {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
+        _context: &ParserContext,
+        _input: &mut Parser<'i, 't>,
     ) -> Result<BoxShadow, ParseError<'i>> {
         todo!()
     }

@@ -118,12 +118,8 @@ impl SupportsCondition {
     }
 
     fn parse_not<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-        let location = input.current_source_location();
-        let ident = input.expect_ident()?;
-        let support_condition = match_ignore_ascii_case! { ident,
-            "not" => SupportsCondition::parse_in_parens(input)?,
-            _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))),
-        };
+        input.expect_ident_matching("not")?;
+        let support_condition = SupportsCondition::parse_in_parens(input)?;
         Ok(SupportsCondition::Not(Box::new(support_condition)))
     }
 

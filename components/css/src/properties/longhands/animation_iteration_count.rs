@@ -1,7 +1,8 @@
-use cssparser::Parser;
+use cssparser::{Parser, Token};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
 
@@ -13,10 +14,19 @@ pub enum SingleAnimationIterationCount {
 
 impl SingleAnimationIterationCount {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let token = input.next()?.clone();
+        Ok(match token {
+            Token::Ident(ident) if ident.eq_ignore_ascii_case("infinite") => {
+                SingleAnimationIterationCount::Infinite
+            },
+            Token::Number { value, .. } => {
+                SingleAnimationIterationCount::Number(Number::new(value))
+            },
+            _ => return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedToken(token))),
+        })
     }
 }
 
@@ -26,6 +36,7 @@ pub struct AnimationIterationCount {
 }
 
 impl AnimationIterationCount {
+    /// https://drafts.csswg.org/css-animations/#animation-iteration-count
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,

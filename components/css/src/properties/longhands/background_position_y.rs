@@ -32,7 +32,17 @@ impl VerticalPosition {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let keyword_parser_ret = input.try_parse(|input| VerticalPositionKeyword::parse(input));
+        let length_parser_ret = input.try_parse(|input| LengthPercentage::parse(context, input));
+
+        if keyword_parser_ret.is_err() && length_parser_ret.is_err() {
+            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+        } else {
+            Ok(VerticalPosition {
+                keyword: keyword_parser_ret.ok(),
+                length: length_parser_ret.ok(),
+            })
+        }
     }
 }
 
@@ -47,7 +57,16 @@ impl VerticalPositionComponent {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("center")?;
+                Ok(VerticalPositionComponent::Center)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let position = VerticalPosition::parse(context, input)
+                    .expect("background-position-x must contain either center or position");
+                Ok(VerticalPositionComponent::PositionY(position))
+            })
     }
 }
 
@@ -57,6 +76,7 @@ pub struct BackgroundPositionY {
 }
 
 impl BackgroundPositionY {
+    /// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-y
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,

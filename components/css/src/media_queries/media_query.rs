@@ -123,11 +123,8 @@ impl MediaQuery {
                 let media_type = MediaQueryType::parse(context, input)?;
                 let condition = input
                     .try_parse(|input| {
-                        match_ignore_ascii_case! { input.expect_ident()?,
-                            "and" => MediaCondition::parse_without_or(context, input),
-                            _ => return Err(input
-                                .new_custom_error(StyleParseErrorKind::MediaQueryExpectedToken)),
-                        }
+                        input.expect_ident_matching("and")?;
+                        MediaCondition::parse_without_or(context, input)
                     })
                     .ok();
                 Ok(MediaQuery {

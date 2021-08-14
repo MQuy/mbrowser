@@ -1,7 +1,6 @@
 use cssparser::Parser;
 
-use super::layout::Size2D;
-use super::length::{NonNegativeLength, NonNegativeLengthPercentage};
+use super::length::{NonNegativeLength, NonNegativeLengthPercentage, Pair};
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -24,7 +23,7 @@ impl BorderSideWidth {
 
 #[derive(Clone)]
 #[repr(C)]
-pub struct GenericBorderCornerRadius<L>(pub Size2D<L>);
+pub struct GenericBorderCornerRadius<L>(pub Pair<L>);
 
 pub type BorderCornerRadius = GenericBorderCornerRadius<NonNegativeLengthPercentage>;
 
