@@ -20,7 +20,7 @@ impl BorderImageSlice {
         let mut fill = input
             .try_parse(|input| input.expect_ident_matching("fill"))
             .is_ok();
-        let offsets = Rect::parse_rect(context, input, |input| {
+        let offsets = Rect::parse_with(input, |input| {
             NonNegativeLengthPercentage::parse(context, input)
         })?;
 

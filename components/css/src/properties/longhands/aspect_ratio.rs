@@ -36,7 +36,7 @@ impl AspectRatio {
             }
         }
         if auto == false && ratio == PreferredRatio::None {
-            panic!("aspect-ration must contain at least auto or ratio")
+            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
         } else {
             Ok(AspectRatio { auto, ratio })
         }

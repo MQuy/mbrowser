@@ -3,22 +3,9 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::PositiveInteger;
+use crate::values::number::IntegerAuto;
 
-#[derive(Clone)]
-pub enum ColumnCount {
-    Integer(PositiveInteger),
-    Auto,
-}
-
-impl ColumnCount {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<ColumnCount, ParseError<'i>> {
-        todo!()
-    }
-}
+pub type ColumnCount = IntegerAuto;
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,

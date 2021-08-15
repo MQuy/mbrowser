@@ -63,8 +63,7 @@ impl VerticalPositionComponent {
                 Ok(VerticalPositionComponent::Center)
             })
             .or_else(|_err: ParseError<'i>| {
-                let position = VerticalPosition::parse(context, input)
-                    .expect("background-position-x must contain either center or position");
+                let position = VerticalPosition::parse(context, input)?;
                 Ok(VerticalPositionComponent::PositionY(position))
             })
     }

@@ -4,13 +4,12 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::Length;
-use crate::values::AllowedNumericType;
 
 pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<Length, ParseError<'i>> {
-    Length::parse(context, input, AllowedNumericType::All)
+    Length::parse(context, input)
 }
 
 pub fn parse_declared<'i, 't>(

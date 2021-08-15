@@ -130,3 +130,41 @@ impl ToCss for NonNegativeNumber {
         dest.write_fmt(format_args!("{}", self.0))
     }
 }
+
+/// Generic for Number/Auto
+#[derive(Clone)]
+pub enum GenericNumberOrAuto<Number> {
+    Number(Number),
+    Auto,
+}
+
+impl<L> GenericNumberOrAuto<L> {
+    pub fn parse_with<'i, 't, LP>(
+        input: &mut Parser<'i, 't>,
+        number_parser: LP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length = number_parser(input)?;
+                Ok(Self::Number(length))
+            })
+    }
+}
+
+pub type IntegerAuto = GenericNumberOrAuto<Integer>;
+
+impl IntegerAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| Integer::parse(context, input))
+    }
+}

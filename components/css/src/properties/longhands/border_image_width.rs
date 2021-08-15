@@ -12,7 +12,7 @@ impl BorderImageWidth {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        Rect::parse_rect(context, input, |input| {
+        Rect::parse_with(input, |input| {
             NonNegativeLengthPercentageNumberOrAuto::parse(context, input)
         })
     }

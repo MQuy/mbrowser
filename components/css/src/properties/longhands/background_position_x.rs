@@ -63,8 +63,7 @@ impl HorizontalPositionComponent {
                 Ok(HorizontalPositionComponent::Center)
             })
             .or_else(|_err: ParseError<'i>| {
-                let position = HorizontalPosition::parse(context, input)
-                    .expect("background-position-x must contain either center or position");
+                let position = HorizontalPosition::parse(context, input)?;
                 Ok(HorizontalPositionComponent::PositionX(position))
             })
     }

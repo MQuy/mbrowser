@@ -29,10 +29,17 @@ impl Length {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        Length::parse(context, input, AllowedNumericType::NonNegative)
+        Length::parse_internal(context, input, AllowedNumericType::NonNegative)
     }
 
     pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Length::parse_internal(context, input, AllowedNumericType::All)
+    }
+
+    pub fn parse_internal<'i, 't>(
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,
         num_context: AllowedNumericType,
@@ -249,7 +256,7 @@ impl LengthPercentage {
     ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| {
-                let length = Length::parse(context, input, num_context)?;
+                let length = Length::parse_internal(context, input, num_context)?;
                 Ok(LengthPercentage::Length(length))
             })
             .or_else(|_err: ParseError<'i>| {
@@ -282,6 +289,33 @@ impl NonNegativeLengthPercentage {
     ) -> Result<Self, ParseError<'i>> {
         let length_percentage = LengthPercentage::parse_non_negative(context, input)?;
         Ok(Self(length_percentage))
+    }
+}
+
+/// Generic for Length/Auto
+#[derive(Clone)]
+pub enum GenericLengthOrAuto<Length> {
+    Length(Length),
+    Auto,
+}
+
+impl<L> GenericLengthOrAuto<L> {
+    pub fn parse_with<'i, 't, LP>(
+        input: &mut Parser<'i, 't>,
+        length_parser: LP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length = length_parser(input)?;
+                Ok(Self::Length(length))
+            })
     }
 }
 
@@ -542,8 +576,7 @@ where
     T: Clone;
 
 impl<T: Clone> Rect<T> {
-    pub fn parse_rect<'i, 't, F>(
-        _context: &ParserContext,
+    pub fn parse_with<'i, 't, F>(
         input: &mut Parser<'i, 't>,
         item_parser: F,
     ) -> Result<Self, ParseError<'i>>
@@ -577,8 +610,47 @@ impl NonNegativeLengthOrNumberRect {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        Rect::parse_rect(context, input, |input| {
+        Rect::parse_with(input, |input| {
             NonNegativeLengthOrNumber::parse(context, input)
+        })
+    }
+}
+
+#[derive(Clone)]
+pub enum GenericRectOrAuto<T: Clone> {
+    Auto,
+    Rect(Rect<T>),
+}
+
+impl<T: Clone> GenericRectOrAuto<T> {
+    pub fn parse_with<'i, 't, F>(
+        input: &mut Parser<'i, 't>,
+        item_parser: F,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        F: Fn(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("auto")?;
+                Ok(Self::Auto)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let rect = Rect::parse_with(input, item_parser)?;
+                Ok(Self::Rect(rect))
+            })
+    }
+}
+
+pub type LengthOrAutoRectAuto = GenericRectOrAuto<GenericLengthOrAuto<Length>>;
+
+impl LengthOrAutoRectAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| {
+            GenericLengthOrAuto::<Length>::parse_with(input, |input| Length::parse(context, input))
         })
     }
 }
