@@ -73,6 +73,7 @@ pub mod column_width;
 pub mod content;
 pub mod counter_increment;
 pub mod counter_reset;
+pub mod counter_set;
 pub mod cursor;
 pub mod direction;
 pub mod display;

@@ -2,7 +2,8 @@ use core::fmt;
 use std::fmt::Write;
 
 use cssparser::{
-    CowRcStr, SourceLocation, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
+    CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase,
+    match_ignore_ascii_case,
 };
 use selectors::parser::SelectorParseErrorKind;
 
@@ -12,12 +13,14 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 pub mod animation;
 pub mod border;
 pub mod color;
+pub mod generics;
 pub mod image;
 pub mod layout;
 pub mod length;
 pub mod number;
 pub mod percentage;
 pub mod position;
+pub mod specified;
 pub mod text;
 pub mod time;
 pub mod url;
@@ -80,6 +83,12 @@ macro_rules! ident {
 pub struct CustomIdent(pub String);
 
 impl CustomIdent {
+    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+        let location = input.current_source_location();
+        let ident = input.expect_ident()?;
+        CustomIdent::from_ident(location, ident, &["none"])
+    }
+
     /// Parse an already-tokenizer identifier
     pub fn from_ident<'i>(
         location: SourceLocation,

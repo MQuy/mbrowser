@@ -3,6 +3,7 @@ use std::fmt::Write;
 use cssparser::{
     CowRcStr, Parser, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
 };
+use html5ever::tendril::SliceExt;
 
 use super::number::{NonNegative, NonNegativeNumber};
 use super::percentage::Percentage;
@@ -62,6 +63,12 @@ impl Length {
             },
             ref t => return Err(location.new_unexpected_token_error(t.clone())),
         }
+    }
+}
+
+impl From<&str> for Length {
+    fn from(_: &str) -> Self {
+        todo!()
     }
 }
 
@@ -270,12 +277,22 @@ impl LengthPercentage {
 pub type NonNegativeLength = NonNegative<Length>;
 
 impl NonNegativeLength {
+    pub fn new(value: Length) -> Self {
+        NonNegative::<Length>(value)
+    }
+
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let length = Length::parse_non_negative(context, input)?;
         Ok(Self(length))
+    }
+}
+
+impl From<&str> for NonNegativeLength {
+    fn from(_: &str) -> Self {
+        todo!()
     }
 }
 

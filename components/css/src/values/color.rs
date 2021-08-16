@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[repr(C)]
 pub struct RGBA {
     pub red: u8,
@@ -12,14 +12,14 @@ pub struct RGBA {
     pub alpha: u8,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[repr(C)]
 pub struct ComplexColorRatios {
     pub bg: f32,
     pub fg: f32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[repr(C, u8)]
 pub enum GenericColor<RGBA> {
     Numeric(RGBA),
@@ -30,9 +30,10 @@ pub enum GenericColor<RGBA> {
     },
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Color {
     CurrentColor,
+    Transparent,
     Numeric {
         parsed: RGBA,
         authored: Option<Box<str>>,

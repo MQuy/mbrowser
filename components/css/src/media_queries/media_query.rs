@@ -1,7 +1,7 @@
 use core::fmt;
 use std::fmt::Write;
 
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, Token};
 
 use super::media_condition::MediaCondition;
 use crate::css_writer::ToCss;

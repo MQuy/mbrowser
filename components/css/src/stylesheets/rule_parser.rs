@@ -1,10 +1,9 @@
 use common::not_supported;
 use cssparser::{
-    match_ignore_ascii_case, AtRuleParser, AtRuleType, BasicParseError, BasicParseErrorKind,
-    CowRcStr, Parser, ParserState, QualifiedRuleParser, RuleListParser, SourcePosition, Token,
-    _cssparser_internal_to_lowercase,
+    match_ignore_ascii_case, AtRuleParser, AtRuleType, CowRcStr, Parser, ParserState,
+    QualifiedRuleParser, RuleListParser, SourcePosition, Token, _cssparser_internal_to_lowercase,
 };
-use html5ever::{Namespace, Prefix};
+use html5ever::Prefix;
 use selectors::parser::SelectorParseErrorKind;
 use selectors::SelectorList;
 

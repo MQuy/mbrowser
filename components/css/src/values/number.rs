@@ -3,6 +3,7 @@ use std::fmt::Display;
 
 use cssparser::{Parser, ToCss};
 
+use super::percentage::Percentage;
 use super::CSSFloat;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -166,5 +167,26 @@ impl IntegerAuto {
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         Self::parse_with(input, |input| Integer::parse(context, input))
+    }
+}
+
+#[derive(Clone)]
+pub enum NonNegativeNumberOrPercentage {
+    Number(NonNegativeNumber),
+    Percentage(Percentage),
+}
+
+impl NonNegativeNumberOrPercentage {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
+impl From<&str> for NonNegativeNumberOrPercentage {
+    fn from(_: &str) -> Self {
+        todo!()
     }
 }

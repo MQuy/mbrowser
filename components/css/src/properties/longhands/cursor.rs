@@ -91,9 +91,8 @@ property_keywords_impl! { CursorKind,
 #[repr(C)]
 pub struct CursorImage {
     pub url: BrowserUrl,
-    pub has_hotspot: bool,
-    pub hotspot_x: Number,
-    pub hotspot_y: Number,
+    pub x: Option<Number>,
+    pub y: Option<Number>,
 }
 
 impl CursorImage {
@@ -101,14 +100,24 @@ impl CursorImage {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = input.expect_ident_or_string()?;
+        let url = BrowserUrl::parse(value)
+            .map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))?;
+        let (x, y) = input
+            .try_parse(|input| -> Result<(Number, Number), ParseError<'i>> {
+                let x = Number::parse(context, input)?;
+                let y = Number::parse(context, input)?;
+                Ok((x, y))
+            })
+            .map_or((None, None), |(x, y)| (Some(x), Some(y)));
+        Ok(CursorImage { url, x, y })
     }
 }
 
 #[derive(Clone)]
 #[repr(C)]
 pub struct Cursor {
-    pub images: CursorImage,
+    pub images: Vec<CursorImage>,
     pub keyword: CursorKind,
 }
 
@@ -117,7 +126,17 @@ impl Cursor {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Cursor, ParseError<'i>> {
-        todo!()
+        let mut images = Vec::with_capacity(1);
+        loop {
+            let image = input.try_parse(|input| CursorImage::parse(context, input));
+            if let Ok(image) = image {
+                images.push(image)
+            } else {
+                break;
+            }
+        }
+        let keyword = CursorKind::parse(input)?;
+        Ok(Cursor { images, keyword })
     }
 }
 

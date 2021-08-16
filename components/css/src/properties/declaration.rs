@@ -185,9 +185,11 @@ pub enum PropertyDeclaration {
     /// `content`
     Content(properties::longhands::content::Content),
     /// `counter-increment`
-    CounterIncrement(properties::longhands::counter_increment::CounterIncrement),
+    CounterIncrement(values::specified::counter::CounterWithInteger),
     /// `counter-reset`
-    CounterReset(properties::longhands::counter_reset::CounterSetOrReset),
+    CounterReset(properties::longhands::counter_reset::CounterReset),
+    /// `counter-set`
+    CounterSet(values::specified::counter::CounterWithInteger),
     /// `cursor`
     Cursor(properties::longhands::cursor::Cursor),
     /// `filter`

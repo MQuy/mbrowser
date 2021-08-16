@@ -1,8 +1,8 @@
 use std::fmt::Write;
 
 use common::url::BrowserUrl;
-use cssparser::{BasicParseError, BasicParseErrorKind, CowRcStr, Parser, SourceLocation, Token};
-use html5ever::{Namespace, Prefix};
+use cssparser::{CowRcStr, Parser, SourceLocation, Token};
+use html5ever::Prefix;
 
 use super::rule_parser::StyleParseErrorKind;
 use crate::css_writer::{CssWriter, ToCss};

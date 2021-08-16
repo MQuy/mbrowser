@@ -159,13 +159,10 @@ impl MediaCondition {
         input.parse_nested_block(|input| {
             let media_condition = input
                 .try_parse(|input| MediaFeatureExpression::parse(context, input))
-                .or_else(|_err| {
-                    input
-                        .try_parse(|input| MediaCondition::parse(context, input))
-                        .or_else(|_err| -> Result<Self, ParseError<'i>> {
-                            let value = parse_general_enclosed(input)?;
-                            Ok(MediaCondition::GeneralEnclosed(value))
-                        })
+                .or_else(|_err| input.try_parse(|input| MediaCondition::parse(context, input)))
+                .or_else(|_err| -> Result<Self, ParseError<'i>> {
+                    let value = parse_general_enclosed(input)?;
+                    Ok(MediaCondition::GeneralEnclosed(value))
                 })?;
             Ok(MediaCondition::InParens(Box::new(media_condition)))
         })

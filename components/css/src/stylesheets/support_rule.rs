@@ -127,19 +127,18 @@ impl SupportsCondition {
         input
             .try_parse(|input| SupportsCondition::parse_declaration(input))
             .or_else(|_err| -> Result<Self, ParseError<'i>> {
-                input
-                    .try_parse(|input| {
-                        input.expect_parenthesis_block()?;
-                        input.parse_nested_block(|input| {
-                            Ok(SupportsCondition::Parenthesized(Box::new(
-                                SupportsCondition::parse(input)?,
-                            )))
-                        })
+                input.try_parse(|input| {
+                    input.expect_parenthesis_block()?;
+                    input.parse_nested_block(|input| {
+                        Ok(SupportsCondition::Parenthesized(Box::new(
+                            SupportsCondition::parse(input)?,
+                        )))
                     })
-                    .or_else(|_err| {
-                        let value = parse_general_enclosed(input)?;
-                        Ok(SupportsCondition::GeneralEnclosed(value))
-                    })
+                })
+            })
+            .or_else(|_err| {
+                let value = parse_general_enclosed(input)?;
+                Ok(SupportsCondition::GeneralEnclosed(value))
             })
     }
 

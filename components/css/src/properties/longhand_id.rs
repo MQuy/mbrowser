@@ -369,6 +369,10 @@ pub enum LonghandId {
     Right = 175,
     /// top
     Top = 176,
+    /// ---- additional
+
+    /// counter-set
+    CounterSet = 177,
 }
 
 impl ToCss for LonghandId {
@@ -573,6 +577,7 @@ impl LonghandId {
         static CONTENT: &'static [ShorthandId] = &[ShorthandId::All];
         static COUNTER_INCREMENT: &'static [ShorthandId] = &[ShorthandId::All];
         static COUNTER_RESET: &'static [ShorthandId] = &[ShorthandId::All];
+        static COUNTER_SET: &'static [ShorthandId] = &[ShorthandId::All];
         static CURSOR: &'static [ShorthandId] = &[ShorthandId::All];
         static FILTER: &'static [ShorthandId] = &[ShorthandId::All];
         static FLEX_BASIS: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Flex];
@@ -859,6 +864,7 @@ impl LonghandId {
                 LonghandId::Content => CONTENT,
                 LonghandId::CounterIncrement => COUNTER_INCREMENT,
                 LonghandId::CounterReset => COUNTER_RESET,
+                LonghandId::CounterSet => COUNTER_SET,
                 LonghandId::Cursor => CURSOR,
                 LonghandId::Filter => FILTER,
                 LonghandId::FlexBasis => FLEX_BASIS,
@@ -964,7 +970,7 @@ impl LonghandId {
             input: &mut Parser<'i, 't>,
         )
             -> Result<PropertyDeclaration, ParseError<'i>>;
-        static PARSE_PROPERTY: [ParsePropertyFn; 177] = [
+        static PARSE_PROPERTY: [ParsePropertyFn; 178] = [
             longhands::align_content::parse_declared,
             longhands::align_items::parse_declared,
             longhands::align_self::parse_declared,
@@ -1052,6 +1058,7 @@ impl LonghandId {
             longhands::content::parse_declared,
             longhands::counter_increment::parse_declared,
             longhands::counter_reset::parse_declared,
+            longhands::counter_set::parse_declared,
             longhands::cursor::parse_declared,
             longhands::filter::parse_declared,
             longhands::flex_basis::parse_declared,
