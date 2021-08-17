@@ -13,7 +13,7 @@ impl LetterSpacing {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Spacing::parse_with(context, input, |input| Length::parse(context, input))
     }
 }
 

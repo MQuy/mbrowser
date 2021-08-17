@@ -6,9 +6,9 @@ use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 #[repr(u8)]
-pub enum BorderStyle {
+pub enum LineStyle {
     Hidden,
     None,
     Inset,
@@ -21,17 +21,17 @@ pub enum BorderStyle {
     Double,
 }
 
-property_keywords_impl! { BorderStyle,
-    BorderStyle::Hidden, "hidden",
-    BorderStyle::None, "none",
-    BorderStyle::Inset, "inset",
-    BorderStyle::Groove, "groove",
-    BorderStyle::Outset, "outset",
-    BorderStyle::Ridge, "ridge",
-    BorderStyle::Dotted, "dotted",
-    BorderStyle::Dashed, "dashed",
-    BorderStyle::Solid, "solid",
-    BorderStyle::Double, "double",
+property_keywords_impl! { LineStyle,
+    LineStyle::Hidden, "hidden",
+    LineStyle::None, "none",
+    LineStyle::Inset, "inset",
+    LineStyle::Groove, "groove",
+    LineStyle::Outset, "outset",
+    LineStyle::Ridge, "ridge",
+    LineStyle::Dotted, "dotted",
+    LineStyle::Dashed, "dashed",
+    LineStyle::Solid, "solid",
+    LineStyle::Double, "double",
 }
 
 #[derive(Clone)]

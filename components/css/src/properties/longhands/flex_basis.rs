@@ -3,10 +3,12 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::length::Size;
 
 #[derive(Clone)]
 pub enum FlexBasis {
     Content,
+    Width(Size),
 }
 
 impl FlexBasis {
@@ -14,7 +16,15 @@ impl FlexBasis {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<FlexBasis, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("content")?;
+                Ok(FlexBasis::Content)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let size = Size::parse(context, input)?;
+                Ok(FlexBasis::Width(size))
+            })
     }
 }
 

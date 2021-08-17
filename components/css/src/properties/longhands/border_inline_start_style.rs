@@ -3,13 +3,13 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::BorderStyle;
+use crate::values::layout::LineStyle;
 
 pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
-) -> Result<BorderStyle, ParseError<'i>> {
-    BorderStyle::parse(input)
+) -> Result<LineStyle, ParseError<'i>> {
+    LineStyle::parse(input)
 }
 
 pub fn parse_declared<'i, 't>(

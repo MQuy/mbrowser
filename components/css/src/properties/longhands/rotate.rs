@@ -1,10 +1,10 @@
 use cssparser::Parser;
 
-use super::font_style::Angle;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
+use crate::values::specified::angle::Angle;
 
 #[derive(Clone)]
 #[repr(C, u8)]

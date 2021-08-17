@@ -6,13 +6,13 @@ use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::border::BorderSideWidth;
 use crate::values::color::Color;
-use crate::values::layout::BorderStyle;
+use crate::values::layout::LineStyle;
 
 pub struct Longhands {
     pub border_inline_start_width: BorderSideWidth,
     pub border_inline_end_width: BorderSideWidth,
-    pub border_inline_start_style: BorderStyle,
-    pub border_inline_end_style: BorderStyle,
+    pub border_inline_start_style: LineStyle,
+    pub border_inline_end_style: LineStyle,
     pub border_inline_start_color: Color,
     pub border_inline_end_color: Color,
 }

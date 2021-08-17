@@ -375,6 +375,17 @@ impl LengthPercentageOrAuto {
     }
 }
 
+pub type NonNegativeLengthOrAuto = GenericLengthPercentageOrAuto<NonNegativeLength>;
+
+impl NonNegativeLengthOrAuto {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| NonNegativeLength::parse(context, input))
+    }
+}
+
 /// Generic for Length/Percentage/Number/Auto
 #[derive(Clone)]
 pub enum GenericLengthPercentageNumberOrAuto<LengthPercent, Number> {
@@ -533,14 +544,53 @@ impl NonNegativeLengthPercentageOrNormal {
     }
 }
 
-pub type NonNegativeLengthOrAuto = GenericLengthPercentageOrAuto<NonNegativeLength>;
+#[derive(Clone)]
+#[repr(C, u8)]
+pub enum GenericLengthPercentageNumberOrNormal<Number, LengthPercent> {
+    LengthPercentage(LengthPercent),
+    Number(Number),
+    Normal,
+}
 
-impl NonNegativeLengthOrAuto {
+impl<N, LP> GenericLengthPercentageNumberOrNormal<N, LP> {
+    pub fn parse_with<'i, 't, NP, LPP>(
+        input: &mut Parser<'i, 't>,
+        number_parser: NP,
+        length_percentage_parser: LPP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        NP: Fn(&mut Parser<'i, 't>) -> Result<N, ParseError<'i>>,
+        LPP: Fn(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("normal")?;
+                Ok(Self::Normal)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let number = number_parser(input)?;
+                Ok(Self::Number(number))
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length_percent = length_percentage_parser(input)?;
+                Ok(Self::LengthPercentage(length_percent))
+            })
+    }
+}
+
+pub type NonNegativeLengthPercentageNumberOrNormal =
+    GenericLengthPercentageNumberOrNormal<NonNegativeNumber, NonNegativeLengthPercentage>;
+
+impl NonNegativeLengthPercentageNumberOrNormal {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        Self::parse_with(input, |input| NonNegativeLength::parse(context, input))
+        Self::parse_with(
+            input,
+            |input| NonNegativeNumber::parse(context, input),
+            |input| NonNegativeLengthPercentage::parse(context, input),
+        )
     }
 }
 

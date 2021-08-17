@@ -123,6 +123,7 @@ impl PropertyId {
                 "content" => StaticId::Longhand(LonghandId::Content),
                 "counter-increment" => StaticId::Longhand(LonghandId::CounterIncrement),
                 "counter-reset" => StaticId::Longhand(LonghandId::CounterReset),
+                "counter-set" => StaticId::Longhand(LonghandId::CounterSet),
                 "cursor" => StaticId::Longhand(LonghandId::Cursor),
                 "filter" => StaticId::Longhand(LonghandId::Filter),
                 "flex-basis" => StaticId::Longhand(LonghandId::FlexBasis),
@@ -342,7 +343,7 @@ impl ToCss for PropertyId {
 pub struct NonCustomPropertyId(usize);
 
 /// The length of all the non-custom properties.
-pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 223;
+pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 224;
 
 impl NonCustomPropertyId {
     /// Returns the underlying index, used for use counter.
@@ -441,6 +442,7 @@ impl NonCustomPropertyId {
             "content",
             "counter-increment",
             "counter-reset",
+            "counter-set",
             "cursor",
             "filter",
             "flex-basis",
@@ -598,9 +600,9 @@ impl NonCustomPropertyId {
             5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
             5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7,
-            7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-            1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7,
+            7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+            5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
         ];
         match rule_type {
             CssRuleType::Style => MAP[self.0] & 1 != 0,

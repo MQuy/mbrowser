@@ -1,5 +1,3 @@
-use std::iter::Zip;
-
 use cssparser::Parser;
 
 use crate::parser::ParseError;

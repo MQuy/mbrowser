@@ -1,6 +1,6 @@
 use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
-use crate::parser::{parse_item_if_missing, parse_when, ParseError};
+use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -35,16 +35,28 @@ pub struct DisplayBasic {
 }
 
 impl DisplayBasic {
-    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
         let mut outside = None;
         let mut inside = None;
-        parse_when(input, &mut |input| {
-            let outside_parser_ret =
-                parse_item_if_missing(input, &mut outside, |input| DisplayOutside::parse(input));
-            let inside_parser_ret =
-                parse_item_if_missing(input, &mut inside, |input| DisplayInside::parse(input));
-            vec![outside_parser_ret, inside_parser_ret]
-        });
+        parse_in_any_order(
+            context,
+            input,
+            &mut [
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut outside, |_, input| {
+                        DisplayOutside::parse(input)
+                    })
+                },
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut inside, |_, input| {
+                        DisplayInside::parse(input)
+                    })
+                },
+            ],
+        );
         Ok(DisplayBasic { outside, inside })
     }
 }
@@ -65,28 +77,41 @@ pub struct DisplayListItem {
 }
 
 impl DisplayListItem {
-    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
         let mut outside = None;
         let mut inside = None;
         let mut item = None;
-        parse_when(input, &mut |input| {
-            let outside_parser_ret =
-                parse_item_if_missing(input, &mut outside, |input| DisplayOutside::parse(input));
-            let inside_parser_ret = parse_item_if_missing(input, &mut inside, |input| {
-                let location = input.current_source_location();
-                let ident = input.expect_ident()?;
-                match_ignore_ascii_case! { ident,
-                    "flow" => Ok(DisplayInside::Flow),
-                    "flow-root" => Ok(DisplayInside::FlowRoot),
-                    _ => Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
-                }
-            });
-            let item_parser_ret = parse_item_if_missing(input, &mut item, |input| {
-                input.expect_ident_matching("list-item")?;
-                Ok(())
-            });
-            vec![outside_parser_ret, inside_parser_ret, item_parser_ret]
-        });
+        parse_in_any_order(
+            context,
+            input,
+            &mut [
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut outside, |_, input| {
+                        DisplayOutside::parse(input)
+                    })
+                },
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut inside, |_, input| {
+                        let location = input.current_source_location();
+                        let ident = input.expect_ident()?;
+                        match_ignore_ascii_case! { ident,
+                            "flow" => Ok(DisplayInside::Flow),
+                            "flow-root" => Ok(DisplayInside::FlowRoot),
+                            _ => Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+                        }
+                    })
+                },
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut item, |_, input| {
+                        input.expect_ident_matching("list-item")?;
+                        Ok(())
+                    })
+                },
+            ],
+        );
         Ok(DisplayListItem { outside, inside })
     }
 }
@@ -159,17 +184,17 @@ pub enum Display {
 
 impl Display {
     pub fn parse<'i, 't>(
-        _context: &ParserContext,
+        context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| {
-                let basic = DisplayBasic::parse(input)?;
+                let basic = DisplayBasic::parse(context, input)?;
                 Ok(Display::Basic(basic))
             })
             .or_else(|_err: ParseError<'i>| {
                 input.try_parse(|input| {
-                    let item = DisplayListItem::parse(input)?;
+                    let item = DisplayListItem::parse(context, input)?;
                     Ok(Display::ListItem(item))
                 })
             })

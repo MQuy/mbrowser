@@ -5,7 +5,6 @@ use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::{CSSWideKeyword, PropertyId};
 use crate::properties::shorthand_id::ShorthandId;
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Integer;
 use crate::{properties, values};
@@ -115,21 +114,21 @@ pub enum PropertyDeclaration {
     /// `overflow-y`
     OverflowY(values::layout::Overflow),
     /// `border-block-end-style`
-    BorderBlockEndStyle(values::layout::BorderStyle),
+    BorderBlockEndStyle(values::layout::LineStyle),
     /// `border-block-start-style`
-    BorderBlockStartStyle(values::layout::BorderStyle),
+    BorderBlockStartStyle(values::layout::LineStyle),
     /// `border-bottom-style`
-    BorderBottomStyle(values::layout::BorderStyle),
+    BorderBottomStyle(values::layout::LineStyle),
     /// `border-inline-end-style`
-    BorderInlineEndStyle(values::layout::BorderStyle),
+    BorderInlineEndStyle(values::layout::LineStyle),
     /// `border-inline-start-style`
-    BorderInlineStartStyle(values::layout::BorderStyle),
+    BorderInlineStartStyle(values::layout::LineStyle),
     /// `border-left-style`
-    BorderLeftStyle(values::layout::BorderStyle),
+    BorderLeftStyle(values::layout::LineStyle),
     /// `border-right-style`
-    BorderRightStyle(values::layout::BorderStyle),
+    BorderRightStyle(values::layout::LineStyle),
     /// `border-top-style`
-    BorderTopStyle(values::layout::BorderStyle),
+    BorderTopStyle(values::layout::LineStyle),
     /// `animation-delay`
     AnimationDelay(properties::longhands::animation_delay::AnimationDelay),
     /// `animation-direction`

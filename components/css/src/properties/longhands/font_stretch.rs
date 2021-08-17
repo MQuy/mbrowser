@@ -43,7 +43,15 @@ impl FontStretch {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<FontStretch, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                let keyword = FontStretchKeyword::parse(input)?;
+                Ok(FontStretch::Keyword(keyword))
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let percentage = Percentage::parse(context, input)?;
+                Ok(FontStretch::Stretch(percentage))
+            })
     }
 }
 

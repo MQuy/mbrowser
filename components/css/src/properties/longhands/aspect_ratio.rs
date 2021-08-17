@@ -1,6 +1,6 @@
 use cssparser::Parser;
 
-use crate::parser::ParseError;
+use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -18,27 +18,32 @@ impl AspectRatio {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<AspectRatio, ParseError<'i>> {
-        let mut auto = false;
-        let mut ratio: PreferredRatio = PreferredRatio::None;
-        loop {
-            let auto_parser_ret = input.try_parse(|input| -> Result<(), ParseError<'i>> {
-                input.expect_ident_matching("auto")?;
-                auto = true;
-                Ok(())
-            });
-            let ratio_parser_ret = input.try_parse(|input| -> Result<(), ParseError<'i>> {
-                ratio = PreferredRatio::parse(context, input)?;
-                Ok(())
-            });
-
-            if auto_parser_ret.is_err() && ratio_parser_ret.is_err() {
-                break;
-            }
-        }
-        if auto == false && ratio == PreferredRatio::None {
+        let mut auto = None;
+        let mut ratio = None;
+        parse_in_any_order(
+            context,
+            input,
+            &mut [
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut auto, |_context, input| {
+                        input.expect_ident_matching("auto")?;
+                        Ok(())
+                    })
+                },
+                &mut |context, input| {
+                    parse_item_if_missing(context, input, &mut ratio, |context, input| {
+                        PreferredRatio::parse(context, input)
+                    })
+                },
+            ],
+        );
+        if auto.is_none() && ratio.is_none() {
             Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
         } else {
-            Ok(AspectRatio { auto, ratio })
+            Ok(AspectRatio {
+                auto: auto.is_some(),
+                ratio: ratio.map_or(PreferredRatio::None, |ratio| ratio),
+            })
         }
     }
 }

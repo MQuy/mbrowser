@@ -1,7 +1,7 @@
 use common::url::BrowserUrl;
 use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
 
-use crate::parser::ParseError;
+use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -126,15 +126,7 @@ impl Cursor {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Cursor, ParseError<'i>> {
-        let mut images = Vec::with_capacity(1);
-        loop {
-            let image = input.try_parse(|input| CursorImage::parse(context, input));
-            if let Ok(image) = image {
-                images.push(image)
-            } else {
-                break;
-            }
-        }
+        let images = parse_repeated(input, &mut |input| CursorImage::parse(context, input), 0)?;
         let keyword = CursorKind::parse(input)?;
         Ok(Cursor { images, keyword })
     }

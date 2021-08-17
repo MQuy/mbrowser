@@ -5,16 +5,9 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::NonNegativeLengthPercentage;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<NonNegativeLengthPercentage, ParseError<'i>> {
-    todo!()
-}
-
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::PaddingLeft)
+    NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingLeft)
 }

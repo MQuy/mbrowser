@@ -11,20 +11,20 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::border::BorderSideWidth;
 use crate::values::color::Color;
 use crate::values::image::Image;
-use crate::values::layout::BorderStyle;
+use crate::values::layout::LineStyle;
 
 pub struct Longhands {
     pub border_top_color: Color,
-    pub border_top_style: BorderStyle,
+    pub border_top_style: LineStyle,
     pub border_top_width: BorderSideWidth,
     pub border_right_color: Color,
-    pub border_right_style: BorderStyle,
+    pub border_right_style: LineStyle,
     pub border_right_width: BorderSideWidth,
     pub border_bottom_color: Color,
-    pub border_bottom_style: BorderStyle,
+    pub border_bottom_style: LineStyle,
     pub border_bottom_width: BorderSideWidth,
     pub border_left_color: Color,
-    pub border_left_style: BorderStyle,
+    pub border_left_style: LineStyle,
     pub border_left_width: BorderSideWidth,
     pub border_image_outset: BorderImageOutset,
     pub border_image_repeat: BorderImageRepeat,

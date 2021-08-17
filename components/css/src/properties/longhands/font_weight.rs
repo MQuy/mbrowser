@@ -1,13 +1,14 @@
-use cssparser::Parser;
+use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
+use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::Number;
+use crate::values::number::NonNegativeNumber;
 
 #[derive(Clone)]
 pub enum AbsoluteFontWeight {
-    Weight(Number),
+    Weight(NonNegativeNumber),
     Normal,
     Bold,
 }
@@ -17,7 +18,28 @@ impl AbsoluteFontWeight {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        input.try_parse(|input| {
+            let location = input.current_source_location();
+            let ident = input.expect_ident()?;
+            Ok(match_ignore_ascii_case! { ident,
+                "normal" => AbsoluteFontWeight::Normal,
+                "bold" => AbsoluteFontWeight::Bold,
+                _ => {
+                    return Err(
+                        location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))
+                    )
+                },
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let value = NonNegativeNumber::parse_in_range(
+                    context,
+                    input,
+                    NonNegativeNumber::new(0.0),
+                    NonNegativeNumber::new(1000.0),
+                )?;
+                Ok(AbsoluteFontWeight::Weight(value))
+            })
+        })
     }
 }
 
@@ -33,7 +55,23 @@ impl FontWeight {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        input.try_parse(|input| {
+            let location = input.current_source_location();
+            let ident = input.expect_ident()?;
+            Ok(match_ignore_ascii_case! { ident,
+                "bolder" => FontWeight::Bolder,
+                "lighter" => FontWeight::Lighter,
+                _ => {
+                    return Err(
+                        location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))
+                    )
+                },
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let value = AbsoluteFontWeight::parse(context, input)?;
+                Ok(FontWeight::Absolute(value))
+            })
+        })
     }
 }
 

@@ -3,25 +3,9 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthPercentage;
-use crate::values::number::NonNegativeNumber;
+use crate::values::length::NonNegativeLengthPercentageNumberOrNormal;
 
-#[derive(Clone)]
-#[repr(C, u8)]
-pub enum LineHeight {
-    Normal,
-    Number(NonNegativeNumber),
-    Length(NonNegativeLengthPercentage),
-}
-
-impl LineHeight {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<LineHeight, ParseError<'i>> {
-        todo!()
-    }
-}
+pub type LineHeight = NonNegativeLengthPercentageNumberOrNormal;
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,

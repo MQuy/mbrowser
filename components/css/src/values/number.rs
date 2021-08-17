@@ -121,6 +121,15 @@ impl NonNegativeNumber {
         let value = Number::parse_non_negative(context, input)?;
         Ok(NonNegative::<Number>(value))
     }
+
+    pub fn parse_in_range<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+        from: Self,
+        to: Self,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
 }
 
 impl ToCss for NonNegativeNumber {

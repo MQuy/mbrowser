@@ -1,14 +1,14 @@
 use common::url::BrowserUrl;
-use cssparser::{Delimiter, Parser};
+use cssparser::Parser;
 
-use crate::parser::ParseError;
+use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
 use crate::values::number::NonNegativeNumberOrPercentage;
-use crate::values::specified::angle::AngleDimension;
+use crate::values::specified::angle::Angle;
 
 #[derive(Clone)]
 pub struct DropShadow {
@@ -43,7 +43,7 @@ pub enum FilterFunction {
     Contrast(NonNegativeNumberOrPercentage),
     DropShadow(DropShadow),
     Grayscale(NonNegativeNumberOrPercentage),
-    HueRotate(AngleDimension),
+    HueRotate(Angle),
     Invert(NonNegativeNumberOrPercentage),
     Opacity(NonNegativeNumberOrPercentage),
     Saturate(NonNegativeNumberOrPercentage),
@@ -97,7 +97,7 @@ impl FilterFunction {
                 Ok(FilterFunction::Grayscale(value))
             })
             .or_else(|_err: ParseError<'i>| {
-                let value = AngleDimension::parse(context, input)?;
+                let value = Angle::parse(context, input)?;
                 Ok(FilterFunction::HueRotate(value))
             })
             .or_else(|_err: ParseError<'i>| {
@@ -200,12 +200,11 @@ impl Filter {
                 Ok(Filter::None)
             })
             .or_else(|_err: ParseError<'i>| {
-                let mut filters = Vec::with_capacity(1);
-                input.parse_until_before(Delimiter::Semicolon, |input| {
-                    let filter = FilterFunctionOrUrl::parse(context, input)?;
-                    filters.push(filter);
-                    Ok(())
-                })?;
+                let filters = parse_repeated(
+                    input,
+                    &mut |input| FilterFunctionOrUrl::parse(context, input),
+                    1,
+                )?;
                 Ok(Filter::List(filters))
             })
     }
