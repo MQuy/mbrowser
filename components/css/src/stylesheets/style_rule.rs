@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use cssparser::SourceLocation;
 use selectors::SelectorList;
 
@@ -21,6 +23,10 @@ impl ToCss for StyleRule {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        use cssparser::ToCss;
+        self.selectors.to_css(dest)?;
+        dest.write_str(" {\n")?;
+        self.block.to_css(dest)?;
+        dest.write_str("}")
     }
 }

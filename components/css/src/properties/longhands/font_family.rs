@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};

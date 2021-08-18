@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::vec::Drain;
 
 use cssparser::{
@@ -126,11 +127,26 @@ impl PropertyDeclarationBlock {
 }
 
 impl ToCss for PropertyDeclarationBlock {
+    /// https://drafts.csswg.org/cssom/#serialize-a-css-declaration-block
     fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
-        todo!()
+        self.declarations
+            .iter()
+            .map(|declaration| {
+                let id = declaration.id();
+                dest.write_str("\t")?;
+                match id {
+                    PropertyId::Longhand(longhand) => longhand.to_css(dest)?,
+                    PropertyId::Shorthand(shorthand) => shorthand.to_css(dest)?,
+                    PropertyId::Custom(custom) => custom.to_css(dest)?,
+                }
+                dest.write_str(": ")?;
+                dest.write_str(&cssparser::ToCss::to_css_string(declaration))?;
+                dest.write_str(";\n")
+            })
+            .collect()
     }
 }
 

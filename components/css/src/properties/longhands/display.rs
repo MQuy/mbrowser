@@ -1,9 +1,29 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+
+pub fn serialize_outside_inside<W>(
+    dest: &mut W,
+    outside: &Option<DisplayOutside>,
+    inside: &Option<DisplayInside>,
+) -> core::fmt::Result
+where
+    W: std::fmt::Write,
+{
+    if let Some(outside) = &outside {
+        outside.to_css(dest)?;
+        if let Some(inside) = inside {
+            dest.write_char(' ')?;
+            inside.to_css(dest)?;
+        }
+    } else if let Some(inside) = inside {
+        inside.to_css(dest)?;
+    }
+    Ok(())
+}
 
 #[derive(Clone, PartialEq)]
 pub enum DisplayOutside {
@@ -61,6 +81,15 @@ impl DisplayBasic {
     }
 }
 
+impl ToCss for DisplayBasic {
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        serialize_outside_inside(dest, &self.outside, &self.inside)
+    }
+}
+
 property_keywords_impl! { DisplayInside,
     DisplayInside::Flow, "flow",
     DisplayInside::FlowRoot, "flow-root",
@@ -113,6 +142,16 @@ impl DisplayListItem {
             ],
         );
         Ok(DisplayListItem { outside, inside })
+    }
+}
+
+impl ToCss for DisplayListItem {
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        serialize_outside_inside(dest, &self.outside, &self.inside)?;
+        dest.write_str(" list-item")
     }
 }
 
@@ -214,6 +253,21 @@ impl Display {
                 let legacy = DisplayLegacy::parse(input)?;
                 Ok(Display::Legacy(legacy))
             })
+    }
+}
+
+impl ToCss for Display {
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Display::Basic(basic) => basic.to_css(dest),
+            Display::ListItem(list) => list.to_css(dest),
+            Display::Internal(internal) => internal.to_css(dest),
+            Display::Box(box_) => box_.to_css(dest),
+            Display::Legacy(legacy) => legacy.to_css(dest),
+        }
     }
 }
 
