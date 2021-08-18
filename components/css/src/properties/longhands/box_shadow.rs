@@ -24,18 +24,17 @@ impl BoxShadowValue {
         let mut length = None;
 
         parse_in_any_order(
-            context,
             input,
             &mut [
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut inset, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut inset, |_, input| {
                         input.expect_ident_matching("inset").map_err(|_err| {
                             input.new_custom_error(StyleParseErrorKind::UnspecifiedError)
                         })
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut length, |context, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut length, |_, input| {
                         let horizontal = Length::parse(context, input)?;
                         let vertical = Length::parse(context, input)?;
                         let blur = input
@@ -47,8 +46,8 @@ impl BoxShadowValue {
                         Ok((horizontal, vertical, blur, spread))
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut color, |context, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut color, |_, input| {
                         Color::parse(context, input)
                     })
                 },

@@ -1,23 +1,21 @@
 use cssparser::Parser;
 
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 
 pub type ParseError<'i> = cssparser::ParseError<'i, StyleParseErrorKind<'i>>;
 
 pub fn parse_item_if_missing<'i, 't, T, F>(
-    context: &ParserContext,
     input: &mut Parser<'i, 't>,
     item: &mut Option<T>,
     item_parser: F,
 ) -> Result<(), ParseError<'i>>
 where
     T: PartialEq,
-    F: Fn(&ParserContext, &mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
+    F: Fn(&Option<T>, &mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 {
     if item.is_none() {
         input.try_parse(|input| -> Result<(), ParseError<'i>> {
-            *item = Some(item_parser(context, input)?);
+            *item = Some(item_parser(item, input)?);
             Ok(())
         })
     } else {
@@ -26,19 +24,15 @@ where
 }
 
 pub fn parse_in_any_order<'i, 't, T>(
-    context: &ParserContext,
     input: &mut Parser<'i, 't>,
-    item_parsers: &mut [&mut dyn FnMut(
-        &ParserContext,
-        &mut Parser<'i, 't>,
-    ) -> Result<T, ParseError<'i>>],
+    item_parsers: &mut [&mut dyn FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>],
 ) {
     loop {
         let state = input.state();
 
         if item_parsers
             .iter_mut()
-            .map(|item_parser| item_parser(context, input))
+            .map(|item_parser| item_parser(input))
             .all(|ret| ret.is_err())
         {
             input.reset(&state);

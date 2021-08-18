@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CSSFloat;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Angle {
     Deg(CSSFloat),
     Grad(CSSFloat),

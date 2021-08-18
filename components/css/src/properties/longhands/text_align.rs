@@ -7,41 +7,31 @@ use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
 #[repr(u8)]
-pub enum TextAlignKeyword {
+pub enum TextAlign {
     Start,
+    End,
     Left,
     Right,
     Center,
     Justify,
-    End,
+    MatchParent,
+    JustifyAll,
 }
 
-property_keywords_impl! { TextAlignKeyword,
-    TextAlignKeyword::Start, "start",
-    TextAlignKeyword::Left, "left",
-    TextAlignKeyword::Right, "right",
-    TextAlignKeyword::Center, "center",
-    TextAlignKeyword::Justify, "justify",
-    TextAlignKeyword::End, "end",
-}
-
-#[derive(Clone)]
-pub enum TextAlign {
-    Keyword(TextAlignKeyword),
-}
-
-impl TextAlign {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<TextAlign, ParseError<'i>> {
-        todo!()
-    }
+property_keywords_impl! { TextAlign,
+    TextAlign::Start, "start",
+    TextAlign::Left, "left",
+    TextAlign::Right, "right",
+    TextAlign::Center, "center",
+    TextAlign::Justify, "justify",
+    TextAlign::End, "end",
+    TextAlign::MatchParent, "match-parent",
+    TextAlign::JustifyAll, "justify-all",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TextAlign::parse(context, input).map(PropertyDeclaration::TextAlign)
+    TextAlign::parse(input).map(PropertyDeclaration::TextAlign)
 }

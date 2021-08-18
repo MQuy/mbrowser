@@ -62,16 +62,15 @@ impl DisplayBasic {
         let mut outside = None;
         let mut inside = None;
         parse_in_any_order(
-            context,
             input,
             &mut [
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut outside, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut outside, |_, input| {
                         DisplayOutside::parse(input)
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut inside, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut inside, |_, input| {
                         DisplayInside::parse(input)
                     })
                 },
@@ -114,16 +113,15 @@ impl DisplayListItem {
         let mut inside = None;
         let mut item = None;
         parse_in_any_order(
-            context,
             input,
             &mut [
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut outside, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut outside, |_, input| {
                         DisplayOutside::parse(input)
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut inside, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut inside, |_, input| {
                         let location = input.current_source_location();
                         let ident = input.expect_ident()?;
                         match_ignore_ascii_case! { ident,
@@ -133,8 +131,8 @@ impl DisplayListItem {
                         }
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut item, |_, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut item, |_, input| {
                         input.expect_ident_matching("list-item")?;
                         Ok(())
                     })

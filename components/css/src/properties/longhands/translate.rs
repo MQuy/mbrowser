@@ -8,7 +8,7 @@ use crate::values::length::{Length, LengthPercentage};
 #[derive(Clone)]
 pub enum Translate {
     None,
-    LengthPercentage(LengthPercentage, LengthPercentageWithLength),
+    LengthPercentage(LengthPercentage, LengthPercentage, Length),
 }
 
 impl Translate {
@@ -16,38 +16,27 @@ impl Translate {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
-    }
-}
-
-#[derive(Clone)]
-pub struct LengthPercentageWithLength {
-    length_percentage: LengthPercentage,
-    length: Option<Length>,
-}
-
-impl LengthPercentageWithLength {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        todo!()
-    }
-}
-
-#[derive(Clone)]
-pub struct LengthPercentageComponent {
-    length: Vec<LengthPercentageWithLength>,
-}
-
-impl LengthPercentageComponent {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        let length = input
-            .parse_comma_separated(|input| LengthPercentageWithLength::parse(context, input))?;
-        Ok(LengthPercentageComponent { length })
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("none")?;
+                Ok(Translate::None)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let x = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+                let y = if let Ok(y) =
+                    input.try_parse(|input| LengthPercentage::parse(context, input))
+                {
+                    y
+                } else {
+                    return Ok(Translate::LengthPercentage(x, "0px".into(), "0px".into()));
+                };
+                let z = if let Ok(z) = input.try_parse(|input| Length::parse(context, input)) {
+                    z
+                } else {
+                    return Ok(Translate::LengthPercentage(x, y, "0px".into()));
+                };
+                Ok(Translate::LengthPercentage(x, y, z))
+            })
     }
 }
 

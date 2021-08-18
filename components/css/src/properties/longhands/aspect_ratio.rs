@@ -21,17 +21,16 @@ impl AspectRatio {
         let mut auto = None;
         let mut ratio = None;
         parse_in_any_order(
-            context,
             input,
             &mut [
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut auto, |_context, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut auto, |_, input| {
                         input.expect_ident_matching("auto")?;
                         Ok(())
                     })
                 },
-                &mut |context, input| {
-                    parse_item_if_missing(context, input, &mut ratio, |context, input| {
+                &mut |input| {
+                    parse_item_if_missing(input, &mut ratio, |_, input| {
                         PreferredRatio::parse(context, input)
                     })
                 },

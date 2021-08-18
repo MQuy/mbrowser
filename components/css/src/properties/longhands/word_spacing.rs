@@ -3,22 +3,11 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::LengthPercentage;
-use crate::values::text::Spacing;
+use crate::values::length::LengthPercentageOrNormal;
 
-pub type WordSpacing = Spacing<LengthPercentage>;
-
-impl WordSpacing {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        todo!()
-    }
-}
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    WordSpacing::parse(context, input).map(PropertyDeclaration::WordSpacing)
+    LengthPercentageOrNormal::parse(context, input).map(PropertyDeclaration::WordSpacing)
 }

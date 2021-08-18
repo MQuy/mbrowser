@@ -180,6 +180,27 @@ impl IntegerAuto {
 }
 
 #[derive(Clone)]
+pub enum NumberOrPercentage {
+    Number(Number),
+    Percentage(Percentage),
+}
+
+impl NumberOrPercentage {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}
+
+impl From<&str> for NumberOrPercentage {
+    fn from(_: &str) -> Self {
+        todo!()
+    }
+}
+
+#[derive(Clone)]
 pub enum NonNegativeNumberOrPercentage {
     Number(NonNegativeNumber),
     Percentage(Percentage),

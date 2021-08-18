@@ -21,7 +21,7 @@ property_keywords_impl! { FlexDirection,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     FlexDirection::parse(input).map(PropertyDeclaration::FlexDirection)

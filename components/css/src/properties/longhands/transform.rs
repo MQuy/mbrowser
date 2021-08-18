@@ -1,20 +1,31 @@
 use cssparser::Parser;
 
-use crate::parser::ParseError;
+use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::animation::TransformFunction;
 
 #[derive(Clone)]
-pub enum Transform {
-    None,
-}
+pub struct Transform(Vec<TransformFunction>);
 
 impl Transform {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Transform, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("none")?;
+                Ok(Transform(vec![]))
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let transforms = parse_repeated(
+                    input,
+                    &mut |input| TransformFunction::parse(context, input),
+                    1,
+                )?;
+                Ok(Transform(transforms))
+            })
     }
 }
 

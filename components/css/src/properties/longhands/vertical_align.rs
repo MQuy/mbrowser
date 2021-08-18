@@ -32,7 +32,7 @@ property_keywords_impl! { VerticalAlignKeyword,
 
 #[derive(Clone)]
 pub enum VerticalAlign {
-    VerticalAlignKeyword,
+    Keyword(VerticalAlignKeyword),
     LengthPercentage(LengthPercentage),
 }
 
@@ -41,7 +41,15 @@ impl VerticalAlign {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<VerticalAlign, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                let keyword = VerticalAlignKeyword::parse(input)?;
+                Ok(VerticalAlign::Keyword(keyword))
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let value = LengthPercentage::parse(context, input)?;
+                Ok(VerticalAlign::LengthPercentage(value))
+            })
     }
 }
 

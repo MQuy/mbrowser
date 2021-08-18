@@ -273,6 +273,12 @@ impl LengthPercentage {
     }
 }
 
+impl From<&str> for LengthPercentage {
+    fn from(_: &str) -> Self {
+        todo!()
+    }
+}
+
 /// value = <length [0, ∞]>
 pub type NonNegativeLength = NonNegative<Length>;
 
@@ -333,6 +339,45 @@ impl<L> GenericLengthOrAuto<L> {
                 let length = length_parser(input)?;
                 Ok(Self::Length(length))
             })
+    }
+}
+
+/// Generic for Length/None
+#[derive(Clone)]
+pub enum GenericLengthOrNone<Length> {
+    Length(Length),
+    None,
+}
+
+impl<L> GenericLengthOrNone<L> {
+    pub fn parse_with<'i, 't, LP>(
+        input: &mut Parser<'i, 't>,
+        length_parser: LP,
+    ) -> Result<Self, ParseError<'i>>
+    where
+        LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
+    {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("none")?;
+                Ok(Self::None)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let length = length_parser(input)?;
+                Ok(Self::Length(length))
+            })
+    }
+}
+
+/// value = <length> | none
+pub type NonNegativeLengthOrNone = GenericLengthOrNone<NonNegativeLength>;
+
+impl NonNegativeLengthOrNone {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| NonNegativeLength::parse(context, input))
     }
 }
 
@@ -527,6 +572,17 @@ impl<LP> GenericLengthPercentageOrNormal<LP> {
                 let length_percent = item_parser(input)?;
                 Ok(Self::LengthPercentage(length_percent))
             })
+    }
+}
+
+pub type LengthPercentageOrNormal = GenericLengthPercentageOrNormal<LengthPercentage>;
+
+impl LengthPercentageOrNormal {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        Self::parse_with(input, |input| LengthPercentage::parse(context, input))
     }
 }
 

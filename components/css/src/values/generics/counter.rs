@@ -50,7 +50,6 @@ impl<I> GenericCounter<I> {
     where
         F: Fn(&mut Parser<'i, 't>) -> Result<I, ParseError<'i>>,
     {
-        let mut reversed = false;
         let name = CustomIdent::parse(input)?;
         let value = input.try_parse(|input| item_parser(input)).ok();
         Ok(GenericCounter { name, value })

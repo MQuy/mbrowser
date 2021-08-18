@@ -100,7 +100,7 @@ pub enum PropertyDeclaration {
     /// `writing-mode`
     WritingMode(properties::longhands::writing_mode::WritingMode),
     /// `z-index`
-    ZIndex(properties::longhands::z_index::ZIndex),
+    ZIndex(values::number::IntegerAuto),
     /// `flex-grow`
     FlexGrow(values::number::NonNegativeNumber),
     /// `flex-shrink`
@@ -200,15 +200,15 @@ pub enum PropertyDeclaration {
     /// `font-size`
     FontSize(properties::longhands::font_size::FontSize),
     /// `letter-spacing`
-    LetterSpacing(properties::longhands::letter_spacing::LetterSpacing),
+    LetterSpacing(values::length::LengthPercentageOrNormal),
     /// `line-height`
     LineHeight(properties::longhands::line_height::LineHeight),
     /// `outline-offset`
     OutlineOffset(values::length::Length),
     /// `perspective`
-    Perspective(properties::longhands::perspective::Perspective),
+    Perspective(values::length::NonNegativeLengthOrNone),
     /// `perspective-origin`
-    PerspectiveOrigin(properties::longhands::perspective_origin::PerspectiveOrigin),
+    PerspectiveOrigin(values::specified::position::Position),
     /// `quotes`
     Quotes(properties::longhands::quotes::Quotes),
     /// `rotate`
@@ -238,7 +238,7 @@ pub enum PropertyDeclaration {
     /// `vertical-align`
     VerticalAlign(properties::longhands::vertical_align::VerticalAlign),
     /// `word-spacing`
-    WordSpacing(properties::longhands::word_spacing::WordSpacing),
+    WordSpacing(values::length::LengthPercentageOrNormal),
     /// `border-image-source`
     BorderImageSource(values::image::Image),
     /// `list-style-image`

@@ -53,7 +53,7 @@ impl FamilyName {
                 Ok(FamilyName::String(value.to_string()))
             })
             .or_else(|_err: ParseError<'i>| {
-                let mut idents = parse_repeated(input, &mut |input| CustomIdent::parse(input), 1)?;
+                let idents = parse_repeated(input, &mut |input| CustomIdent::parse(input), 1)?;
                 Ok(FamilyName::Ident(idents))
             })
     }

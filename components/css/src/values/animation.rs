@@ -88,3 +88,15 @@ impl ToCss for KeyframesName {
         }
     }
 }
+
+#[derive(Clone)]
+pub enum TransformFunction {}
+
+impl TransformFunction {
+    pub fn parse<'i, 't>(
+        _context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+}

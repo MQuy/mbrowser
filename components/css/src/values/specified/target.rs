@@ -1,17 +1,17 @@
 use cssparser::Parser;
 
-use super::url::CssUrl;
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone)]
-pub enum Image {
-    None,
-    Url(CssUrl),
+pub enum Target {
+    Counter,
+    Counters,
+    Text,
 }
 
-impl Image {
-    /// https://drafts.csswg.org/css-images-3/#typedef-image
+impl Target {
+    /// https://drafts.csswg.org/css-content/#typedef-target
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,

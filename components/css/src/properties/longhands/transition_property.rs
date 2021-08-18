@@ -11,6 +11,20 @@ pub enum SingleTransitionProperty {
     Ident(CustomIdent),
 }
 
+impl SingleTransitionProperty {
+    pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("all")?;
+                Ok(SingleTransitionProperty::All)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let ident = CustomIdent::parse(input)?;
+                Ok(SingleTransitionProperty::Ident(ident))
+            })
+    }
+}
+
 #[derive(Clone)]
 pub struct TransitionProperty {
     properties: Vec<SingleTransitionProperty>,
@@ -18,10 +32,19 @@ pub struct TransitionProperty {
 
 impl TransitionProperty {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<TransitionProperty, ParseError<'i>> {
-        todo!()
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("none")?;
+                Ok(TransitionProperty { properties: vec![] })
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let properties =
+                    input.parse_comma_separated(|input| SingleTransitionProperty::parse(input))?;
+                Ok(TransitionProperty { properties })
+            })
     }
 }
 
