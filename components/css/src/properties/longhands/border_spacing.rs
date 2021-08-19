@@ -12,7 +12,7 @@ impl BorderSpacing {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<BorderSpacing, ParseError<'i>> {
-        Pair::parse_pair(input, |input| NonNegativeLength::parse(context, input))
+        Pair::parse_with(input, |input| NonNegativeLength::parse(context, input))
     }
 }
 

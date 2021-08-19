@@ -146,7 +146,7 @@ pub enum PropertyDeclaration {
     /// `animation-play-state`
     AnimationPlayState(properties::longhands::animation_play_state::AnimationPlayState),
     /// `animation-timing-function`
-    AnimationTimingFunction(values::animation::TimingFunction),
+    AnimationTimingFunction(values::specified::easing::EasingFunction),
     /// `background-attachment`
     BackgroundAttachment(properties::longhands::background_attachment::BackgroundAttachment),
     /// `background-clip`
@@ -232,7 +232,7 @@ pub enum PropertyDeclaration {
     /// `transition-property`
     TransitionProperty(properties::longhands::transition_property::TransitionProperty),
     /// `transition-timing-function`
-    TransitionTimingFunction(values::animation::TimingFunction),
+    TransitionTimingFunction(values::specified::easing::EasingFunction),
     /// `translate`
     Translate(properties::longhands::translate::Translate),
     /// `vertical-align`
@@ -300,23 +300,23 @@ pub enum PropertyDeclaration {
     /// `width`
     Width(values::length::Size),
     /// `border-block-end-width`
-    BorderBlockEndWidth(values::border::BorderSideWidth),
+    BorderBlockEndWidth(values::specified::line::LineWidth),
     /// `border-block-start-width`
-    BorderBlockStartWidth(values::border::BorderSideWidth),
+    BorderBlockStartWidth(values::specified::line::LineWidth),
     /// `border-bottom-width`
-    BorderBottomWidth(values::border::BorderSideWidth),
+    BorderBottomWidth(values::specified::line::LineWidth),
     /// `border-inline-end-width`
-    BorderInlineEndWidth(values::border::BorderSideWidth),
+    BorderInlineEndWidth(values::specified::line::LineWidth),
     /// `border-inline-start-width`
-    BorderInlineStartWidth(values::border::BorderSideWidth),
+    BorderInlineStartWidth(values::specified::line::LineWidth),
     /// `border-left-width`
-    BorderLeftWidth(values::border::BorderSideWidth),
+    BorderLeftWidth(values::specified::line::LineWidth),
     /// `border-right-width`
-    BorderRightWidth(values::border::BorderSideWidth),
+    BorderRightWidth(values::specified::line::LineWidth),
     /// `border-top-width`
-    BorderTopWidth(values::border::BorderSideWidth),
+    BorderTopWidth(values::specified::line::LineWidth),
     /// `outline-width`
-    OutlineWidth(values::border::BorderSideWidth),
+    OutlineWidth(values::specified::line::LineWidth),
     /// `background-color`
     BackgroundColor(values::color::Color),
     /// `border-block-end-color`

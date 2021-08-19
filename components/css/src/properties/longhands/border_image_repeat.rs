@@ -29,7 +29,7 @@ impl BorderImageRepeat {
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        BorderImageRepeat::parse_pair(input, |input| BorderImageRepeatKeyword::parse(input))
+        BorderImageRepeat::parse_with(input, |input| BorderImageRepeatKeyword::parse(input))
     }
 }
 

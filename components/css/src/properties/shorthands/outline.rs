@@ -5,13 +5,13 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands::outline_style::OutlineStyle;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderSideWidth;
 use crate::values::color::Color;
+use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {
     pub outline_color: Color,
     pub outline_style: OutlineStyle,
-    pub outline_width: BorderSideWidth,
+    pub outline_width: LineWidth,
 }
 
 pub fn parse_value<'i, 't>(

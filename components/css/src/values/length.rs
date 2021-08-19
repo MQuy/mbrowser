@@ -279,6 +279,12 @@ impl From<&str> for LengthPercentage {
     }
 }
 
+impl From<i32> for LengthPercentage {
+    fn from(_: i32) -> Self {
+        todo!()
+    }
+}
+
 /// value = <length [0, ∞]>
 pub type NonNegativeLength = NonNegative<Length>;
 
@@ -786,7 +792,7 @@ impl<T: Clone> Pair<T> {
         Pair::<T>(left, right)
     }
 
-    pub fn parse_pair<'i, 't, F>(
+    pub fn parse_with<'i, 't, F>(
         input: &mut Parser<'i, 't>,
         item_parser: F,
     ) -> Result<Self, ParseError<'i>>

@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::animation::TransformFunction;
+use crate::values::specified::transform::TransformFunction;
 
 #[derive(Clone)]
 pub struct Transform(Vec<TransformFunction>);

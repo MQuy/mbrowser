@@ -8,24 +8,24 @@ use crate::properties::longhands::border_image_repeat::BorderImageRepeat;
 use crate::properties::longhands::border_image_slice::BorderImageSlice;
 use crate::properties::longhands::border_image_width::BorderImageWidth;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderSideWidth;
 use crate::values::color::Color;
 use crate::values::image::Image;
 use crate::values::layout::LineStyle;
+use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {
     pub border_top_color: Color,
     pub border_top_style: LineStyle,
-    pub border_top_width: BorderSideWidth,
+    pub border_top_width: LineWidth,
     pub border_right_color: Color,
     pub border_right_style: LineStyle,
-    pub border_right_width: BorderSideWidth,
+    pub border_right_width: LineWidth,
     pub border_bottom_color: Color,
     pub border_bottom_style: LineStyle,
-    pub border_bottom_width: BorderSideWidth,
+    pub border_bottom_width: LineWidth,
     pub border_left_color: Color,
     pub border_left_style: LineStyle,
-    pub border_left_width: BorderSideWidth,
+    pub border_left_width: LineWidth,
     pub border_image_outset: BorderImageOutset,
     pub border_image_repeat: BorderImageRepeat,
     pub border_image_slice: BorderImageSlice,

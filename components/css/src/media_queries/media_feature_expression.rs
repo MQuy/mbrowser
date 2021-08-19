@@ -334,14 +334,6 @@ impl ToCss for MediaFeatureExpression {
     }
 }
 
-/// A value found or expected in a media expression.
-///
-/// FIXME(emilio): How should calc() serialize in the Number / Integer /
-/// BoolInteger / NumberRatio case, as computed or as specified value?
-///
-/// If the first, this would need to store the relevant values.
-///
-/// See: https://github.com/w3c/csswg-drafts/issues/1968
 #[derive(Clone, Debug, PartialEq)]
 pub enum MediaExpressionValue {
     /// A length.

@@ -4,11 +4,11 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderSideWidth;
+use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {
-    pub border_block_start_width: BorderSideWidth,
-    pub border_block_end_width: BorderSideWidth,
+    pub border_block_start_width: LineWidth,
+    pub border_block_end_width: LineWidth,
 }
 
 pub fn parse_value<'i, 't>(

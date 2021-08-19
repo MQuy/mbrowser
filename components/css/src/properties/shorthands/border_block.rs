@@ -4,13 +4,13 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderSideWidth;
+use crate::values::specified::line::LineWidth;
 use crate::values::color::Color;
 use crate::values::layout::LineStyle;
 
 pub struct Longhands {
-    pub border_block_start_width: BorderSideWidth,
-    pub border_block_end_width: BorderSideWidth,
+    pub border_block_start_width: LineWidth,
+    pub border_block_end_width: LineWidth,
     pub border_block_start_style: LineStyle,
     pub border_block_end_style: LineStyle,
     pub border_block_start_color: Color,

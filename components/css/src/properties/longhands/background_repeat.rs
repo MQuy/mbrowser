@@ -47,7 +47,7 @@ impl BackgroundRepeat {
                         ))
                     })
                     .or_else(|_err: ParseError<'i>| {
-                        BackgroundRepeat::parse_pair(input, |input| {
+                        BackgroundRepeat::parse_with(input, |input| {
                             BackgroundRepeatKeyword::parse(input)
                         })
                     })

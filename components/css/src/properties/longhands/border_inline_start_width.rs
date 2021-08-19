@@ -3,13 +3,13 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderSideWidth;
+use crate::values::specified::line::LineWidth;
 
 pub fn parse<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
-) -> Result<BorderSideWidth, ParseError<'i>> {
-    BorderSideWidth::parse(context, input)
+) -> Result<LineWidth, ParseError<'i>> {
+    LineWidth::parse(context, input)
 }
 
 pub fn parse_declared<'i, 't>(

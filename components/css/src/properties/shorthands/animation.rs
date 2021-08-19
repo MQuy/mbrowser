@@ -11,12 +11,12 @@ use crate::properties::longhands::animation_iteration_count::AnimationIterationC
 use crate::properties::longhands::animation_name::AnimationName;
 use crate::properties::longhands::animation_play_state::AnimationPlayState;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::animation::TimingFunction;
+use crate::values::specified::easing::EasingFunction;
 
 pub struct Longhands {
     pub animation_name: AnimationName,
     pub animation_duration: AnimationDuration,
-    pub animation_timing_function: TimingFunction,
+    pub animation_timing_function: EasingFunction,
     pub animation_delay: AnimationDelay,
     pub animation_iteration_count: AnimationIterationCount,
     pub animation_direction: AnimationDirection,

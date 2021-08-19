@@ -35,13 +35,34 @@ impl Number {
     ) -> Result<Self, ParseError<'i>> {
         let value = Number::parse(context, input)?;
         if value < 0 {
-            return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+        } else {
+            Ok(value)
         }
-        Ok(value)
+    }
+
+    pub fn parse_in_range<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+        from: Number,
+        to: Number,
+    ) -> Result<Self, ParseError<'i>> {
+        let value = Number::parse(context, input)?;
+        if from <= value && value <= to {
+            Ok(value)
+        } else {
+            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+        }
     }
 
     pub fn get(&self) -> f32 {
         self.value
+    }
+}
+
+impl From<f32> for Number {
+    fn from(value: f32) -> Self {
+        Number::new(value)
     }
 }
 
@@ -130,6 +151,29 @@ impl NonNegativeNumber {
     ) -> Result<Self, ParseError<'i>> {
         todo!()
     }
+
+    pub fn get(&self) -> f32 {
+        self.0.get()
+    }
+}
+
+impl PartialEq<i32> for NonNegativeNumber {
+    fn eq(&self, other: &i32) -> bool {
+        self.get() as i32 == *other
+    }
+}
+
+impl PartialOrd<i32> for NonNegativeNumber {
+    fn partial_cmp(&self, other: &i32) -> Option<Ordering> {
+        let value = self.get() as i32;
+        if value > *other {
+            Some(Ordering::Greater)
+        } else if value < *other {
+            Some(Ordering::Less)
+        } else {
+            Some(Ordering::Equal)
+        }
+    }
 }
 
 impl ToCss for NonNegativeNumber {
@@ -217,6 +261,17 @@ impl NonNegativeNumberOrPercentage {
 
 impl From<&str> for NonNegativeNumberOrPercentage {
     fn from(_: &str) -> Self {
+        todo!()
+    }
+}
+
+pub struct Zero {}
+
+impl Zero {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
         todo!()
     }
 }
