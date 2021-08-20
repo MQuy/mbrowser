@@ -10,7 +10,6 @@ pub fn parse_item_if_missing<'i, 't, T, F>(
     item_parser: F,
 ) -> Result<(), ParseError<'i>>
 where
-    T: PartialEq,
     F: Fn(&Option<T>, &mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 {
     if item.is_none() {

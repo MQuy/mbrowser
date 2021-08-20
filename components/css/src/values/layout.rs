@@ -96,6 +96,12 @@ impl ToCss for Resolution {
     }
 }
 
+impl From<&str> for Resolution {
+    fn from(_: &str) -> Self {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub enum Box {
     BorderBox,

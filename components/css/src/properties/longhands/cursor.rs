@@ -1,11 +1,11 @@
-use common::url::BrowserUrl;
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
-use crate::parser::{parse_repeated, ParseError};
+use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
+use crate::values::url::CssUrl;
 
 #[derive(Clone)]
 #[repr(u8)]
@@ -90,7 +90,7 @@ property_keywords_impl! { CursorKind,
 #[derive(Clone)]
 #[repr(C)]
 pub struct CursorImage {
-    pub url: BrowserUrl,
+    pub url: CssUrl,
     pub x: Option<Number>,
     pub y: Option<Number>,
 }
@@ -100,9 +100,7 @@ impl CursorImage {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        let value = input.expect_ident_or_string()?;
-        let url = BrowserUrl::parse(value)
-            .map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))?;
+        let url = CssUrl::parse(context, input)?;
         let (x, y) = input
             .try_parse(|input| -> Result<(Number, Number), ParseError<'i>> {
                 let x = Number::parse(context, input)?;
@@ -126,7 +124,7 @@ impl Cursor {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Cursor, ParseError<'i>> {
-        let images = parse_repeated(input, &mut |input| CursorImage::parse(context, input), 0)?;
+        let images = input.parse_comma_separated(|input| CursorImage::parse(context, input))?;
         let keyword = CursorKind::parse(input)?;
         Ok(Cursor { images, keyword })
     }

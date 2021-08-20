@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use cssparser::{Parser, ToCss, Token};
 
 use super::number::NonNegativeNumber;
@@ -6,7 +8,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Percentage {
     value: CSSFloat,
 }
@@ -24,6 +26,10 @@ impl Percentage {
             } if unit == &"%" => Ok(Percentage { value }),
             _ => Err(input.new_custom_error(StyleParseErrorKind::UnexpectedToken(token))),
         }
+    }
+
+    pub fn to_value(&self, range: &Range<f32>) -> CSSFloat {
+        (range.end - range.start) * self.value + range.start
     }
 }
 

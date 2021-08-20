@@ -1,14 +1,13 @@
-use common::url::BrowserUrl;
 use cssparser::Parser;
 
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
 use crate::values::number::NonNegativeNumberOrPercentage;
 use crate::values::specified::angle::Angle;
+use crate::values::url::CssUrl;
 
 #[derive(Clone)]
 pub struct DropShadow {
@@ -160,7 +159,7 @@ impl FilterFunction {
 #[derive(Clone)]
 pub enum FilterFunctionOrUrl {
     Function(FilterFunction),
-    Url(BrowserUrl),
+    Url(CssUrl),
 }
 
 impl FilterFunctionOrUrl {
@@ -170,10 +169,7 @@ impl FilterFunctionOrUrl {
     ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| {
-                let value = input.expect_url()?;
-                let url = BrowserUrl::parse(&value).map_err(|_err| {
-                    input.new_custom_error(StyleParseErrorKind::UnexpectedValue(value))
-                })?;
+                let url = CssUrl::parse(context, input)?;
                 Ok(FilterFunctionOrUrl::Url(url))
             })
             .or_else(|_err: ParseError<'i>| {

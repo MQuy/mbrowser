@@ -14,3 +14,9 @@ impl Position {
         todo!()
     }
 }
+
+impl From<&str> for Position {
+    fn from(_: &str) -> Self {
+        todo!()
+    }
+}

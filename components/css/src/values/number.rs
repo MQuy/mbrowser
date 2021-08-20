@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::Display;
+use std::ops::Range;
 
 use cssparser::{Parser, ToCss};
 
@@ -57,6 +58,12 @@ impl Number {
 
     pub fn get(&self) -> f32 {
         self.value
+    }
+}
+
+impl From<i32> for Number {
+    fn from(value: i32) -> Self {
+        Number::new(value as f32)
     }
 }
 
@@ -223,7 +230,7 @@ impl IntegerAuto {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum NumberOrPercentage {
     Number(Number),
     Percentage(Percentage),
@@ -233,6 +240,15 @@ impl NumberOrPercentage {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        todo!()
+    }
+
+    pub fn parse_in_range<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+        number_range: Option<&Range<f32>>,
+        percentage_range: Option<&Range<f32>>,
     ) -> Result<Self, ParseError<'i>> {
         todo!()
     }
