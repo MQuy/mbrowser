@@ -4,12 +4,12 @@ use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::position::PreferredRatio;
+use crate::values::percentage::Ratio;
 
 #[derive(Clone)]
 pub struct AspectRatio {
     pub auto: bool,
-    pub ratio: PreferredRatio,
+    pub ratio: Option<Ratio>,
 }
 
 impl AspectRatio {
@@ -31,7 +31,7 @@ impl AspectRatio {
                 },
                 &mut |input| {
                     parse_item_if_missing(input, &mut ratio, |_, input| {
-                        PreferredRatio::parse(context, input)
+                        Ratio::parse(context, input)
                     })
                 },
             ],
@@ -41,7 +41,7 @@ impl AspectRatio {
         } else {
             Ok(AspectRatio {
                 auto: auto.is_some(),
-                ratio: ratio.map_or(PreferredRatio::None, |ratio| ratio),
+                ratio: ratio.map_or(None, |ratio| Some(ratio)),
             })
         }
     }

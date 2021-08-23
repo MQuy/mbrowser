@@ -97,8 +97,16 @@ impl ToCss for Resolution {
 }
 
 impl From<&str> for Resolution {
-    fn from(_: &str) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        let index = text.find(|ch: char| ch == 'x' || ch == 'd').unwrap();
+        let (value, unit) = (&text[..index], &text[index..]);
+        let value = value.parse::<f32>().unwrap();
+        match_ignore_ascii_case! { unit,
+            "dpi" => Resolution::Dpi(value),
+            "x" | "dppx"=> Resolution::Dppx(value),
+            "dpcm" => Resolution::Dpcm(value),
+            _ => Resolution::Dppx(1.0),
+        }
     }
 }
 

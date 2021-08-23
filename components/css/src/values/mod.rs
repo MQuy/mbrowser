@@ -19,7 +19,6 @@ pub mod layout;
 pub mod length;
 pub mod number;
 pub mod percentage;
-pub mod position;
 pub mod specified;
 pub mod text;
 pub mod time;
@@ -86,7 +85,16 @@ impl CustomIdent {
     pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
         let location = input.current_source_location();
         let ident = input.expect_ident()?;
-        CustomIdent::from_ident(location, ident, &["none"])
+        CustomIdent::from_ident(location, ident, &[])
+    }
+
+    pub fn parse_excluding<'i, 't>(
+        input: &mut Parser<'i, 't>,
+        excluding: &[&str],
+    ) -> Result<Self, ParseError<'i>> {
+        let location = input.current_source_location();
+        let ident = input.expect_ident()?;
+        CustomIdent::from_ident(location, ident, excluding)
     }
 
     /// Parse an already-tokenizer identifier

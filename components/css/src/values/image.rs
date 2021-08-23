@@ -496,7 +496,7 @@ pub enum Image {
 }
 
 impl Image {
-    /// https://drafts.csswg.org/css-images-3/#typedef-image
+    /// https://drafts.csswg.org/css-images-4/#funcdef-image
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -507,6 +507,7 @@ impl Image {
                 Ok(Image::Url(url))
             })
             .or_else(|_err: ParseError<'i>| {
+                let location = input.current_source_location();
                 let name = input.expect_function()?.clone();
                 input.parse_nested_block(|input| {
                     match_ignore_ascii_case! { &name,
@@ -520,7 +521,7 @@ impl Image {
                         "repeating-radial-gradient" => Image::parse_radial_gradient(context, input, true),
                         "conic-gradient" => Image::parse_conic_gradient(context, input, false),
                         "repeating-conic-gradient" => Image::parse_conic_gradient(context, input, true),
-                        _ => todo!()
+                        _ => return Err(location.new_custom_error(StyleParseErrorKind::UnspecifiedError))
                     }
                 })
             })
