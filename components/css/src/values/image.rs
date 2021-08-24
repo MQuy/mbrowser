@@ -5,7 +5,7 @@ use super::layout::Resolution;
 use super::length::{LengthPercentage, NonNegativeLength};
 use super::percentage::Percentage;
 use super::specified::angle::{Angle, AnglePercentage};
-use super::specified::position::Position;
+use super::specified::position::{HorizontalPosition, Position, VerticalPosition};
 use super::url::CssUrl;
 use super::Ident;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
@@ -434,7 +434,10 @@ impl RadialGradient {
             size,
             color_stop,
             repeating: false,
-            position: position.map_or("center".into(), |v| v),
+            position: position.map_or(
+                Position::new(HorizontalPosition::Center, VerticalPosition::Center),
+                |v| v,
+            ),
         })
     }
 }
@@ -472,7 +475,10 @@ impl ConicRadient {
         Ok(ConicRadient {
             color_stop,
             angle: angle.map_or("0deg".into(), |v| v),
-            position: position.map_or("center".into(), |v| v),
+            position: position.map_or(
+                Position::new(HorizontalPosition::Center, VerticalPosition::Center),
+                |v| v,
+            ),
             repeating: false,
         })
     }
@@ -496,7 +502,7 @@ pub enum Image {
 }
 
 impl Image {
-    /// https://drafts.csswg.org/css-images-4/#funcdef-image
+    /// https://drafts.csswg.org/css-images-4/#image-values
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,

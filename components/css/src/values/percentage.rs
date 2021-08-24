@@ -14,6 +14,10 @@ pub struct Percentage {
 }
 
 impl Percentage {
+    pub fn new(value: CSSFloat) -> Self {
+        Percentage { value }
+    }
+
     /// https://drafts.csswg.org/css-values/#percentages
     pub fn parse<'i, 't>(
         context: &ParserContext,

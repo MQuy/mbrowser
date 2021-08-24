@@ -123,14 +123,6 @@ impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
         Ok(pseudo_element)
     }
 
-    fn parse_functional_pseudo_element<'t>(
-        &self,
-        name: CowRcStr<'i>,
-        parser: &mut Parser<'i, 't>,
-    ) -> Result<PseudoElement, ParseError<'i, Self::Error>> {
-        todo!()
-    }
-
     fn default_namespace(&self) -> Option<Namespace> {
         self.namespaces.default.clone()
     }

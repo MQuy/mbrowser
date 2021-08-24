@@ -34,8 +34,8 @@ impl AbsoluteFontWeight {
                 let value = NonNegativeNumber::parse_in_range(
                     context,
                     input,
-                    NonNegativeNumber::new(0.0),
-                    NonNegativeNumber::new(1000.0),
+                    0.0,
+                    1000.0,
                 )?;
                 Ok(AbsoluteFontWeight::Weight(value))
             })

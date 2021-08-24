@@ -98,10 +98,10 @@ impl CMYK {
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        let cyan = NumberOrPercentage::parse_in_range(context, input, Some(&(0.0..1.0)), None)?;
-        let magenta = NumberOrPercentage::parse_in_range(context, input, Some(&(0.0..1.0)), None)?;
-        let yellow = NumberOrPercentage::parse_in_range(context, input, Some(&(0.0..1.0)), None)?;
-        let black = NumberOrPercentage::parse_in_range(context, input, Some(&(0.0..1.0)), None)?;
+        let cyan = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
+        let magenta = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
+        let yellow = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
+        let black = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
         Ok(CMYK {
             cyan,
             magenta,
@@ -149,7 +149,7 @@ impl Hue {
     ) -> Result<Self, ParseError<'i>> {
         input
             .try_parse(|input| {
-                let number = Number::parse_in_range(context, input, 0.into(), 360.into())?;
+                let number = Number::parse_in_range(context, input, 0.0, 360.0)?;
                 Ok(Hue::Number(number))
             })
             .or_else(|_err: ParseError<'i>| {
@@ -452,9 +452,9 @@ impl Color {
             .or_else(
                 |_err: ParseError<'i>| -> Result<(f32, f32, f32), ParseError<'i>> {
                     input.try_parse(|input| {
-                        let red = Number::parse_in_range(context, input, 0.into(), 255.into())?;
-                        let green = Number::parse_in_range(context, input, 0.into(), 255.into())?;
-                        let blue = Number::parse_in_range(context, input, 0.into(), 255.into())?;
+                        let red = Number::parse_in_range(context, input, 0.0, 255.0)?;
+                        let green = Number::parse_in_range(context, input, 0.0, 255.0)?;
+                        let blue = Number::parse_in_range(context, input, 0.0, 255.0)?;
                         Ok((red.get(), green.get(), blue.get()))
                     })
                 },
@@ -506,8 +506,8 @@ impl Color {
         input: &mut Parser<'i, 't>,
     ) -> Result<Color, ParseError<'i>> {
         let lightness = Percentage::parse(context, input)?;
-        let a = Number::parse_in_range(context, input, (-160).into(), 160.into())?;
-        let b = Number::parse_in_range(context, input, (-160).into(), 160.into())?;
+        let a = Number::parse_in_range(context, input, -160.0, 160.0)?;
+        let b = Number::parse_in_range(context, input, -160.0, 160.0)?;
         let alpha = Color::parse_alpha_value(context, input);
         Ok(Color::LAB(lightness, a, b, alpha))
     }
@@ -517,7 +517,7 @@ impl Color {
         input: &mut Parser<'i, 't>,
     ) -> Result<Color, ParseError<'i>> {
         let lightness = Percentage::parse(context, input)?;
-        let chroma = Number::parse_in_range(context, input, 0.into(), 230.into())?;
+        let chroma = Number::parse_in_range(context, input, 0.0, 230.0)?;
         let hue = Hue::parse(context, input)?;
         let alpha = Color::parse_alpha_value(context, input);
         Ok(Color::LCH(lightness, chroma, hue, alpha))
@@ -554,7 +554,7 @@ impl Color {
                 input.expect_delim('/')?;
                 input
                     .try_parse(|input| -> Result<f32, ParseError<'i>> {
-                        let number = Number::parse_in_range(context, input, 0.into(), 1.into())?;
+                        let number = Number::parse_in_range(context, input, 0.0, 1.0)?;
                         Ok(number.get() * 255.0)
                     })
                     .or_else(|_err: ParseError<'i>| -> Result<f32, ParseError<'i>> {

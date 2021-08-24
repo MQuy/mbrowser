@@ -4,6 +4,7 @@ use std::ops::Range;
 
 use cssparser::{Parser, ToCss};
 
+use super::generics::number::{GenericNumberOrPercentage, GreaterThanOrEqualToOne, NonNegative};
 use super::percentage::Percentage;
 use super::CSSFloat;
 use crate::parser::ParseError;
@@ -45,11 +46,11 @@ impl Number {
     pub fn parse_in_range<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        from: Number,
-        to: Number,
+        from: f32,
+        to: f32,
     ) -> Result<Self, ParseError<'i>> {
         let value = Number::parse(context, input)?;
-        if from <= value && value <= to {
+        if from <= value.get() && value.get() <= to {
             Ok(value)
         } else {
             Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
@@ -97,12 +98,6 @@ impl Display for Number {
         f.write_fmt(format_args!("{}", self.value))
     }
 }
-
-#[derive(Clone, PartialEq, PartialOrd, Debug)]
-pub struct NonNegative<T>(pub T);
-
-#[derive(Clone, PartialEq, PartialOrd)]
-pub struct GreaterThanOrEqualToOne<T>(pub T);
 
 pub type PositiveInteger = GreaterThanOrEqualToOne<Integer>;
 
@@ -153,10 +148,11 @@ impl NonNegativeNumber {
     pub fn parse_in_range<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        from: Self,
-        to: Self,
+        from: f32,
+        to: f32,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = Number::parse_in_range(context, input, from, to)?;
+        Ok(NonNegative::<Number>(value))
     }
 
     pub fn get(&self) -> f32 {
@@ -230,64 +226,82 @@ impl IntegerAuto {
     }
 }
 
-#[derive(Clone, PartialEq)]
-pub enum NumberOrPercentage {
-    Number(Number),
-    Percentage(Percentage),
-}
+pub type NumberOrPercentage = GenericNumberOrPercentage<Number>;
 
 impl NumberOrPercentage {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(context, input, |input| Number::parse(context, input))
     }
 
     pub fn parse_in_range<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
-        number_range: Option<&Range<f32>>,
-        percentage_range: Option<&Range<f32>>,
+        number_range: &Range<f32>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(context, input, |input| {
+            let value = Number::parse(context, input)?;
+            if value.get() >= number_range.start && value.get() <= number_range.end {
+                Ok(value)
+            } else {
+                Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+            }
+        })
     }
 }
 
 impl From<&str> for NumberOrPercentage {
-    fn from(_: &str) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        if let Some(index) = text.find(|ch: char| ch == '%') {
+            let value = text[..index].parse::<f32>().unwrap();
+            Self::Percentage(Percentage::new(value))
+        } else {
+            let value = text.parse::<f32>().unwrap();
+            Self::Number(Number::new(value))
+        }
     }
 }
 
-#[derive(Clone)]
-pub enum NonNegativeNumberOrPercentage {
-    Number(NonNegativeNumber),
-    Percentage(Percentage),
-}
+pub type NonNegativeNumberOrPercentage = GenericNumberOrPercentage<NonNegativeNumber>;
 
 impl NonNegativeNumberOrPercentage {
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        Self::parse_with(context, input, |input| {
+            NonNegativeNumber::parse(context, input)
+        })
     }
 }
 
 impl From<&str> for NonNegativeNumberOrPercentage {
-    fn from(_: &str) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        if let Some(index) = text.find(|ch: char| ch == '%') {
+            let value = text[..index].parse::<f32>().unwrap();
+            Self::Percentage(Percentage::new(value))
+        } else {
+            let value = text.parse::<f32>().unwrap();
+            assert!(value >= 0.0 && value <= 100.0);
+            Self::Number(NonNegativeNumber::new(value))
+        }
     }
 }
 
-pub struct Zero {}
+pub struct Zero;
 
 impl Zero {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        todo!()
+        let value = input.expect_number()?;
+        if value == 0.0 {
+            Ok(Zero)
+        } else {
+            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+        }
     }
 }

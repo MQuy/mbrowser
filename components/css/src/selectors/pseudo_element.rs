@@ -35,20 +35,3 @@ impl ToCss for PseudoElement {
 impl ::selectors::parser::PseudoElement for PseudoElement {
     type Impl = SelectorImpl;
 }
-
-impl PseudoElement {
-    /// Whether this pseudo-element is enabled for all content.
-    pub fn enabled_in_content(&self) -> bool {
-        todo!()
-    }
-
-    /// Whether this pseudo is enabled explicitly in UA sheets.
-    pub fn enabled_in_ua_sheets(&self) -> bool {
-        todo!()
-    }
-
-    /// Whether this pseudo is enabled explicitly in chrome sheets.
-    pub fn enabled_in_chrome(&self) -> bool {
-        todo!()
-    }
-}

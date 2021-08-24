@@ -3,9 +3,10 @@ use std::fmt::Write;
 use cssparser::{
     CowRcStr, Parser, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
 };
-use html5ever::tendril::SliceExt;
+use regex::Regex;
 
-use super::number::{NonNegative, NonNegativeNumber};
+use super::generics::number::NonNegative;
+use super::number::NonNegativeNumber;
 use super::percentage::Percentage;
 use super::{AllowedNumericType, CSSFloat};
 use crate::css_writer::ToCss;
@@ -67,8 +68,28 @@ impl Length {
 }
 
 impl From<&str> for Length {
-    fn from(_: &str) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        let regex = Regex::new(r"/px|in|cm|mm|q|pt|pc|em|ex|ch|vw|vh|vmin|vmax/i").unwrap();
+        let index = regex.find(text).unwrap().start();
+        let (value, unit) = (&text[..index], &text[index..]);
+        let value = value.parse::<f32>().unwrap();
+        Length::NoCalc(match_ignore_ascii_case! { unit,
+            "px" => NoCalcLength::Absolute(AbsoluteLength::Px(value)),
+            "in" => NoCalcLength::Absolute(AbsoluteLength::In(value)),
+            "cm" => NoCalcLength::Absolute(AbsoluteLength::Cm(value)),
+            "mm" => NoCalcLength::Absolute(AbsoluteLength::Mm(value)),
+            "q" => NoCalcLength::Absolute(AbsoluteLength::Q(value)),
+            "pt" => NoCalcLength::Absolute(AbsoluteLength::Pt(value)),
+            "pc" => NoCalcLength::Absolute(AbsoluteLength::Pc(value)),
+            "em" => NoCalcLength::FontRelative(FontRelativeLength::Em(value)),
+            "ex" => NoCalcLength::FontRelative(FontRelativeLength::Ex(value)),
+            "ch" => NoCalcLength::FontRelative(FontRelativeLength::Ch(value)),
+            "vw" => NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vw(value)),
+            "vh" => NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vh(value)),
+            "vmin" => NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vmin(value)),
+            "vmax" => NoCalcLength::ViewportPercentage(ViewportPercentageLength::Vmax(value)),
+            _ => panic!("unit {} is not supported", unit),
+        })
     }
 }
 
@@ -274,14 +295,14 @@ impl LengthPercentage {
 }
 
 impl From<&str> for LengthPercentage {
-    fn from(_: &str) -> Self {
-        todo!()
-    }
-}
-
-impl From<i32> for LengthPercentage {
-    fn from(_: i32) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        match text.find(|ch| ch == '%') {
+            Some(index) => {
+                let value = text[..index].parse::<f32>().unwrap();
+                LengthPercentage::Percentage(Percentage::new(value))
+            },
+            None => LengthPercentage::Length(text.into()),
+        }
     }
 }
 
@@ -303,8 +324,9 @@ impl NonNegativeLength {
 }
 
 impl From<&str> for NonNegativeLength {
-    fn from(_: &str) -> Self {
-        todo!()
+    fn from(text: &str) -> Self {
+        assert!(text.chars().nth(0).unwrap() != '-');
+        NonNegativeLength::new(text.into())
     }
 }
 

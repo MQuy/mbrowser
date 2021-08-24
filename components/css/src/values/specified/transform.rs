@@ -87,7 +87,8 @@ impl TransformFunction {
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let tx = LengthPercentage::parse(context, input)?;
-        let ty = LengthPercentage::parse(context, input).map_or(0.into(), |v| v);
+        let ty = LengthPercentage::parse(context, input)
+            .map_or(LengthPercentage::Length("0".into()), |v| v);
         Ok(TransformFunction::Translate(tx, ty))
     }
 
