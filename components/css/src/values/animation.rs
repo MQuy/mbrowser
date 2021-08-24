@@ -1,9 +1,6 @@
-use std::fmt::Write;
-
-use cssparser::{Parser, Token};
+use cssparser::{Parser, ToCss, Token};
 
 use super::CustomIdent;
-use crate::css_writer::{CssWriter, ToCss};
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -32,12 +29,12 @@ impl KeyframesName {
 }
 
 impl ToCss for KeyframesName {
-    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
         match self {
-            KeyframesName::Ident(ident) => dest.write_str(&cssparser::ToCss::to_css_string(ident)),
+            KeyframesName::Ident(ident) => ident.to_css(dest),
             KeyframesName::QuotedString(value) => dest.write_str(value),
         }
     }

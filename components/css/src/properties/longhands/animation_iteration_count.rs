@@ -1,4 +1,4 @@
-use cssparser::{Parser, Token};
+use cssparser::{Parser, ToCss, Token};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -30,13 +30,25 @@ impl SingleAnimationIterationCount {
     }
 }
 
+impl ToCss for SingleAnimationIterationCount {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            SingleAnimationIterationCount::Number(number) => dest.write_str(&number.to_string()),
+            SingleAnimationIterationCount::Infinite => dest.write_str("infinite"),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-animations/#animation-iteration-count
 #[derive(Clone)]
 pub struct AnimationIterationCount {
     iteration_count: Vec<SingleAnimationIterationCount>,
 }
 
 impl AnimationIterationCount {
-    /// https://drafts.csswg.org/css-animations/#animation-iteration-count
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -44,6 +56,20 @@ impl AnimationIterationCount {
         let iteration_count = input
             .parse_comma_separated(|input| SingleAnimationIterationCount::parse(context, input))?;
         Ok(AnimationIterationCount { iteration_count })
+    }
+}
+
+impl ToCss for AnimationIterationCount {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let count: Vec<String> = self
+            .iteration_count
+            .iter()
+            .map(|v| v.to_css_string())
+            .collect();
+        dest.write_str(&count.join(", "))
     }
 }
 

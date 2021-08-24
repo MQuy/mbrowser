@@ -146,7 +146,9 @@ pub enum PropertyDeclaration {
     /// `animation-play-state`
     AnimationPlayState(properties::longhands::animation_play_state::AnimationPlayState),
     /// `animation-timing-function`
-    AnimationTimingFunction(values::specified::easing::EasingFunction),
+    AnimationTimingFunction(
+        properties::longhands::animation_timing_function::AnimationTimingFunction,
+    ),
     /// `background-attachment`
     BackgroundAttachment(properties::longhands::background_attachment::BackgroundAttachment),
     /// `background-clip`
@@ -654,8 +656,8 @@ impl ToCss for PropertyDeclaration {
         W: std::fmt::Write,
     {
         match self {
-            PropertyDeclaration::AlignContent(_) => todo!(),
-            PropertyDeclaration::AlignItems(_) => todo!(),
+            PropertyDeclaration::AlignContent(property) => property.to_css(dest),
+            PropertyDeclaration::AlignItems(property) => property.to_css(dest),
             PropertyDeclaration::AlignSelf(_) => todo!(),
             PropertyDeclaration::AspectRatio(_) => todo!(),
             PropertyDeclaration::BackfaceVisibility(_) => todo!(),

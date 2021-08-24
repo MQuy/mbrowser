@@ -1,4 +1,6 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use std::fmt::{Display, Write};
+
+use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use super::CSSFloat;
 use crate::parser::ParseError;
@@ -11,6 +13,16 @@ pub enum TimeUnit {
     Millisecond,
 }
 
+impl Display for TimeUnit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TimeUnit::Second => f.write_char('s'),
+            TimeUnit::Millisecond => f.write_str("ms"),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-values-3/#time
 #[derive(Clone)]
 pub struct Time {
     amount: CSSFloat,
@@ -18,7 +30,6 @@ pub struct Time {
 }
 
 impl Time {
-    /// https://drafts.csswg.org/css-values/#time
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -46,5 +57,14 @@ impl Time {
             },
             _ => return_unexpected_token!(location, token),
         })
+    }
+}
+
+impl ToCss for Time {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!("{}{}", self.amount, self.unit))
     }
 }

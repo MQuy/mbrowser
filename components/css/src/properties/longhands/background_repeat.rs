@@ -21,37 +21,68 @@ property_keywords_impl! { BackgroundRepeatKeyword,
     BackgroundRepeatKeyword::NoRepeat, "no-repeat",
 }
 
-pub type BackgroundRepeat = Pair<BackgroundRepeatKeyword>;
+pub type RepeatStyle = Pair<BackgroundRepeatKeyword>;
+
+/// https://drafts.csswg.org/css-backgrounds/#background-repeat
+#[derive(Clone)]
+pub struct BackgroundRepeat {
+    repeat: Vec<RepeatStyle>,
+}
 
 impl BackgroundRepeat {
-    /// https://drafts.csswg.org/css-backgrounds/#background-repeat
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
-        input
-            .try_parse(|input| {
-                input.expect_ident_matching("repeat-x")?;
-                Ok(BackgroundRepeat::new(
-                    BackgroundRepeatKeyword::Repeat,
-                    BackgroundRepeatKeyword::NoRepeat,
-                ))
-            })
-            .or_else(|_err: ParseError<'i>| {
-                input
-                    .try_parse(|input| {
-                        input.expect_ident_matching("repeat-y")?;
-                        Ok(BackgroundRepeat::new(
+        let repeat = input.parse_comma_separated(|input| {
+            input
+                .try_parse(|input| {
+                    let location = input.current_source_location();
+                    let ident = input.expect_ident()?;
+                    Ok(match_ignore_ascii_case! { ident,
+                        "repeat-x" => RepeatStyle::new(
+                            BackgroundRepeatKeyword::Repeat,
+                            BackgroundRepeatKeyword::NoRepeat,
+                        ),
+                        "repeat-y" => RepeatStyle::new(
                             BackgroundRepeatKeyword::NoRepeat,
                             BackgroundRepeatKeyword::Repeat,
-                        ))
+                        ),
+                        "repeat" => RepeatStyle::new(
+                            BackgroundRepeatKeyword::Repeat,
+                            BackgroundRepeatKeyword::Repeat,
+                        ),
+                        "space" => RepeatStyle::new(
+                            BackgroundRepeatKeyword::Space,
+                            BackgroundRepeatKeyword::Space,
+                        ),
+                        "round" => RepeatStyle::new(
+                            BackgroundRepeatKeyword::Round,
+                            BackgroundRepeatKeyword::Round,
+                        ),
+                        "no-repeat" => RepeatStyle::new(
+                            BackgroundRepeatKeyword::NoRepeat,
+                            BackgroundRepeatKeyword::NoRepeat,
+                        ),
+                        _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
                     })
-                    .or_else(|_err: ParseError<'i>| {
-                        BackgroundRepeat::parse_with(input, |input| {
-                            BackgroundRepeatKeyword::parse(input)
-                        })
-                    })
-            })
+                }).or_else(|_err: ParseError<'i>| {
+                    let horizontal = BackgroundRepeatKeyword::parse(input)?;
+                    let veritcal = BackgroundRepeatKeyword::parse(input)?;
+                    Ok(RepeatStyle::new(horizontal, veritcal))
+                })
+        })?;
+        Ok(BackgroundRepeat { repeat })
+    }
+}
+
+impl ToCss for BackgroundRepeat {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let values: Vec<String> = self.repeat.iter().map(|f| f.to_css_string()).collect();
+        dest.write_str(&values.join(", "))
     }
 }
 

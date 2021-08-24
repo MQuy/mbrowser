@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -28,6 +28,19 @@ impl BgImage {
     }
 }
 
+impl ToCss for BgImage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            BgImage::None => dest.write_str("none"),
+            BgImage::Image(image) => image.to_css(dest),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-backgrounds/#background-image
 #[derive(Clone)]
 pub struct BackgroundImage {
     images: Vec<BgImage>,
@@ -40,6 +53,16 @@ impl BackgroundImage {
     ) -> Result<Self, ParseError<'i>> {
         let images = input.parse_comma_separated(|input| BgImage::parse(context, input))?;
         Ok(BackgroundImage { images })
+    }
+}
+
+impl ToCss for BackgroundImage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let images: Vec<String> = self.images.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&images.join(", "))
     }
 }
 

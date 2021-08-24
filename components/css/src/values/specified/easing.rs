@@ -48,8 +48,8 @@ property_keywords_impl! { StepPosition,
     StepPosition::End, "end",
 }
 
+/// https://drafts.csswg.org/css-easing-1/#easing-functions
 #[derive(Clone)]
-#[repr(u8, C)]
 pub enum EasingFunction {
     Keyword(EasingKeyword),
     CubicBezier {
@@ -92,5 +92,24 @@ impl EasingFunction {
                     Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
                 }
             })
+    }
+}
+
+impl ToCss for EasingFunction {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            EasingFunction::Keyword(keyword) => keyword.to_css(dest),
+            EasingFunction::CubicBezier { x1, y1, x2, y2 } => {
+                dest.write_fmt(format_args!("cubic-bezier({}, {}, {}, {})", x1, y1, x2, y2))
+            },
+            EasingFunction::Steps(value, position) => dest.write_fmt(format_args!(
+                "steps({}, {})",
+                value.to_css_string(),
+                position.to_css_string()
+            )),
+        }
     }
 }

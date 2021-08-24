@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
 use cssparser::{
-    CowRcStr, Parser, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
+    CowRcStr, Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
 };
 use regex::Regex;
 
@@ -9,19 +9,13 @@ use super::generics::number::NonNegative;
 use super::number::NonNegativeNumber;
 use super::percentage::Percentage;
 use super::{AllowedNumericType, CSSFloat};
-use crate::css_writer::ToCss;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-/// An extension to `NoCalcLength` to parse `calc` expressions.
-
-/// This is commonly used for the `<length>` values.
-///
 /// <https://drafts.csswg.org/css-values/#lengths>
 #[derive(Clone, Debug, PartialEq)]
 pub enum Length {
-    /// The internal length type that cannot parse `calc`
     NoCalc(NoCalcLength),
 }
 
@@ -94,7 +88,7 @@ impl From<&str> for Length {
 }
 
 impl ToCss for Length {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
@@ -104,24 +98,11 @@ impl ToCss for Length {
     }
 }
 
-/// A `<length>` without taking `calc` expressions into account
-///
 /// <https://drafts.csswg.org/css-values/#lengths>
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum NoCalcLength {
-    /// An absolute length
-    ///
-    /// <https://drafts.csswg.org/css-values/#absolute-length>
     Absolute(AbsoluteLength),
-
-    /// A font-relative length:
-    ///
-    /// <https://drafts.csswg.org/css-values/#font-relative-lengths>
     FontRelative(FontRelativeLength),
-
-    /// A viewport-relative length.
-    ///
-    /// <https://drafts.csswg.org/css-values/#viewport-relative-lengths>
     ViewportPercentage(ViewportPercentageLength),
 }
 
@@ -148,7 +129,7 @@ impl NoCalcLength {
 }
 
 impl ToCss for NoCalcLength {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
@@ -160,6 +141,7 @@ impl ToCss for NoCalcLength {
     }
 }
 
+/// <https://drafts.csswg.org/css-values/#absolute-length>
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum AbsoluteLength {
     /// An absolute length in pixels (px)
@@ -179,7 +161,7 @@ pub enum AbsoluteLength {
 }
 
 impl ToCss for AbsoluteLength {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: std::fmt::Write,
     {
@@ -196,7 +178,7 @@ impl ToCss for AbsoluteLength {
     }
 }
 
-/// A font relative length.
+/// <https://drafts.csswg.org/css-values/#font-relative-lengths>
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum FontRelativeLength {
     /// A "em" value: https://drafts.csswg.org/css-values/#em
@@ -210,7 +192,7 @@ pub enum FontRelativeLength {
 }
 
 impl ToCss for FontRelativeLength {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: Write,
     {
@@ -224,8 +206,6 @@ impl ToCss for FontRelativeLength {
     }
 }
 
-/// A viewport-relative length.
-///
 /// <https://drafts.csswg.org/css-values/#viewport-relative-lengths>
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ViewportPercentageLength {
@@ -240,7 +220,7 @@ pub enum ViewportPercentageLength {
 }
 
 impl ToCss for ViewportPercentageLength {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
     where
         W: Write,
     {
@@ -303,6 +283,15 @@ impl From<&str> for LengthPercentage {
             },
             None => LengthPercentage::Length(text.into()),
         }
+    }
+}
+
+impl ToCss for LengthPercentage {
+    fn to_css<W>(&self, dest: &mut W) -> core::fmt::Result
+    where
+        W: Write,
+    {
+        todo!()
     }
 }
 
@@ -448,6 +437,15 @@ impl LengthPercentageOrAuto {
     }
 }
 
+impl ToCss for LengthPercentageOrAuto {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}
+
 pub type NonNegativeLengthOrAuto = GenericLengthPercentageOrAuto<NonNegativeLength>;
 
 impl NonNegativeLengthOrAuto {
@@ -573,6 +571,15 @@ impl Size {
         Self::parse_with(input, |input| {
             NonNegativeLengthPercentage::parse(context, input)
         })
+    }
+}
+
+impl ToCss for Size {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }
 
@@ -828,5 +835,16 @@ impl<T: Clone> Pair<T> {
         } else {
             Ok(Self(first.clone(), first))
         }
+    }
+}
+
+impl<T: ToCss> ToCss for Pair<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.0.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.1.to_css(dest)
     }
 }

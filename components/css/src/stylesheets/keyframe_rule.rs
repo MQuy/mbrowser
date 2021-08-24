@@ -37,7 +37,7 @@ impl ToCss for KeyframesRule {
         W: std::fmt::Write,
     {
         dest.write_str("@keyframes ")?;
-        self.name.to_css(&mut CssWriter::new(dest))?;
+        cssparser::ToCss::to_css(&self.name, &mut CssWriter::new(dest))?;
         dest.write_str(" {")?;
         for keyframe in self.keyframes.iter() {
             dest.write_str("\n")?;

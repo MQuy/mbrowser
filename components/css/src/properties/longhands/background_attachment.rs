@@ -18,6 +18,7 @@ property_keywords_impl! { Attachment,
     Attachment::Local, "local",
 }
 
+/// https://drafts.csswg.org/css-backgrounds/#background-attachment
 #[derive(Clone)]
 pub struct BackgroundAttachment {
     attachments: Vec<Attachment>,
@@ -30,6 +31,16 @@ impl BackgroundAttachment {
     ) -> Result<Self, ParseError<'i>> {
         let attachments = input.parse_comma_separated(Attachment::parse)?;
         Ok(BackgroundAttachment { attachments })
+    }
+}
+
+impl ToCss for BackgroundAttachment {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let attachments: Vec<String> = self.attachments.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&attachments.join(", "))
     }
 }
 

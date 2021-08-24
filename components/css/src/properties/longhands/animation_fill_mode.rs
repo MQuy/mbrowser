@@ -20,6 +20,7 @@ property_keywords_impl! { SingleAnimationFillMode,
     SingleAnimationFillMode::Both, "both",
 }
 
+/// https://drafts.csswg.org/css-animations-1/#animation-fill-mode
 #[derive(Clone)]
 pub struct AnimationFillMode {
     fill_modes: Vec<SingleAnimationFillMode>,
@@ -32,6 +33,16 @@ impl AnimationFillMode {
     ) -> Result<Self, ParseError<'i>> {
         let fill_modes = input.parse_comma_separated(SingleAnimationFillMode::parse)?;
         Ok(AnimationFillMode { fill_modes })
+    }
+}
+
+impl ToCss for AnimationFillMode {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let modes: Vec<String> = self.fill_modes.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&modes.join(", "))
     }
 }
 

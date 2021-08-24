@@ -1,5 +1,6 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use crate::css_writer::write_elements;
 use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -46,6 +47,17 @@ impl VerticalPosition {
     }
 }
 
+impl ToCss for VerticalPosition {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let keyword = self.keyword.as_ref().map(|v| v.to_css_string());
+        let length = self.length.as_ref().map(|v| v.to_css_string());
+        write_elements(dest, &[keyword.as_deref(), length.as_deref()], ',')
+    }
+}
+
 #[derive(Clone)]
 pub enum VerticalPositionComponent {
     Center,
@@ -69,13 +81,25 @@ impl VerticalPositionComponent {
     }
 }
 
+impl ToCss for VerticalPositionComponent {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            VerticalPositionComponent::Center => dest.write_str("center"),
+            VerticalPositionComponent::PositionY(value) => value.to_css(dest),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-y
 #[derive(Clone)]
 pub struct BackgroundPositionY {
     positions: Vec<VerticalPositionComponent>,
 }
 
 impl BackgroundPositionY {
-    /// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-y
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -83,6 +107,16 @@ impl BackgroundPositionY {
         let positions = input
             .parse_comma_separated(|input| VerticalPositionComponent::parse(context, input))?;
         Ok(BackgroundPositionY { positions })
+    }
+}
+
+impl ToCss for BackgroundPositionY {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let values: Vec<String> = self.positions.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&values.join(", "))
     }
 }
 

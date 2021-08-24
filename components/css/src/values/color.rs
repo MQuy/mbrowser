@@ -567,3 +567,12 @@ impl Color {
             .map_or(255, |v| v as u8)
     }
 }
+
+impl ToCss for Color {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}

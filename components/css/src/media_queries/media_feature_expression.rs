@@ -407,7 +407,9 @@ impl ToCss for MediaExpressionValue {
         W: Write,
     {
         match self {
-            MediaExpressionValue::Length(length) => length.to_css(dest),
+            MediaExpressionValue::Length(length) => {
+                dest.write_str(&cssparser::ToCss::to_css_string(length))
+            },
             MediaExpressionValue::Integer(value) => dest.write_str(&std::format!("{}", value)),
             MediaExpressionValue::BoolInteger(value) => dest.write_str(&std::format!("{}", value)),
             MediaExpressionValue::Float(value) => dest.write_str(&std::format!("{}", value)),

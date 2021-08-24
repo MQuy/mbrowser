@@ -1,5 +1,6 @@
 use core::fmt;
 use std::fmt::Write;
+use std::ops::Deref;
 
 use cssparser::serialize_string;
 
@@ -130,5 +131,36 @@ where
             }
         }
         self.inner.write_char(c)
+    }
+}
+
+pub fn write_elements<W>(
+    dest: &mut W,
+    elements: &[Option<&str>],
+    delimiter: char,
+) -> std::fmt::Result
+where
+    W: std::fmt::Write,
+{
+    elements
+        .iter()
+        .flatten()
+        .enumerate()
+        .map(|(index, e)| {
+            if index > 0 {
+                dest.write_char(delimiter)?;
+            }
+            dest.write_str(e)
+        })
+        .collect()
+}
+
+trait OptionDeref<T: Deref> {
+    fn as_deref(&self) -> Option<&T::Target>;
+}
+
+impl<T: Deref> OptionDeref<T> for Option<T> {
+    fn as_deref(&self) -> Option<&T::Target> {
+        self.as_ref().map(Deref::deref)
     }
 }

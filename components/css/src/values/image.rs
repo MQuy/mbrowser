@@ -612,3 +612,12 @@ impl Image {
         Ok(Image::Gradient(Gradient::Conic(value)))
     }
 }
+
+impl ToCss for Image {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}

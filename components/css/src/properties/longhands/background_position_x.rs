@@ -1,5 +1,6 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use crate::css_writer::write_elements;
 use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -46,10 +47,33 @@ impl HorizontalPosition {
     }
 }
 
+impl ToCss for HorizontalPosition {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let keyword = self.keyword.as_ref().map(|v| v.to_css_string());
+        let length = self.length.as_ref().map(|v| v.to_css_string());
+        write_elements(dest, &[keyword.as_deref(), length.as_deref()], ',')
+    }
+}
+
 #[derive(Clone)]
 pub enum HorizontalPositionComponent {
     Center,
     PositionX(HorizontalPosition),
+}
+
+impl ToCss for HorizontalPositionComponent {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            HorizontalPositionComponent::Center => dest.write_str("center"),
+            HorizontalPositionComponent::PositionX(value) => value.to_css(dest),
+        }
+    }
 }
 
 impl HorizontalPositionComponent {
@@ -69,13 +93,13 @@ impl HorizontalPositionComponent {
     }
 }
 
+/// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-x
 #[derive(Clone)]
 pub struct BackgroundPositionX {
     positions: Vec<HorizontalPositionComponent>,
 }
 
 impl BackgroundPositionX {
-    /// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-x
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -83,6 +107,16 @@ impl BackgroundPositionX {
         let positions = input
             .parse_comma_separated(|input| HorizontalPositionComponent::parse(context, input))?;
         Ok(BackgroundPositionX { positions })
+    }
+}
+
+impl ToCss for BackgroundPositionX {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let values: Vec<String> = self.positions.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&values.join(", "))
     }
 }
 

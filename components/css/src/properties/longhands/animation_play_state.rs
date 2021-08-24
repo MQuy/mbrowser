@@ -16,6 +16,7 @@ property_keywords_impl! { SingleAnimationPlayState,
     SingleAnimationPlayState::Paused, "paused",
 }
 
+/// https://drafts.csswg.org/css-animations-1/#animation-play-state
 #[derive(Clone)]
 pub struct AnimationPlayState {
     play_states: Vec<SingleAnimationPlayState>,
@@ -28,6 +29,16 @@ impl AnimationPlayState {
     ) -> Result<Self, ParseError<'i>> {
         let play_states = input.parse_comma_separated(SingleAnimationPlayState::parse)?;
         Ok(AnimationPlayState { play_states })
+    }
+}
+
+impl ToCss for AnimationPlayState {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let states: Vec<String> = self.play_states.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&states.join(", "))
     }
 }
 
