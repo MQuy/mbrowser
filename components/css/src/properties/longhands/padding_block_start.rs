@@ -5,16 +5,10 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::NonNegativeLengthPercentage;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<NonNegativeLengthPercentage, ParseError<'i>> {
-    NonNegativeLengthPercentage::parse(context, input)
-}
-
+/// https://drafts.csswg.org/css-logical/#propdef-padding-block-start
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::PaddingBlockStart)
+    NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingBlockStart)
 }

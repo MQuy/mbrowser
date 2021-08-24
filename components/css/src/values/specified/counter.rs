@@ -109,6 +109,15 @@ impl CounterStyle {
     }
 }
 
+impl ToCss for CounterStyle {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}
+
 #[derive(Clone)]
 pub struct InnerMostCounter {
     name: CustomIdent,
@@ -160,6 +169,7 @@ impl AllCounters {
     }
 }
 
+/// https://drafts.csswg.org/css-lists-3/#typedef-counter
 #[derive(Clone)]
 pub enum Counter {
     Counter(InnerMostCounter),
@@ -167,7 +177,6 @@ pub enum Counter {
 }
 
 impl Counter {
-    /// https://drafts.csswg.org/css-lists-3/#typedef-counter
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -179,5 +188,14 @@ impl Counter {
             "counters" => Counter::Counters(AllCounters::parse(context, input)?),
             _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
         })
+    }
+}
+
+impl ToCss for Counter {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }

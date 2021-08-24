@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -6,6 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::angle::Angle;
 
+/// https://drafts.csswg.org/css-fonts/#font-style-prop
 #[derive(Clone)]
 pub enum FontStyle {
     Normal,
@@ -34,6 +35,22 @@ impl FontStyle {
                     _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
                 })
             })
+    }
+}
+
+impl ToCss for FontStyle {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FontStyle::Normal => dest.write_str("normal"),
+            FontStyle::Italic => dest.write_str("italic"),
+            FontStyle::Oblique(value) => {
+                dest.write_str("oblique ")?;
+                value.to_css(dest)
+            },
+        }
     }
 }
 

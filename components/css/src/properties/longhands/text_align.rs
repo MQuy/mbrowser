@@ -5,8 +5,8 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-text/#text-align-property
 #[derive(Clone)]
-#[repr(u8)]
 pub enum TextAlign {
     Start,
     End,

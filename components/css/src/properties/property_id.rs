@@ -667,13 +667,9 @@ where
 /// An enum to represent a CSS Wide keyword.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CSSWideKeyword {
-    /// The `initial` keyword.
     Initial,
-    /// The `inherit` keyword.
     Inherit,
-    /// The `unset` keyword.
     Unset,
-    /// The `revert` keyword.
     Revert,
 }
 
@@ -692,5 +688,19 @@ impl CSSWideKeyword {
         };
         input.expect_exhausted().map_err(|_| ())?;
         Ok(keyword)
+    }
+}
+
+impl cssparser::ToCss for CSSWideKeyword {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            CSSWideKeyword::Initial => dest.write_str("initial"),
+            CSSWideKeyword::Inherit => dest.write_str("inherit"),
+            CSSWideKeyword::Unset => dest.write_str("unset"),
+            CSSWideKeyword::Revert => dest.write_str("revert"),
+        }
     }
 }

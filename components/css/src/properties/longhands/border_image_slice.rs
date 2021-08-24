@@ -1,10 +1,11 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::{NonNegativeLengthPercentage, Rect};
 
+/// https://drafts.csswg.org/css-backgrounds/#the-border-image-slice
 #[derive(Clone)]
 pub struct BorderImageSlice {
     pub offsets: Rect<NonNegativeLengthPercentage>,
@@ -12,7 +13,6 @@ pub struct BorderImageSlice {
 }
 
 impl BorderImageSlice {
-    /// https://drafts.csswg.org/css-backgrounds/#the-border-image-slice
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -31,6 +31,19 @@ impl BorderImageSlice {
         }
 
         Ok(BorderImageSlice { fill, offsets })
+    }
+}
+
+impl ToCss for BorderImageSlice {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.offsets.to_css(dest)?;
+        if self.fill {
+            dest.write_str(" fill");
+        }
+        Ok(())
     }
 }
 

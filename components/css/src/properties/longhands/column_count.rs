@@ -7,6 +7,7 @@ use crate::values::number::IntegerAuto;
 
 pub type ColumnCount = IntegerAuto;
 
+/// https://drafts.csswg.org/css-multicol/#cc
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,

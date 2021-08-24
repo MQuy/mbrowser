@@ -5,6 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.fxtf.org/compositing/#mix-blend-mode
 #[derive(Clone)]
 pub enum MixBlendMode {
     Normal,
@@ -45,7 +46,7 @@ property_keywords_impl! { MixBlendMode,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     MixBlendMode::parse(input).map(PropertyDeclaration::MixBlendMode)

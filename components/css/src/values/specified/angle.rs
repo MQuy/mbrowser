@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 use regex::Regex;
 
 use crate::parser::ParseError;
@@ -7,6 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::percentage::Percentage;
 use crate::values::CSSFloat;
 
+/// https://drafts.csswg.org/css-values-4/#angle-value
 #[derive(Clone, PartialEq)]
 pub enum Angle {
     Deg(CSSFloat),
@@ -58,6 +59,22 @@ impl From<&str> for Angle {
     }
 }
 
+impl ToCss for Angle {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let (value, unit) = match self {
+            Angle::Deg(value) => (value, "deg"),
+            Angle::Grad(value) => (value, "grad"),
+            Angle::Rad(value) => (value, "rad"),
+            Angle::Turn(value) => (value, "turn"),
+        };
+        dest.write_fmt(format_args!("{}{}", value, unit))
+    }
+}
+
+/// https://drafts.csswg.org/css-values-4/#typedef-angle-percentage
 #[derive(Clone)]
 pub enum AnglePercentage {
     Angle(Angle),
@@ -78,5 +95,17 @@ impl AnglePercentage {
                 let percentage = Percentage::parse(context, input)?;
                 Ok(AnglePercentage::Percentage(percentage))
             })
+    }
+}
+
+impl ToCss for AnglePercentage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            AnglePercentage::Angle(value) => value.to_css(dest),
+            AnglePercentage::Percentage(value) => value.to_css(dest),
+        }
     }
 }

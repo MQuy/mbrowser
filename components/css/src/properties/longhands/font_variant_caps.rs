@@ -5,6 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-fonts/#font-variant-caps-prop
 #[derive(Clone)]
 pub enum FontVariantCaps {
     Normal,
@@ -27,7 +28,7 @@ property_keywords_impl! { FontVariantCaps,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     FontVariantCaps::parse(input).map(PropertyDeclaration::FontVariantCaps)

@@ -5,6 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::NonNegativeLengthPercentageNumberOrNormal;
 
+/// https://drafts.csswg.org/css-inline/#line-height-property
 pub type LineHeight = NonNegativeLengthPercentageNumberOrNormal;
 
 pub fn parse_declared<'i, 't>(

@@ -5,8 +5,8 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-transforms-2/#transform-style-property
 #[derive(Clone)]
-#[repr(u8)]
 pub enum TransformStyle {
     Flat,
     Preserve3d,
@@ -18,7 +18,7 @@ property_keywords_impl! { TransformStyle,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     TransformStyle::parse(input).map(PropertyDeclaration::TransformStyle)

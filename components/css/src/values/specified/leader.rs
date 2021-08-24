@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, Token, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -36,11 +36,11 @@ impl LeaderType {
     }
 }
 
+/// https://drafts.csswg.org/css-content/#leader-function
 #[derive(Clone)]
 pub struct Leader(LeaderType);
 
 impl Leader {
-    /// https://drafts.csswg.org/css-content/#leader-function
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -50,5 +50,14 @@ impl Leader {
             let style = LeaderType::parse(context, input)?;
             Ok(Leader(style))
         })
+    }
+}
+
+impl ToCss for Leader {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }

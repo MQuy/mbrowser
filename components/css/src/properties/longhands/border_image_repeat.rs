@@ -21,10 +21,10 @@ property_keywords_impl! { BorderImageRepeatKeyword,
     BorderImageRepeatKeyword::Space, "space",
 }
 
+/// https://drafts.csswg.org/css-backgrounds/#the-border-image-repeat
 pub type BorderImageRepeat = Pair<BorderImageRepeatKeyword>;
 
 impl BorderImageRepeat {
-    /// https://drafts.csswg.org/css-backgrounds/#the-border-image-repeat
     pub fn parse<'i, 't>(
         _context: &ParserContext,
         input: &mut Parser<'i, 't>,

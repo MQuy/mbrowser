@@ -37,6 +37,15 @@ impl Percentage {
     }
 }
 
+impl ToCss for Percentage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}
+
 /// A computed <ratio> value.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Ratio(pub NonNegativeNumber, pub NonNegativeNumber);

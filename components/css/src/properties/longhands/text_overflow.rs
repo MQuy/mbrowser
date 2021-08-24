@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -41,6 +41,21 @@ impl TextOverflowSide {
     }
 }
 
+impl ToCss for TextOverflowSide {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            TextOverflowSide::Clip => dest.write_str("clip"),
+            TextOverflowSide::Ellipsis => dest.write_str("ellipsis"),
+            TextOverflowSide::String(value) => dest.write_str(value),
+            TextOverflowSide::Fade(value) => value.as_ref().map_or(Ok(()), |v| v.to_css(dest)),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-overflow-4/#text-overflow
 #[derive(Clone)]
 pub struct TextOverflow {
     first: TextOverflowSide,
@@ -55,6 +70,20 @@ impl TextOverflow {
         let first = TextOverflowSide::parse(context, input)?;
         let second = TextOverflowSide::parse(context, input).ok();
         Ok(TextOverflow { first, second })
+    }
+}
+
+impl ToCss for TextOverflow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.first.to_css(dest)?;
+        if let Some(side) = &self.second {
+            dest.write_char(' ')?;
+            side.to_css(dest)?;
+        }
+        Ok(())
     }
 }
 

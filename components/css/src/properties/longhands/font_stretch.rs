@@ -31,8 +31,8 @@ property_keywords_impl! { FontStretchKeyword,
     FontStretchKeyword::UltraExpanded, "ultra-expanded",
 }
 
+/// https://drafts.csswg.org/css-fonts/#font-stretch-prop
 #[derive(Clone)]
-#[repr(u8)]
 pub enum FontStretch {
     Stretch(Percentage),
     Keyword(FontStretchKeyword),
@@ -52,6 +52,18 @@ impl FontStretch {
                 let percentage = Percentage::parse(context, input)?;
                 Ok(FontStretch::Stretch(percentage))
             })
+    }
+}
+
+impl ToCss for FontStretch {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FontStretch::Stretch(value) => value.to_css(dest),
+            FontStretch::Keyword(value) => value.to_css(dest),
+        }
     }
 }
 

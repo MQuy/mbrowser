@@ -40,6 +40,7 @@ property_keywords_impl! { RelativeSize,
     RelativeSize::Smaller, "smaller",
 }
 
+/// https://drafts.csswg.org/css-fonts/#font-size-prop
 #[derive(Clone)]
 pub enum FontSize {
     AbsoluteSize(AbsoluteSize),
@@ -65,6 +66,19 @@ impl FontSize {
                 let value = LengthPercentage::parse(context, input)?;
                 Ok(FontSize::LengthPercentage(value))
             })
+    }
+}
+
+impl ToCss for FontSize {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FontSize::AbsoluteSize(value) => value.to_css(dest),
+            FontSize::RelativeSize(value) => value.to_css(dest),
+            FontSize::LengthPercentage(value) => value.to_css(dest),
+        }
     }
 }
 

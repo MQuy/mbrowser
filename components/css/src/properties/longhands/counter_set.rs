@@ -5,6 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::counter::CounterWithInteger;
 
+/// https://drafts.csswg.org/css-lists/#propdef-counter-set
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,

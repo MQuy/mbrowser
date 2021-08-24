@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use super::angle::Angle;
 use crate::parser::ParseError;
@@ -164,5 +164,14 @@ impl TransformFunction {
     ) -> Result<Self, ParseError<'i>> {
         let ay = AngleOrZero::parse(context, input)?;
         Ok(TransformFunction::SkewY(ay))
+    }
+}
+
+impl ToCss for TransformFunction {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }

@@ -1,5 +1,6 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
+use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -48,6 +49,23 @@ impl SingleTextShadow {
     }
 }
 
+impl ToCss for SingleTextShadow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let color = self.color.as_ref().map(|v| v.to_css_string());
+        let length = Some(std::format!(
+            "{} {} {}",
+            self.shadow.0.to_css_string(),
+            self.shadow.1.to_css_string(),
+            self.shadow.2.to_css_string()
+        ));
+        write_elements(dest, &[color.as_deref(), length.as_deref()], ' ')
+    }
+}
+
+/// https://drafts.csswg.org/css-text-decor/#text-shadow-property
 #[derive(Clone)]
 pub struct TextShadow(Vec<SingleTextShadow>);
 
@@ -59,6 +77,21 @@ impl TextShadow {
         let values =
             input.parse_comma_separated(|input| SingleTextShadow::parse(context, input))?;
         Ok(TextShadow(values))
+    }
+}
+
+impl ToCss for TextShadow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self.0.len() {
+            0 => dest.write_str("none"),
+            _ => {
+                let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
+                dest.write_str(&values.join(", "))
+            },
+        }
     }
 }
 

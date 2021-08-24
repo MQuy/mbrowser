@@ -91,8 +91,7 @@ property_keywords_impl! { CursorKind,
 #[repr(C)]
 pub struct CursorImage {
     pub url: CssUrl,
-    pub x: Option<Number>,
-    pub y: Option<Number>,
+    pub coordinate: Option<(Number, Number)>,
 }
 
 impl CursorImage {
@@ -101,14 +100,27 @@ impl CursorImage {
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let url = CssUrl::parse(context, input)?;
-        let (x, y) = input
+        let coordinate = input
             .try_parse(|input| -> Result<(Number, Number), ParseError<'i>> {
                 let x = Number::parse(context, input)?;
                 let y = Number::parse(context, input)?;
                 Ok((x, y))
             })
-            .map_or((None, None), |(x, y)| (Some(x), Some(y)));
-        Ok(CursorImage { url, x, y })
+            .map_or(None, |(x, y)| Some((x, y)));
+        Ok(CursorImage { url, coordinate })
+    }
+}
+
+impl ToCss for CursorImage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.url.to_css(dest)?;
+        if let Some((x, y)) = &self.coordinate {
+            dest.write_fmt(format_args!("{} {}", x, y))?;
+        }
+        Ok(())
     }
 }
 
@@ -127,6 +139,21 @@ impl Cursor {
         let images = input.parse_comma_separated(|input| CursorImage::parse(context, input))?;
         let keyword = CursorKind::parse(input)?;
         Ok(Cursor { images, keyword })
+    }
+}
+
+impl ToCss for Cursor {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        for (index, image) in self.images.iter().enumerate() {
+            if index > 0 {
+                dest.write_str(", ")?;
+            }
+            image.to_css(dest)?;
+        }
+        self.keyword.to_css(dest)
     }
 }
 

@@ -1,6 +1,4 @@
-use std::ops::Range;
-
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -33,8 +31,26 @@ impl<N> GenericNumberOrPercentage<N> {
     }
 }
 
+impl<N: ToCss> ToCss for GenericNumberOrPercentage<N> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}
+
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct NonNegative<T>(pub T);
+
+impl<T: ToCss + Clone> ToCss for NonNegative<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.0.to_css(dest)
+    }
+}
 
 #[derive(Clone, PartialEq, PartialOrd)]
 pub struct GreaterThanOrEqualToOne<T>(pub T);

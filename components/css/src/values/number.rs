@@ -130,6 +130,15 @@ impl Integer {
     }
 }
 
+impl ToCss for Integer {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!("{}", self.0))
+    }
+}
+
 pub type NonNegativeNumber = NonNegative<Number>;
 
 impl NonNegativeNumber {
@@ -215,6 +224,18 @@ impl<L> GenericNumberOrAuto<L> {
     }
 }
 
+impl<N: ToCss> ToCss for GenericNumberOrAuto<N> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericNumberOrAuto::Number(value) => value.to_css(dest),
+            GenericNumberOrAuto::Auto => dest.write_str("auto"),
+        }
+    }
+}
+
 pub type IntegerAuto = GenericNumberOrAuto<Integer>;
 
 impl IntegerAuto {
@@ -261,6 +282,15 @@ impl From<&str> for NumberOrPercentage {
             let value = text.parse::<f32>().unwrap();
             Self::Number(Number::new(value))
         }
+    }
+}
+
+impl ToCss for NumberOrPercentage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }
 

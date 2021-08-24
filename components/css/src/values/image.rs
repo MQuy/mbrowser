@@ -491,6 +491,7 @@ pub enum Gradient {
     Conic(ConicRadient),
 }
 
+/// https://drafts.csswg.org/css-images-4/#image-values
 #[derive(Clone)]
 pub enum Image {
     Url(CssUrl),
@@ -502,7 +503,6 @@ pub enum Image {
 }
 
 impl Image {
-    /// https://drafts.csswg.org/css-images-4/#image-values
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,

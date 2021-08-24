@@ -5,6 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::{NonNegativeLengthPercentageNumberOrAuto, Rect};
 
+/// https://drafts.csswg.org/css-backgrounds/#border-image-width
 pub type BorderImageWidth = Rect<NonNegativeLengthPercentageNumberOrAuto>;
 
 impl BorderImageWidth {

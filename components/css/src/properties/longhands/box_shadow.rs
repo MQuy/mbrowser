@@ -1,5 +1,6 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
+use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -8,13 +9,13 @@ use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
 
 #[derive(Clone)]
-pub struct BoxShadowValue {
+pub struct Shadow {
     inset: bool,
     length: (Length, Length, NonNegativeLength, Length),
     color: Option<Color>,
 }
 
-impl BoxShadowValue {
+impl Shadow {
     pub fn parse<'i, 't, 'a>(
         context: &'a ParserContext,
         input: &mut Parser<'i, 't>,
@@ -55,7 +56,7 @@ impl BoxShadowValue {
         );
 
         if let Some(length) = length {
-            Ok(BoxShadowValue {
+            Ok(Shadow {
                 inset: inset.is_some(),
                 color,
                 length,
@@ -66,10 +67,29 @@ impl BoxShadowValue {
     }
 }
 
+impl ToCss for Shadow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let color = self.color.as_ref().map(|v| v.to_css_string());
+        let length = Some(std::format!(
+            "{} {} {} {}",
+            self.length.0.to_css_string(),
+            self.length.1.to_css_string(),
+            self.length.2.to_css_string(),
+            self.length.3.to_css_string(),
+        ));
+        let inset = if self.inset { Some("inset") } else { None };
+        write_elements(dest, &[color.as_deref(), length.as_deref(), inset], ' ')
+    }
+}
+
+/// https://drafts.csswg.org/css-backgrounds/#box-shadow
 #[derive(Clone)]
 pub enum BoxShadow {
     None,
-    Shadow(Vec<BoxShadowValue>),
+    Shadow(Vec<Shadow>),
 }
 
 impl BoxShadow {
@@ -84,11 +104,23 @@ impl BoxShadow {
             })
             .or_else(|_err: ParseError<'i>| {
                 let shadows = input.parse_comma_separated(|input| {
-                    let value = BoxShadowValue::parse(context, input)?;
+                    let value = Shadow::parse(context, input)?;
                     Ok(value)
                 })?;
                 Ok(BoxShadow::Shadow(shadows))
             })
+    }
+}
+
+impl ToCss for BoxShadow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            BoxShadow::None => dest.write_str("none"),
+            BoxShadow::Shadow(value) => value.iter().map(|v| v.to_css(dest)).collect(),
+        }
     }
 }
 

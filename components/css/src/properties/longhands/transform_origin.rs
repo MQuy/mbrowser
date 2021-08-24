@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
@@ -39,12 +39,40 @@ impl OffsetKeyword {
     }
 }
 
+impl ToCss for OffsetKeyword {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_str(match self {
+            OffsetKeyword::Left => "left",
+            OffsetKeyword::Center => "center",
+            OffsetKeyword::Right => "right",
+            OffsetKeyword::Top => "top",
+            OffsetKeyword::Bottom => "bottom",
+        })
+    }
+}
+
 #[derive(Clone)]
 pub enum LengthPercentageOrKeyword {
     LengthPercentage(LengthPercentage),
     Keyword(OffsetKeyword),
 }
 
+impl ToCss for LengthPercentageOrKeyword {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            LengthPercentageOrKeyword::LengthPercentage(value) => value.to_css(dest),
+            LengthPercentageOrKeyword::Keyword(value) => value.to_css(dest),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-transforms-1/#transform-origin-property
 #[derive(Clone)]
 pub struct TransformOrigin {
     x: LengthPercentageOrKeyword,
@@ -155,6 +183,20 @@ impl TransformOrigin {
                 })?;
                 Ok(TransformOrigin {x, y: LengthPercentageOrKeyword::Keyword(OffsetKeyword::Center), z: LengthPercentageOrKeyword::LengthPercentage("0px".into())})
             })
+    }
+}
+
+impl ToCss for TransformOrigin {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.x.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.y.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.z.to_css(dest)?;
+        dest.write_char(' ')
     }
 }
 

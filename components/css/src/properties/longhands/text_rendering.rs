@@ -5,6 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://svgwg.org/svg2-draft/painting.html#TextRendering
 #[derive(Clone)]
 pub enum TextRendering {
     Auto,
@@ -21,7 +22,7 @@ property_keywords_impl! { TextRendering,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     TextRendering::parse(input).map(PropertyDeclaration::TextRendering)

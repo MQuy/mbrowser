@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -25,6 +25,19 @@ impl SingleTransitionProperty {
     }
 }
 
+impl ToCss for SingleTransitionProperty {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            SingleTransitionProperty::All => dest.write_str("all"),
+            SingleTransitionProperty::Ident(value) => value.to_css(dest),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-transitions/#transition-property-property
 #[derive(Clone)]
 pub struct TransitionProperty {
     properties: Vec<SingleTransitionProperty>,
@@ -45,6 +58,16 @@ impl TransitionProperty {
                     input.parse_comma_separated(|input| SingleTransitionProperty::parse(input))?;
                 Ok(TransitionProperty { properties })
             })
+    }
+}
+
+impl ToCss for TransitionProperty {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let values: Vec<String> = self.properties.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&values.join(", "))
     }
 }
 

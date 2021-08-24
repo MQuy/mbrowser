@@ -3,14 +3,14 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
-use crate::properties::longhands::border_image_outset::BorderImageOutset;
 use crate::properties::longhands::border_image_repeat::BorderImageRepeat;
 use crate::properties::longhands::border_image_slice::BorderImageSlice;
+use crate::properties::longhands::border_image_source::BorderImageSource;
 use crate::properties::longhands::border_image_width::BorderImageWidth;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
-use crate::values::image::Image;
 use crate::values::layout::LineStyle;
+use crate::values::length::NonNegativeLengthOrNumberRect;
 use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {
@@ -26,10 +26,10 @@ pub struct Longhands {
     pub border_left_color: Color,
     pub border_left_style: LineStyle,
     pub border_left_width: LineWidth,
-    pub border_image_outset: BorderImageOutset,
+    pub border_image_outset: NonNegativeLengthOrNumberRect,
     pub border_image_repeat: BorderImageRepeat,
     pub border_image_slice: BorderImageSlice,
-    pub border_image_source: Image,
+    pub border_image_source: BorderImageSource,
     pub border_image_width: BorderImageWidth,
 }
 

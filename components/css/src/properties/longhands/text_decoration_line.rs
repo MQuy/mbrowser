@@ -1,5 +1,6 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
+use crate::css_writer::write_elements;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -7,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 
 bitflags! {
     #[repr(C)]
-    /// Specified keyword values for the text-decoration-line property.
+    /// https://drafts.csswg.org/css-text-decor/#text-decoration-line-property
     pub struct TextDecorationLine: u8 {
         /// No text decoration line is specified.
         const NONE = 0;
@@ -56,6 +57,28 @@ impl TextDecorationLine {
                     Ok(TextDecorationLine { bits})
                 }
             })
+    }
+}
+
+impl ToCss for TextDecorationLine {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        fn convert_to(origin: u8, compare: u8, text: &str) -> Option<&str> {
+            if (origin & compare) != 0 {
+                Some(text)
+            } else {
+                None
+            }
+        }
+
+        let none = convert_to(self.bits, TextDecorationLine::NONE.bits, "none");
+        let underline = convert_to(self.bits, TextDecorationLine::NONE.bits, "underline");
+        let overline = convert_to(self.bits, TextDecorationLine::NONE.bits, "overline");
+        let line_through = convert_to(self.bits, TextDecorationLine::NONE.bits, "line-through");
+        let blink = convert_to(self.bits, TextDecorationLine::NONE.bits, "blink");
+        write_elements(dest, &[none, underline, overline, line_through, blink], ' ')
     }
 }
 

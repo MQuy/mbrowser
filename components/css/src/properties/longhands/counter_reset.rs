@@ -6,6 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::generics::counter::{GenericCounterOrNone, GenericReversedCounter};
 use crate::values::number::Integer;
 
+/// https://drafts.csswg.org/css-lists/#counter-reset
 pub type CounterReset = GenericCounterOrNone<GenericReversedCounter<Integer>>;
 
 impl CounterReset {

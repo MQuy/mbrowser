@@ -359,6 +359,18 @@ impl<L> GenericLengthOrAuto<L> {
     }
 }
 
+impl<L: ToCss> ToCss for GenericLengthOrAuto<L> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthOrAuto::Length(value) => value.to_css(dest),
+            GenericLengthOrAuto::Auto => dest.write_str("auto"),
+        }
+    }
+}
+
 /// Generic for Length/None
 #[derive(Clone)]
 pub enum GenericLengthOrNone<Length> {
@@ -383,6 +395,18 @@ impl<L> GenericLengthOrNone<L> {
                 let length = length_parser(input)?;
                 Ok(Self::Length(length))
             })
+    }
+}
+
+impl<L: ToCss> ToCss for GenericLengthOrNone<L> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthOrNone::Length(length) => length.to_css(dest),
+            GenericLengthOrNone::None => dest.write_str("none"),
+        }
     }
 }
 
@@ -425,6 +449,18 @@ impl<LP> GenericLengthPercentageOrAuto<LP> {
     }
 }
 
+impl<LP: ToCss> ToCss for GenericLengthPercentageOrAuto<LP> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthPercentageOrAuto::LengthPercentage(value) => value.to_css(dest),
+            GenericLengthPercentageOrAuto::Auto => dest.write_str("auto"),
+        }
+    }
+}
+
 /// value = <length> | <percentage> | auto
 pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
 
@@ -434,15 +470,6 @@ impl LengthPercentageOrAuto {
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         Self::parse_with(input, |input| LengthPercentage::parse(context, input))
-    }
-}
-
-impl ToCss for LengthPercentageOrAuto {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        todo!()
     }
 }
 
@@ -491,6 +518,19 @@ impl<LP, N> GenericLengthPercentageNumberOrAuto<LP, N> {
                         Ok(Self::Number(number))
                     })
             })
+    }
+}
+
+impl<LP: ToCss, N: ToCss> ToCss for GenericLengthPercentageNumberOrAuto<LP, N> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthPercentageNumberOrAuto::LengthPercentage(value) => value.to_css(dest),
+            GenericLengthPercentageNumberOrAuto::Number(value) => value.to_css(dest),
+            GenericLengthPercentageNumberOrAuto::Auto => dest.write_str("auto"),
+        }
     }
 }
 
@@ -610,6 +650,18 @@ impl<LP> GenericLengthPercentageOrNormal<LP> {
     }
 }
 
+impl<LP: ToCss> ToCss for GenericLengthPercentageOrNormal<LP> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthPercentageOrNormal::LengthPercentage(value) => value.to_css(dest),
+            GenericLengthPercentageOrNormal::Normal => dest.write_str("normal"),
+        }
+    }
+}
+
 pub type LengthPercentageOrNormal = GenericLengthPercentageOrNormal<LengthPercentage>;
 
 impl LengthPercentageOrNormal {
@@ -669,6 +721,15 @@ impl<N, LP> GenericLengthPercentageNumberOrNormal<N, LP> {
     }
 }
 
+impl<N: ToCss, LP: ToCss> ToCss for GenericLengthPercentageNumberOrNormal<N, LP> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}
+
 pub type NonNegativeLengthPercentageNumberOrNormal =
     GenericLengthPercentageNumberOrNormal<NonNegativeNumber, NonNegativeLengthPercentage>;
 
@@ -710,6 +771,18 @@ impl<N, L> GenericLengthOrNumber<N, L> {
                 let length = length_parser(input)?;
                 Ok(Self::Length(length))
             })
+    }
+}
+
+impl<N: ToCss, L: ToCss> ToCss for GenericLengthOrNumber<N, L> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericLengthOrNumber::Number(value) => value.to_css(dest),
+            GenericLengthOrNumber::Length(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -761,6 +834,21 @@ impl<T: Clone> Rect<T> {
     }
 }
 
+impl<T: ToCss + Clone> ToCss for Rect<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.0.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.1.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.2.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.3.to_css(dest)
+    }
+}
+
 pub type NonNegativeLengthOrNumberRect = Rect<NonNegativeLengthOrNumber>;
 
 impl NonNegativeLengthOrNumberRect {
@@ -797,6 +885,18 @@ impl<T: Clone> GenericRectOrAuto<T> {
                 let rect = Rect::parse_with(input, item_parser)?;
                 Ok(Self::Rect(rect))
             })
+    }
+}
+
+impl<T: Clone + ToCss> ToCss for GenericRectOrAuto<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericRectOrAuto::Auto => dest.write_str("auto"),
+            GenericRectOrAuto::Rect(rect) => rect.to_css(dest),
+        }
     }
 }
 

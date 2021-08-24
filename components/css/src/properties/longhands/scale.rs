@@ -1,12 +1,12 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::NumberOrPercentage;
 
+/// https://drafts.csswg.org/css-transforms-2/#propdef-scale
 #[derive(Clone)]
-#[repr(C, u8)]
 pub enum Scale {
     None,
     Scale(NumberOrPercentage, NumberOrPercentage, NumberOrPercentage),
@@ -32,6 +32,25 @@ impl Scale {
                     .map_or("1".into(), |value| value);
                 Ok(Scale::Scale(x, y, z))
             })
+    }
+}
+
+impl ToCss for Scale {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Scale::None => dest.write_str("none"),
+            Scale::Scale(x, y, z) => {
+                x.to_css(dest)?;
+                dest.write_char(' ')?;
+                y.to_css(dest)?;
+                dest.write_char(' ')?;
+                z.to_css(dest)?;
+                dest.write_char(' ')
+            },
+        }
     }
 }
 

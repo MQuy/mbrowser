@@ -1,29 +1,10 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-
-pub fn serialize_outside_inside<W>(
-    dest: &mut W,
-    outside: &Option<DisplayOutside>,
-    inside: &Option<DisplayInside>,
-) -> core::fmt::Result
-where
-    W: std::fmt::Write,
-{
-    if let Some(outside) = &outside {
-        outside.to_css(dest)?;
-        if let Some(inside) = inside {
-            dest.write_char(' ')?;
-            inside.to_css(dest)?;
-        }
-    } else if let Some(inside) = inside {
-        inside.to_css(dest)?;
-    }
-    Ok(())
-}
 
 #[derive(Clone, PartialEq)]
 pub enum DisplayOutside {
@@ -56,7 +37,7 @@ pub struct DisplayBasic {
 
 impl DisplayBasic {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let mut outside = None;
@@ -85,7 +66,9 @@ impl ToCss for DisplayBasic {
     where
         W: std::fmt::Write,
     {
-        serialize_outside_inside(dest, &self.outside, &self.inside)
+        let outside = self.outside.as_ref().map(|v| v.to_css_string());
+        let inside = self.inside.as_ref().map(|v| v.to_css_string());
+        write_elements(dest, &[outside.as_deref(), inside.as_deref()], ' ')
     }
 }
 
@@ -106,7 +89,7 @@ pub struct DisplayListItem {
 
 impl DisplayListItem {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let mut outside = None;
@@ -148,7 +131,9 @@ impl ToCss for DisplayListItem {
     where
         W: std::fmt::Write,
     {
-        serialize_outside_inside(dest, &self.outside, &self.inside)?;
+        let outside = self.outside.as_ref().map(|v| v.to_css_string());
+        let inside = self.inside.as_ref().map(|v| v.to_css_string());
+        write_elements(dest, &[outside.as_deref(), inside.as_deref()], ' ')?;
         dest.write_str(" list-item")
     }
 }
@@ -210,6 +195,7 @@ property_keywords_impl! { DisplayLegacy,
     DisplayLegacy::InlineGrid, "inline-grid",
 }
 
+/// https://drafts.csswg.org/css-display/#the-display-properties
 #[derive(Clone)]
 pub enum Display {
     Basic(DisplayBasic),

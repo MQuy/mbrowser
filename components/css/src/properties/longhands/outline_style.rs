@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -6,8 +6,8 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::layout::LineStyle;
 
+/// https://drafts.csswg.org/css-ui/#outline-style
 #[derive(Clone)]
-#[repr(C, u8)]
 pub enum OutlineStyle {
     Auto,
     BorderStyle(LineStyle),
@@ -31,6 +31,18 @@ impl OutlineStyle {
                 }
                 Ok(OutlineStyle::BorderStyle(style))
             })
+    }
+}
+
+impl ToCss for OutlineStyle {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            OutlineStyle::Auto => dest.write_str("auto"),
+            OutlineStyle::BorderStyle(value) => value.to_css(dest),
+        }
     }
 }
 

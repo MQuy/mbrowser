@@ -158,3 +158,12 @@ impl Target {
         Ok(Target::Text(text))
     }
 }
+
+impl ToCss for Target {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
+    }
+}

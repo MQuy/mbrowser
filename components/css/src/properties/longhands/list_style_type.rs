@@ -1,88 +1,56 @@
-use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
-use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
-use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::specified::counter::CounterStyle;
 
 #[derive(Clone)]
 pub enum ListStyleType {
-    Disc,
     None,
-    Circle,
-    Square,
-    DisclosureOpen,
-    DisclosureClosed,
-    Decimal,
-    LowerAlpha,
-    UpperAlpha,
-    ArabicIndic,
-    Bengali,
-    Cambodian,
-    CjkDecimal,
-    Devanagari,
-    Gujarati,
-    Gurmukhi,
-    Kannada,
-    Khmer,
-    Lao,
-    Malayalam,
-    Mongolian,
-    Myanmar,
-    Oriya,
-    Persian,
-    Telugu,
-    Thai,
-    Tibetan,
-    CjkEarthlyBranch,
-    CjkHeavenlyStem,
-    LowerGreek,
-    Hiragana,
-    HiraganaIroha,
-    Katakana,
-    KatakanaIroha,
+    String(String),
+    Style(CounterStyle),
 }
 
-property_keywords_impl! { ListStyleType,
-    ListStyleType::Disc, "disc",
-    ListStyleType::None, "none",
-    ListStyleType::Circle, "circle",
-    ListStyleType::Square, "square",
-    ListStyleType::DisclosureOpen, "disclosure-open",
-    ListStyleType::DisclosureClosed, "disclosure-closed",
-    ListStyleType::Decimal, "decimal",
-    ListStyleType::LowerAlpha, "lower-alpha",
-    ListStyleType::UpperAlpha, "upper-alpha",
-    ListStyleType::ArabicIndic, "arabic-indic",
-    ListStyleType::Bengali, "bengali",
-    ListStyleType::Cambodian, "cambodian",
-    ListStyleType::CjkDecimal, "cjk-decimal",
-    ListStyleType::Devanagari, "devanagari",
-    ListStyleType::Gujarati, "gujarati",
-    ListStyleType::Gurmukhi, "gurmukhi",
-    ListStyleType::Kannada, "kannada",
-    ListStyleType::Khmer, "khmer",
-    ListStyleType::Lao, "lao",
-    ListStyleType::Malayalam, "malayalam",
-    ListStyleType::Mongolian, "mongolian",
-    ListStyleType::Myanmar, "myanmar",
-    ListStyleType::Oriya, "oriya",
-    ListStyleType::Persian, "persian",
-    ListStyleType::Telugu, "telugu",
-    ListStyleType::Thai, "thai",
-    ListStyleType::Tibetan, "tibetan",
-    ListStyleType::CjkEarthlyBranch, "cjk-earthly-branch",
-    ListStyleType::CjkHeavenlyStem, "cjk-heavenly-stem",
-    ListStyleType::LowerGreek, "lower-greek",
-    ListStyleType::Hiragana, "hiragana",
-    ListStyleType::HiraganaIroha, "hiragana-iroha",
-    ListStyleType::Katakana, "katakana",
-    ListStyleType::KatakanaIroha, "katakana-iroha",
+impl ListStyleType {
+    pub fn parse<'i, 't>(
+        context: &ParserContext,
+        input: &mut Parser<'i, 't>,
+    ) -> Result<Self, ParseError<'i>> {
+        input
+            .try_parse(|input| {
+                input.expect_ident_matching("none")?;
+                Ok(ListStyleType::None)
+            })
+            .or_else(|_err: ParseError<'i>| {
+                input.try_parse(|input| {
+                    let value = input.expect_string()?.to_string();
+                    Ok(ListStyleType::String(value))
+                })
+            })
+            .or_else(|_err: ParseError<'i>| {
+                let style = CounterStyle::parse(context, input)?;
+                Ok(ListStyleType::Style(style))
+            })
+    }
+}
+
+impl ToCss for ListStyleType {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ListStyleType::None => dest.write_str("none"),
+            ListStyleType::String(value) => dest.write_str(value),
+            ListStyleType::Style(value) => value.to_css(dest),
+        }
+    }
 }
 
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    ListStyleType::parse(input).map(PropertyDeclaration::ListStyleType)
+    ListStyleType::parse(context, input).map(PropertyDeclaration::ListStyleType)
 }

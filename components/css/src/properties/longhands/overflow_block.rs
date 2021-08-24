@@ -5,16 +5,10 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::layout::Overflow;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<Overflow, ParseError<'i>> {
-    Overflow::parse(input)
-}
-
+/// https://drafts.csswg.org/css-overflow/#propdef-overflow-block
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::OverflowBlock)
+    Overflow::parse(input).map(PropertyDeclaration::OverflowBlock)
 }

@@ -30,6 +30,7 @@ property_keywords_impl! { VerticalAlignKeyword,
     VerticalAlignKeyword::TextBottom, "text-bottom",
 }
 
+/// https://drafts.csswg.org/css2/#propdef-vertical-align
 #[derive(Clone)]
 pub enum VerticalAlign {
     Keyword(VerticalAlignKeyword),
@@ -50,6 +51,18 @@ impl VerticalAlign {
                 let value = LengthPercentage::parse(context, input)?;
                 Ok(VerticalAlign::LengthPercentage(value))
             })
+    }
+}
+
+impl ToCss for VerticalAlign {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            VerticalAlign::Keyword(value) => value.to_css(dest),
+            VerticalAlign::LengthPercentage(value) => value.to_css(dest),
+        }
     }
 }
 

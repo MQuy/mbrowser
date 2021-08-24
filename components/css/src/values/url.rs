@@ -1,5 +1,5 @@
 use common::url::BrowserUrl;
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -41,5 +41,14 @@ impl CssUrl {
             original: Some(value),
             resolved: None,
         })
+    }
+}
+
+impl ToCss for CssUrl {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        todo!()
     }
 }

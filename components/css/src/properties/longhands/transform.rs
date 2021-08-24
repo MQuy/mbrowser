@@ -1,10 +1,11 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::transform::TransformFunction;
 
+/// https://drafts.csswg.org/css-transforms-1/#transform-property
 #[derive(Clone)]
 pub struct Transform(Vec<TransformFunction>);
 
@@ -26,6 +27,21 @@ impl Transform {
                 )?;
                 Ok(Transform(transforms))
             })
+    }
+}
+
+impl ToCss for Transform {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self.0.len() {
+            0 => dest.write_str("none"),
+            _ => {
+                let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
+                dest.write_str(&values.join(" "))
+            },
+        }
     }
 }
 

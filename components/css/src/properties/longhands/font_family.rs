@@ -59,6 +59,18 @@ impl FamilyName {
     }
 }
 
+impl ToCss for FamilyName {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FamilyName::String(value) => dest.write_str(value),
+            FamilyName::Ident(idents) => idents.iter().map(|v| v.to_css(dest)).collect(),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum SingleFontFamily {
     FamilyName(FamilyName),
@@ -67,7 +79,7 @@ pub enum SingleFontFamily {
 
 impl SingleFontFamily {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         input
@@ -82,6 +94,18 @@ impl SingleFontFamily {
     }
 }
 
+impl ToCss for SingleFontFamily {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            SingleFontFamily::FamilyName(value) => value.to_css(dest),
+            SingleFontFamily::GenericFamily(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct FontFamily(Vec<SingleFontFamily>);
 
@@ -92,6 +116,16 @@ impl FontFamily {
     ) -> Result<Self, ParseError<'i>> {
         let fonts = input.parse_comma_separated(|input| SingleFontFamily::parse(context, input))?;
         Ok(FontFamily(fonts))
+    }
+}
+
+impl ToCss for FontFamily {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
+        dest.write_str(&values.join(", "))
     }
 }
 

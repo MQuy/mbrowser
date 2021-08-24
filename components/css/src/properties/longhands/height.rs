@@ -5,6 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::Size;
 
+/// https://drafts.csswg.org/css-sizing/#propdef-height
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,

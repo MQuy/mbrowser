@@ -1,4 +1,4 @@
-use cssparser::{match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
+use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
@@ -70,6 +70,23 @@ impl ContentList {
     }
 }
 
+impl ToCss for ContentList {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ContentList::String(value) => dest.write_str(value),
+            ContentList::Contents => dest.write_str("contents"),
+            ContentList::Image(value) => value.to_css(dest),
+            ContentList::Counter(value) => value.to_css(dest),
+            ContentList::Quote(value) => value.to_css(dest),
+            ContentList::Target(value) => value.to_css(dest),
+            ContentList::Leader(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum ContentReplacementOrList {
     Replacement(Image),
@@ -93,6 +110,18 @@ impl ContentReplacementOrList {
     }
 }
 
+impl ToCss for ContentReplacementOrList {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ContentReplacementOrList::Replacement(value) => value.to_css(dest),
+            ContentReplacementOrList::List(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum CounterOrString {
     Counter(Counter),
@@ -113,6 +142,18 @@ impl CounterOrString {
                 let value = input.expect_string()?.to_string();
                 Ok(CounterOrString::String(value))
             })
+    }
+}
+
+impl ToCss for CounterOrString {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            CounterOrString::Counter(value) => value.to_css(dest),
+            CounterOrString::String(value) => dest.write_str(value),
+        }
     }
 }
 
@@ -143,6 +184,23 @@ impl ContentData {
     }
 }
 
+impl ToCss for ContentData {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.content.to_css(dest)?;
+        if self.alt.len() > 0 {
+            dest.write_str(" / ")?;
+            for value in self.alt.iter() {
+                value.to_css(dest)?;
+            }
+        }
+        Ok(())
+    }
+}
+
+/// https://drafts.csswg.org/css-content/#content-property
 #[derive(Clone)]
 pub enum Content {
     Normal,
@@ -167,6 +225,19 @@ impl Content {
             let value = ContentData::parse(context, input)?;
             Ok(Content::Data(value))
         })
+    }
+}
+
+impl ToCss for Content {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Content::Normal => dest.write_str("normal"),
+            Content::None => dest.write_str("none"),
+            Content::Data(value) => value.to_css(dest),
+        }
     }
 }
 

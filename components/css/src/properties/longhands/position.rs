@@ -5,6 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-position/#position-property
 #[derive(Clone)]
 pub enum Position {
     Static,

@@ -5,6 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::position::Position;
 
+/// https://drafts.csswg.org/css-transforms-2/#perspective-origin-property
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,

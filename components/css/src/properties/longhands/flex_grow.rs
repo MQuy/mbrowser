@@ -5,16 +5,10 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::NonNegativeNumber;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<NonNegativeNumber, ParseError<'i>> {
-    NonNegativeNumber::parse(context, input)
-}
-
+/// https://drafts.csswg.org/css-flexbox/#flex-grow-property
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::FlexGrow)
+    NonNegativeNumber::parse(context, input).map(PropertyDeclaration::FlexGrow)
 }

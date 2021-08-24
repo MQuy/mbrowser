@@ -1,4 +1,4 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
@@ -32,6 +32,21 @@ impl DropShadow {
             color,
             lengths: (horizontal, vertical, blur),
         })
+    }
+}
+
+impl ToCss for DropShadow {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.color.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.lengths.0.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.lengths.1.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.lengths.2.to_css(dest)
     }
 }
 
@@ -156,6 +171,26 @@ impl FilterFunction {
     }
 }
 
+impl ToCss for FilterFunction {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FilterFunction::Blur(value) => value.to_css(dest),
+            FilterFunction::Brightness(value) => value.to_css(dest),
+            FilterFunction::Contrast(value) => value.to_css(dest),
+            FilterFunction::DropShadow(value) => value.to_css(dest),
+            FilterFunction::Grayscale(value) => value.to_css(dest),
+            FilterFunction::HueRotate(value) => value.to_css(dest),
+            FilterFunction::Invert(value) => value.to_css(dest),
+            FilterFunction::Opacity(value) => value.to_css(dest),
+            FilterFunction::Saturate(value) => value.to_css(dest),
+            FilterFunction::Sepia(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum FilterFunctionOrUrl {
     Function(FilterFunction),
@@ -179,6 +214,19 @@ impl FilterFunctionOrUrl {
     }
 }
 
+impl ToCss for FilterFunctionOrUrl {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            FilterFunctionOrUrl::Function(value) => value.to_css(dest),
+            FilterFunctionOrUrl::Url(value) => value.to_css(dest),
+        }
+    }
+}
+
+/// https://drafts.fxtf.org/filter-effects/#FilterProperty
 #[derive(Clone)]
 pub enum Filter {
     None,
@@ -203,6 +251,26 @@ impl Filter {
                 )?;
                 Ok(Filter::List(filters))
             })
+    }
+}
+
+impl ToCss for Filter {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Filter::None => dest.write_str("none"),
+            Filter::List(list) => {
+                for (index, value) in list.iter().enumerate() {
+                    if index > 0 {
+                        dest.write_char(' ')?;
+                    }
+                    value.to_css(dest)?;
+                }
+                Ok(())
+            },
+        }
     }
 }
 

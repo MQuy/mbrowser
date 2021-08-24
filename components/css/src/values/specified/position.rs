@@ -74,6 +74,26 @@ impl HorizontalPosition {
     }
 }
 
+impl ToCss for HorizontalPosition {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            HorizontalPosition::Left => dest.write_str("left"),
+            HorizontalPosition::Right => dest.write_str("right"),
+            HorizontalPosition::Center => dest.write_str("center"),
+            HorizontalPosition::Length(length) => length.to_css(dest),
+            HorizontalPosition::Side(side, value) => {
+                side.to_css(dest)?;
+                value.as_ref().map_or(Ok(()), |v| {
+                    dest.write_fmt(format_args!(" {}", v.to_css_string()))
+                })
+            },
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum TopOrBottom {
     Top,
@@ -136,6 +156,27 @@ impl VerticalPosition {
     }
 }
 
+impl ToCss for VerticalPosition {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            VerticalPosition::Top => dest.write_str("top"),
+            VerticalPosition::Bottom => dest.write_str("bottom"),
+            VerticalPosition::Center => dest.write_str("center"),
+            VerticalPosition::Length(value) => value.to_css(dest),
+            VerticalPosition::Side(side, value) => {
+                side.to_css(dest)?;
+                value.as_ref().map_or(Ok(()), |v| {
+                    dest.write_fmt(format_args!(" {}", v.to_css_string()))
+                })
+            },
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-values-4/#position
 #[derive(Clone)]
 pub struct Position {
     horizontal: HorizontalPosition,
@@ -200,5 +241,16 @@ impl Position {
                     vertical,
                 })
             })
+    }
+}
+
+impl ToCss for Position {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.horizontal.to_css(dest)?;
+        dest.write_char(' ')?;
+        self.vertical.to_css(dest)
     }
 }

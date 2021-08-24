@@ -5,16 +5,10 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::NonNegativeLengthPercentage;
 
-pub fn parse<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
-) -> Result<NonNegativeLengthPercentage, ParseError<'i>> {
-    NonNegativeLengthPercentage::parse(context, input)
-}
-
+/// https://drafts.csswg.org/css-box-4/#propdef-padding-top
 pub fn parse_declared<'i, 't>(
     context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    parse(context, input).map(PropertyDeclaration::PaddingTop)
+    NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingTop)
 }

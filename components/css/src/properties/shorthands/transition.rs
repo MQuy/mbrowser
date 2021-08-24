@@ -6,13 +6,13 @@ use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands::transition_delay::TransitionDelay;
 use crate::properties::longhands::transition_duration::TransitionDuration;
 use crate::properties::longhands::transition_property::TransitionProperty;
+use crate::properties::longhands::transition_timing_function::TransitionTimingFunction;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::specified::easing::EasingFunction;
 
 pub struct Longhands {
     pub transition_property: TransitionProperty,
     pub transition_duration: TransitionDuration,
-    pub transition_timing_function: EasingFunction,
+    pub transition_timing_function: TransitionTimingFunction,
     pub transition_delay: TransitionDelay,
 }
 

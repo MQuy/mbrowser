@@ -5,6 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css2/#empty-cells
 #[derive(Clone)]
 pub enum EmptyCells {
     Show,
@@ -17,7 +18,7 @@ property_keywords_impl! { EmptyCells,
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
+    _context: &ParserContext,
     input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
     EmptyCells::parse(input).map(PropertyDeclaration::EmptyCells)

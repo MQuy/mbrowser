@@ -1,10 +1,11 @@
-use cssparser::Parser;
+use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::{Length, LengthPercentage};
 
+/// https://drafts.csswg.org/css-transforms-2/#individual-transforms
 #[derive(Clone)]
 pub enum Translate {
     None,
@@ -37,6 +38,24 @@ impl Translate {
                 };
                 Ok(Translate::LengthPercentage(x, y, z))
             })
+    }
+}
+
+impl ToCss for Translate {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Translate::None => dest.write_str("none"),
+            Translate::LengthPercentage(x, y, z) => {
+                x.to_css(dest)?;
+                dest.write_char(' ')?;
+                y.to_css(dest)?;
+                dest.write_char(' ')?;
+                z.to_css(dest)
+            },
+        }
     }
 }
 
