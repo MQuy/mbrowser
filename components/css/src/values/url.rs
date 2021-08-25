@@ -5,6 +5,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-values-4/#urls
 #[derive(Clone, Debug)]
 pub struct CssUrl {
     original: Option<String>,

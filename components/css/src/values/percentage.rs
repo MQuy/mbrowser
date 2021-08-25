@@ -8,6 +8,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
+/// https://drafts.csswg.org/css-values/#percentages
 #[derive(Clone, Debug, PartialEq)]
 pub struct Percentage {
     value: CSSFloat,
@@ -18,9 +19,8 @@ impl Percentage {
         Percentage { value }
     }
 
-    /// https://drafts.csswg.org/css-values/#percentages
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         let token = input.next()?.clone();
@@ -42,7 +42,7 @@ impl ToCss for Percentage {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        dest.write_fmt(format_args!("{}%", self.value))
     }
 }
 

@@ -31,7 +31,7 @@ pub struct Time {
 
 impl Time {
     pub fn parse<'i, 't>(
-        context: &ParserContext,
+        _context: &ParserContext,
         input: &mut Parser<'i, 't>,
     ) -> Result<Self, ParseError<'i>> {
         macro_rules! return_unexpected_token {

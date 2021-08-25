@@ -36,7 +36,10 @@ impl<N: ToCss> ToCss for GenericNumberOrPercentage<N> {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            GenericNumberOrPercentage::Number(value) => value.to_css(dest),
+            GenericNumberOrPercentage::Percentage(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -54,3 +57,12 @@ impl<T: ToCss + Clone> ToCss for NonNegative<T> {
 
 #[derive(Clone, PartialEq, PartialOrd)]
 pub struct GreaterThanOrEqualToOne<T>(pub T);
+
+impl<T: ToCss> ToCss for GreaterThanOrEqualToOne<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        self.0.to_css(dest)
+    }
+}

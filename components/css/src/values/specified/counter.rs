@@ -62,6 +62,18 @@ impl StringOrImage {
     }
 }
 
+impl ToCss for StringOrImage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            StringOrImage::String(value) => dest.write_str(value),
+            StringOrImage::Image(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct Symbols {
     symbols_type: SymbolsType,
@@ -83,6 +95,23 @@ impl Symbols {
                 idents,
             })
         })
+    }
+}
+
+impl ToCss for Symbols {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "symbols({} {})",
+            self.symbols_type.to_css_string(),
+            self.idents
+                .iter()
+                .map(|v| v.to_css_string())
+                .collect::<Vec<String>>()
+                .join(" ")
+        ))
     }
 }
 
@@ -114,7 +143,10 @@ impl ToCss for CounterStyle {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            CounterStyle::Name(value) => value.to_css(dest),
+            CounterStyle::Symbols(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -137,6 +169,24 @@ impl InnerMostCounter {
             })
             .ok();
         Ok(InnerMostCounter { name, style })
+    }
+}
+
+impl ToCss for InnerMostCounter {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "counter({}, {})",
+            self.name.to_css_string(),
+            self.style
+                .as_ref()
+                .map_or(String::from(""), |v| std::format!(
+                    ", {}",
+                    v.to_css_string()
+                ))
+        ))
     }
 }
 
@@ -169,6 +219,25 @@ impl AllCounters {
     }
 }
 
+impl ToCss for AllCounters {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "counters({}, {}{})",
+            self.name.to_css_string(),
+            self.string,
+            self.style
+                .as_ref()
+                .map_or(String::from(""), |v| std::format!(
+                    ", {}",
+                    v.to_css_string()
+                ))
+        ))
+    }
+}
+
 /// https://drafts.csswg.org/css-lists-3/#typedef-counter
 #[derive(Clone)]
 pub enum Counter {
@@ -196,6 +265,9 @@ impl ToCss for Counter {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            Counter::Counter(value) => value.to_css(dest),
+            Counter::Counters(value) => value.to_css(dest),
+        }
     }
 }

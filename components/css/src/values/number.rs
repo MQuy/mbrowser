@@ -99,6 +99,15 @@ impl Display for Number {
     }
 }
 
+impl ToCss for Number {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_str(&self.to_string())
+    }
+}
+
 pub type PositiveInteger = GreaterThanOrEqualToOne<Integer>;
 
 #[derive(Clone)]
@@ -188,15 +197,6 @@ impl PartialOrd<i32> for NonNegativeNumber {
     }
 }
 
-impl ToCss for NonNegativeNumber {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        dest.write_fmt(format_args!("{}", self.0))
-    }
-}
-
 /// Generic for Number/Auto
 #[derive(Clone)]
 pub enum GenericNumberOrAuto<Number> {
@@ -282,15 +282,6 @@ impl From<&str> for NumberOrPercentage {
             let value = text.parse::<f32>().unwrap();
             Self::Number(Number::new(value))
         }
-    }
-}
-
-impl ToCss for NumberOrPercentage {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        todo!()
     }
 }
 

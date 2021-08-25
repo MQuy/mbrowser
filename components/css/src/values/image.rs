@@ -51,6 +51,30 @@ impl Annotation {
     }
 }
 
+impl ToCss for Annotation {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let value = vec![
+            self.src
+                .as_ref()
+                .map_or("".to_string(), |v| v.to_css_string()),
+            self.color
+                .as_ref()
+                .map_or("".to_string(), |v| v.to_css_string()),
+        ]
+        .join(", ");
+        dest.write_fmt(format_args!(
+            "{}{}",
+            self.tag
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!("{} ", v.to_css_string())),
+            value
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub enum ImageReference {
     Image(Image),
@@ -71,6 +95,18 @@ impl ImageReference {
                 let url = CssUrl::parse_string(context, input)?;
                 Ok(ImageReference::String(url))
             })
+    }
+}
+
+impl ToCss for ImageReference {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ImageReference::Image(value) => value.to_css(dest),
+            ImageReference::String(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -120,6 +156,22 @@ impl ImageSetOption {
     }
 }
 
+impl ToCss for ImageSetOption {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{} {}{}",
+            self.reference.to_css_string(),
+            self.resolution.to_css_string(),
+            self.mime
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(" {}", v))
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub enum ImageOrColor {
     Image(Image),
@@ -140,6 +192,18 @@ impl ImageOrColor {
                 let color = Color::parse(context, input)?;
                 Ok(ImageOrColor::Color(color))
             })
+    }
+}
+
+impl ToCss for ImageOrColor {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ImageOrColor::Image(value) => value.to_css(dest),
+            ImageOrColor::Color(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -177,6 +241,21 @@ impl CFImage {
         } else {
             Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
         }
+    }
+}
+
+impl ToCss for CFImage {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{}{}",
+            self.percentage
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(" {}", v.to_css_string())),
+            self.fade.to_css_string()
+        ))
     }
 }
 
@@ -234,6 +313,19 @@ impl LineDirection {
     }
 }
 
+impl ToCss for LineDirection {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            LineDirection::Angle(value) => value.to_css(dest),
+            LineDirection::Side(value) => value.to_css(dest),
+            LineDirection::Corner(value) => value.to_css(dest),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct LinearColorStop {
     color: Color,
@@ -271,6 +363,21 @@ impl LinearColorStop {
     }
 }
 
+impl ToCss for LinearColorStop {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{}{}",
+            self.color.to_css_string(),
+            self.length
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(" {}", v.to_css_string()))
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub struct LinearColorHint<T> {
     hint: Option<T>,
@@ -292,6 +399,22 @@ impl<T> LinearColorHint<T> {
     }
 }
 
+impl<T: ToCss> ToCss for LinearColorHint<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{}{}",
+            self.hint
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(", {}", v.to_css_string())),
+            self.color.to_css_string()
+        ))
+    }
+}
+
+/// https://drafts.csswg.org/css-images-3/#color-stop-syntax
 #[derive(Clone)]
 pub struct ColorStopList<T> {
     starting: LinearColorStop,
@@ -299,7 +422,6 @@ pub struct ColorStopList<T> {
 }
 
 impl<T> ColorStopList<T> {
-    /// https://drafts.csswg.org/css-images-3/#color-stop-syntax
     pub fn parse<'i, 't, P>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -312,6 +434,23 @@ impl<T> ColorStopList<T> {
         let ending = input
             .parse_comma_separated(|input| LinearColorHint::parse(context, input, item_parser))?;
         Ok(ColorStopList { starting, ending })
+    }
+}
+
+impl<T: ToCss> ToCss for ColorStopList<T> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{}, {}",
+            self.starting.to_css_string(),
+            self.ending
+                .iter()
+                .map(|v| v.to_css_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        ))
     }
 }
 
@@ -338,6 +477,25 @@ impl LinearGradient {
             color_stop,
             repeating: false,
         })
+    }
+}
+
+impl ToCss for LinearGradient {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let name = if self.repeating {
+            "repeating-linear-gradient"
+        } else {
+            "linear-gradient"
+        };
+        dest.write_fmt(format_args!(
+            "{}({}, {})",
+            name,
+            self.direction.to_css_string(),
+            self.color_stop.to_css_string()
+        ))
     }
 }
 
@@ -380,6 +538,21 @@ impl RadialSize {
                 _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))),
             })
         })
+    }
+}
+
+impl ToCss for RadialSize {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            RadialSize::ClosestSide => dest.write_str("closest-side"),
+            RadialSize::FarthestSide => dest.write_str("farthest-side"),
+            RadialSize::ClosestCorner => dest.write_str("closest-corner"),
+            RadialSize::FarthestCorner => dest.write_str("farthest-corner"),
+            RadialSize::Length(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -442,6 +615,26 @@ impl RadialGradient {
     }
 }
 
+impl ToCss for RadialGradient {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let name = if self.repeating {
+            "repeating-radial-gradient"
+        } else {
+            "radial-gradient"
+        };
+        dest.write_fmt(format_args!(
+            "{}({} at {}, {})",
+            name,
+            self.end_shape.to_css_string(),
+            self.position.to_css_string(),
+            self.color_stop.to_css_string()
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub struct ConicRadient {
     angle: Angle,
@@ -484,11 +677,44 @@ impl ConicRadient {
     }
 }
 
+impl ToCss for ConicRadient {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        let name = if self.repeating {
+            "repeating-conic-gradient"
+        } else {
+            "conic-gradient"
+        };
+        dest.write_fmt(format_args!(
+            "{}(from {} at {}, {})",
+            name,
+            self.angle.to_css_string(),
+            self.position.to_css_string(),
+            self.color_stop.to_css_string()
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub enum Gradient {
     Linear(LinearGradient),
     Radial(RadialGradient),
     Conic(ConicRadient),
+}
+
+impl ToCss for Gradient {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Gradient::Linear(value) => value.to_css(dest),
+            Gradient::Radial(value) => value.to_css(dest),
+            Gradient::Conic(value) => value.to_css(dest),
+        }
+    }
 }
 
 /// https://drafts.csswg.org/css-images-4/#image-values
@@ -618,6 +844,29 @@ impl ToCss for Image {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            Image::Url(value) => value.to_css(dest),
+            Image::Image(value) => dest.write_fmt(format_args!("image({})", value.to_css_string())),
+            Image::Set(value) => dest.write_fmt(format_args!(
+                "image-set({})",
+                value
+                    .iter()
+                    .map(|v| v.to_css_string())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )),
+            Image::CrossFade(value) => dest.write_fmt(format_args!(
+                "cross-fade({})",
+                value
+                    .iter()
+                    .map(|v| v.to_css_string())
+                    .collect::<Vec<String>>()
+                    .join(", ")
+            )),
+            Image::Element(value) => {
+                dest.write_fmt(format_args!("element({})", value.to_css_string()))
+            },
+            Image::Gradient(value) => value.to_css(dest),
+        }
     }
 }

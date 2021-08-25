@@ -35,6 +35,22 @@ impl TargetCounter {
     }
 }
 
+impl ToCss for TargetCounter {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "target-counter({}, {}{})",
+            self.url.to_css_string(),
+            self.ident.to_css_string(),
+            self.style
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(", {}", v.to_css_string()))
+        ))
+    }
+}
+
 #[derive(Clone)]
 pub struct TargetCounters {
     url: CssUrl,
@@ -67,6 +83,23 @@ impl TargetCounters {
             string: str,
             style,
         })
+    }
+}
+
+impl ToCss for TargetCounters {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "target-counters({}, {}, {}{})",
+            self.url.to_css_string(),
+            self.ident.to_css_string(),
+            self.string,
+            self.style
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(", {}", v.to_css_string()))
+        ))
     }
 }
 
@@ -106,6 +139,21 @@ impl TargetText {
             })
             .ok();
         Ok(TargetText { url, keyword })
+    }
+}
+
+impl ToCss for TargetText {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "target-text({}{})",
+            self.url.to_css_string(),
+            self.keyword
+                .as_ref()
+                .map_or("".to_string(), |v| std::format!(", {}", v.to_css_string()))
+        ))
     }
 }
 
@@ -164,6 +212,10 @@ impl ToCss for Target {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            Target::Counter(value) => value.to_css(dest),
+            Target::Counters(value) => value.to_css(dest),
+            Target::Text(value) => value.to_css(dest),
+        }
     }
 }

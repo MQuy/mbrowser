@@ -85,6 +85,18 @@ impl RGBA {
     }
 }
 
+impl ToCss for RGBA {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{} {} {} / {}",
+            self.red, self.green, self.blue, self.alpha
+        ))
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub struct CMYK {
     pub cyan: NumberOrPercentage,
@@ -136,6 +148,21 @@ impl CMYK {
     }
 }
 
+impl ToCss for CMYK {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        dest.write_fmt(format_args!(
+            "{} {} {} {}",
+            self.cyan.to_css_string(),
+            self.magenta.to_css_string(),
+            self.yellow.to_css_string(),
+            self.black.to_css_string(),
+        ))
+    }
+}
+
 #[derive(Clone, PartialEq)]
 pub enum Hue {
     Number(Number),
@@ -156,6 +183,18 @@ impl Hue {
                 let angle = Angle::parse(context, input)?;
                 Ok(Hue::Angle(angle))
             })
+    }
+}
+
+impl ToCss for Hue {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            Hue::Number(value) => dest.write_str(&value.to_string()),
+            Hue::Angle(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -372,6 +411,7 @@ pub static NAMED_COLORS: [NamedColor; 148] = [
     named_color!("yellowgreen", 154, 205, 50),
 ];
 
+/// https://drafts.csswg.org/css-color/#color-syntax
 #[derive(Clone, PartialEq)]
 pub enum Color {
     CurrentColor,
@@ -387,7 +427,6 @@ pub enum Color {
 }
 
 impl Color {
-    /// https://drafts.csswg.org/css-color/#color-syntax
     pub fn parse<'i, 't>(
         context: &ParserContext,
         input: &mut Parser<'i, 't>,
@@ -573,6 +612,55 @@ impl ToCss for Color {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            Color::CurrentColor => dest.write_str("currentcolor"),
+            Color::Transparent => dest.write_str("transparent"),
+            Color::RGB(value) => dest.write_fmt(format_args!("rgb({})", value.to_css_string())),
+            Color::HSL(h, s, l, alpha) => dest.write_fmt(format_args!(
+                "hsl({} {} {} / {})",
+                h.to_css_string(),
+                s.to_css_string(),
+                l.to_css_string(),
+                alpha
+            )),
+            Color::HWB(h, w, b, alpha) => dest.write_fmt(format_args!(
+                "hwb({} {} {} / {})",
+                h.to_css_string(),
+                w.to_css_string(),
+                b.to_css_string(),
+                alpha
+            )),
+            Color::LAB(l, a, b, alpha) => dest.write_fmt(format_args!(
+                "hwb({} {} {} / {})",
+                l.to_css_string(),
+                a,
+                b,
+                alpha
+            )),
+            Color::LCH(l, c, h, alpha) => dest.write_fmt(format_args!(
+                "lch({} {} {} / {})",
+                l.to_css_string(),
+                c,
+                h.to_css_string(),
+                alpha
+            )),
+            Color::Color(ident, number, alpha) => dest.write_fmt(format_args!(
+                "color({} {} / {})",
+                ident.to_css_string(),
+                number
+                    .iter()
+                    .map(|v| v.to_css_string())
+                    .collect::<Vec<String>>()
+                    .join(" "),
+                alpha
+            )),
+            Color::DeviceCMYK(value, alpha, color) => dest.write_fmt(format_args!(
+                "device-cmyk({} / {}, {})",
+                value.to_css_string(),
+                alpha,
+                color.to_css_string()
+            )),
+            Color::System(value) => value.to_css(dest),
+        }
     }
 }

@@ -20,7 +20,6 @@ pub mod length;
 pub mod number;
 pub mod percentage;
 pub mod specified;
-pub mod text;
 pub mod time;
 pub mod url;
 

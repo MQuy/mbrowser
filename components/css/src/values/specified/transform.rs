@@ -30,6 +30,19 @@ impl AngleOrZero {
     }
 }
 
+impl ToCss for AngleOrZero {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            AngleOrZero::Angle(value) => value.to_css(dest),
+            AngleOrZero::Zero => dest.write_char('0'),
+        }
+    }
+}
+
+/// https://drafts.csswg.org/css-transforms-1/#two-d-transform-functions
 #[derive(Clone)]
 pub enum TransformFunction {
     Matrix(Number, Number, Number, Number, Number, Number),
@@ -172,6 +185,40 @@ impl ToCss for TransformFunction {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            TransformFunction::Matrix(a, b, c, d, e, f) => {
+                dest.write_fmt(format_args!("matrix({} {} {} {} {} {}", a, b, c, d, e, f))
+            },
+            TransformFunction::Translate(tx, ty) => dest.write_fmt(format_args!(
+                "translate({}, {})",
+                tx.to_css_string(),
+                ty.to_css_string()
+            )),
+            TransformFunction::TranslateX(x) => {
+                dest.write_fmt(format_args!("translateX({})", x.to_css_string()))
+            },
+            TransformFunction::TranslateY(y) => {
+                dest.write_fmt(format_args!("translateY({})", y.to_css_string()))
+            },
+            TransformFunction::Scale(sx, sy) => {
+                dest.write_fmt(format_args!("scale({}, {})", sx, sy))
+            },
+            TransformFunction::ScaleX(sx) => dest.write_fmt(format_args!("scaleX({})", sx)),
+            TransformFunction::ScaleY(sy) => dest.write_fmt(format_args!("scaleY({})", sy)),
+            TransformFunction::Rotate(angle) => {
+                dest.write_fmt(format_args!("rotate({})", angle.to_css_string()))
+            },
+            TransformFunction::Skew(ax, ay) => dest.write_fmt(format_args!(
+                "skew({}, {})",
+                ax.to_css_string(),
+                ay.to_css_string()
+            )),
+            TransformFunction::SkewX(ax) => {
+                dest.write_fmt(format_args!("skewX({})", ax.to_css_string()))
+            },
+            TransformFunction::SkewY(ay) => {
+                dest.write_fmt(format_args!("skewY({})", ay.to_css_string()))
+            },
+        }
     }
 }

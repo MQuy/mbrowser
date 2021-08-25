@@ -291,7 +291,10 @@ impl ToCss for LengthPercentage {
     where
         W: Write,
     {
-        todo!()
+        match self {
+            LengthPercentage::Length(value) => value.to_css(dest),
+            LengthPercentage::Percentage(value) => value.to_css(dest),
+        }
     }
 }
 
@@ -558,6 +561,21 @@ pub enum ExtremumLength<LengthPercent> {
     FitContent(LengthPercent),
 }
 
+impl<LP: ToCss> ToCss for ExtremumLength<LP> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            ExtremumLength::MaxContent => dest.write_str("max-content"),
+            ExtremumLength::MinContent => dest.write_str("min-content"),
+            ExtremumLength::FitContent(value) => {
+                dest.write_fmt(format_args!("fit-content({})", value.to_css_string()))
+            },
+        }
+    }
+}
+
 #[derive(Clone)]
 pub enum GenericSize<LengthPercent> {
     Auto,
@@ -601,6 +619,19 @@ impl<LP> GenericSize<LP> {
     }
 }
 
+impl<LP: ToCss> ToCss for GenericSize<LP> {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            GenericSize::Auto => dest.write_str("auto"),
+            GenericSize::LengthPercentage(value) => value.to_css(dest),
+            GenericSize::ExtremumLength(value) => value.to_css(dest),
+        }
+    }
+}
+
 pub type Size = GenericSize<NonNegativeLengthPercentage>;
 
 impl Size {
@@ -611,15 +642,6 @@ impl Size {
         Self::parse_with(input, |input| {
             NonNegativeLengthPercentage::parse(context, input)
         })
-    }
-}
-
-impl ToCss for Size {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        todo!()
     }
 }
 
@@ -726,7 +748,11 @@ impl<N: ToCss, LP: ToCss> ToCss for GenericLengthPercentageNumberOrNormal<N, LP>
     where
         W: std::fmt::Write,
     {
-        todo!()
+        match self {
+            GenericLengthPercentageNumberOrNormal::LengthPercentage(value) => value.to_css(dest),
+            GenericLengthPercentageNumberOrNormal::Number(value) => value.to_css(dest),
+            GenericLengthPercentageNumberOrNormal::Normal => dest.write_str("normal"),
+        }
     }
 }
 

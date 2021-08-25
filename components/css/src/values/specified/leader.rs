@@ -36,6 +36,20 @@ impl LeaderType {
     }
 }
 
+impl ToCss for LeaderType {
+    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+    where
+        W: std::fmt::Write,
+    {
+        match self {
+            LeaderType::Dotted => dest.write_str("dotted"),
+            LeaderType::Solid => dest.write_str("solid"),
+            LeaderType::Space => dest.write_str("space"),
+            LeaderType::String(value) => dest.write_str(value),
+        }
+    }
+}
+
 /// https://drafts.csswg.org/css-content/#leader-function
 #[derive(Clone)]
 pub struct Leader(LeaderType);
@@ -58,6 +72,6 @@ impl ToCss for Leader {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        dest.write_fmt(format_args!("leader({})", self.0.to_css_string()))
     }
 }
