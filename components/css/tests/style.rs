@@ -1,4 +1,4 @@
-use crate::setup::{assert_stylesheet, parse};
+use setup::{assert_stylesheet, parse};
 
 mod setup;
 

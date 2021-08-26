@@ -8,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-values-4/#urls
 #[derive(Clone, Debug)]
 pub struct CssUrl {
-    original: Option<String>,
+    original: String,
     resolved: Option<BrowserUrl>,
 }
 
@@ -28,7 +28,7 @@ impl CssUrl {
         let url = BrowserUrl::parse(&value)
             .map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))?;
         Ok(CssUrl {
-            original: None,
+            original: std::format!("{}({})", name, value),
             resolved: Some(url),
         })
     }
@@ -39,7 +39,7 @@ impl CssUrl {
     ) -> Result<Self, ParseError<'i>> {
         let value = input.expect_string()?.to_string();
         Ok(CssUrl {
-            original: Some(value),
+            original: value,
             resolved: None,
         })
     }
@@ -50,6 +50,6 @@ impl ToCss for CssUrl {
     where
         W: std::fmt::Write,
     {
-        todo!()
+        dest.write_str(&self.original)
     }
 }

@@ -39,11 +39,11 @@ impl ToCss for BorderImageSlice {
     where
         W: std::fmt::Write,
     {
-        self.offsets.to_css(dest)?;
-        if self.fill {
-            dest.write_str(" fill");
-        }
-        Ok(())
+        dest.write_fmt(format_args!(
+            "{}{}",
+            self.offsets.to_css_string(),
+            if self.fill { " fill" } else { "" }
+        ))
     }
 }
 
