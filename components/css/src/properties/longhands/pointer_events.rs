@@ -8,36 +8,36 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://svgwg.org/svg2-draft/interact.html#PointerEventsProp
 #[derive(Clone)]
 pub enum PointerEvents {
-    Auto,
-    BoundingBox,
-    VisiblePainted,
-    VisibleFill,
-    VisibleStroke,
-    Visible,
-    Painted,
-    Fill,
-    Stroke,
-    All,
-    None,
+	Auto,
+	BoundingBox,
+	VisiblePainted,
+	VisibleFill,
+	VisibleStroke,
+	Visible,
+	Painted,
+	Fill,
+	Stroke,
+	All,
+	None,
 }
 
 property_keywords_impl! { PointerEvents,
-    PointerEvents::Auto, "auto",
-    PointerEvents::BoundingBox, "bounding-box",
-    PointerEvents::VisiblePainted, "visiblepainted",
-    PointerEvents::VisibleFill, "visiblefill",
-    PointerEvents::VisibleStroke, "visiblestroke",
-    PointerEvents::Visible, "visible",
-    PointerEvents::Painted, "painted",
-    PointerEvents::Fill, "fill",
-    PointerEvents::Stroke, "stroke",
-    PointerEvents::All, "all",
-    PointerEvents::None, "none",
+	PointerEvents::Auto, "auto",
+	PointerEvents::BoundingBox, "bounding-box",
+	PointerEvents::VisiblePainted, "visiblepainted",
+	PointerEvents::VisibleFill, "visiblefill",
+	PointerEvents::VisibleStroke, "visiblestroke",
+	PointerEvents::Visible, "visible",
+	PointerEvents::Painted, "painted",
+	PointerEvents::Fill, "fill",
+	PointerEvents::Stroke, "stroke",
+	PointerEvents::All, "all",
+	PointerEvents::None, "none",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    PointerEvents::parse(input).map(PropertyDeclaration::PointerEvents)
+	PointerEvents::parse(input).map(PropertyDeclaration::PointerEvents)
 }

@@ -7,8 +7,8 @@ use crate::values::length::NonNegativeLengthPercentageOrNormal;
 
 /// https://drafts.csswg.org/css-align-3/#propdef-column-gap
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    NonNegativeLengthPercentageOrNormal::parse(context, input).map(PropertyDeclaration::ColumnGap)
+	NonNegativeLengthPercentageOrNormal::parse(context, input).map(PropertyDeclaration::ColumnGap)
 }

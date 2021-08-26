@@ -7,8 +7,8 @@ use crate::values::number::Integer;
 
 /// https://drafts.csswg.org/css-display/#order-property
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Integer::parse(context, input).map(PropertyDeclaration::Order)
+	Integer::parse(context, input).map(PropertyDeclaration::Order)
 }

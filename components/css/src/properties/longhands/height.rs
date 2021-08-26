@@ -7,8 +7,8 @@ use crate::values::length::Size;
 
 /// https://drafts.csswg.org/css-sizing/#propdef-height
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Size::parse(context, input).map(PropertyDeclaration::Height)
+	Size::parse(context, input).map(PropertyDeclaration::Height)
 }

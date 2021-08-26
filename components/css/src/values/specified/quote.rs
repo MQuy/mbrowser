@@ -7,15 +7,15 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 /// https://drafts.csswg.org/css-content/#typedef-quote
 #[derive(Clone)]
 pub enum Quote {
-    OpenQuote,
-    CloseQuote,
-    NoOpenQuote,
-    NoCloseQuote,
+	OpenQuote,
+	CloseQuote,
+	NoOpenQuote,
+	NoCloseQuote,
 }
 
 property_keywords_impl! { Quote,
-    Quote::OpenQuote, "open-quote",
-    Quote::CloseQuote, "close-quote",
-    Quote::NoOpenQuote, "no-open-quote",
-    Quote::NoCloseQuote, "no-close-quote",
+	Quote::OpenQuote, "open-quote",
+	Quote::CloseQuote, "close-quote",
+	Quote::NoOpenQuote, "no-open-quote",
+	Quote::NoCloseQuote, "no-close-quote",
 }

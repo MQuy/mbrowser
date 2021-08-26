@@ -8,26 +8,26 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-logical/#float-clear
 #[derive(Clone)]
 pub enum Clear {
-    None,
-    Left,
-    Right,
-    Both,
-    InlineStart,
-    InlineEnd,
+	None,
+	Left,
+	Right,
+	Both,
+	InlineStart,
+	InlineEnd,
 }
 
 property_keywords_impl! { Clear,
-    Clear::None, "none",
-    Clear::Left, "left",
-    Clear::Right, "right",
-    Clear::Both, "both",
-    Clear::InlineStart, "inline-start",
-    Clear::InlineEnd, "inline-end",
+	Clear::None, "none",
+	Clear::Left, "left",
+	Clear::Right, "right",
+	Clear::Both, "both",
+	Clear::InlineStart, "inline-start",
+	Clear::InlineEnd, "inline-end",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Clear::parse(input).map(PropertyDeclaration::Clear)
+	Clear::parse(input).map(PropertyDeclaration::Clear)
 }

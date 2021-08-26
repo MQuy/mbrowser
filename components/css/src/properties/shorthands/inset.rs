@@ -7,32 +7,32 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentageOrAuto;
 
 pub struct Longhands {
-    pub top: LengthPercentageOrAuto,
-    pub right: LengthPercentageOrAuto,
-    pub bottom: LengthPercentageOrAuto,
-    pub left: LengthPercentageOrAuto,
+	pub top: LengthPercentageOrAuto,
+	pub right: LengthPercentageOrAuto,
+	pub bottom: LengthPercentageOrAuto,
+	pub left: LengthPercentageOrAuto,
 }
 
 pub fn parse_value<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<Longhands, ParseError<'i>> {
-    todo!()
+	todo!()
 }
 
 /// Parse the given shorthand and fill the result into the
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
-    declarations: &mut SourcePropertyDeclaration,
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	declarations: &mut SourcePropertyDeclaration,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
-    input
-        .parse_entirely(|input| parse_value(context, input))
-        .map(|longhands| {
-            declarations.push(PropertyDeclaration::Top(longhands.top));
-            declarations.push(PropertyDeclaration::Right(longhands.right));
-            declarations.push(PropertyDeclaration::Bottom(longhands.bottom));
-            declarations.push(PropertyDeclaration::Left(longhands.left));
-        })
+	input
+		.parse_entirely(|input| parse_value(context, input))
+		.map(|longhands| {
+			declarations.push(PropertyDeclaration::Top(longhands.top));
+			declarations.push(PropertyDeclaration::Right(longhands.right));
+			declarations.push(PropertyDeclaration::Bottom(longhands.bottom));
+			declarations.push(PropertyDeclaration::Left(longhands.left));
+		})
 }

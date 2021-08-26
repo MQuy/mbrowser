@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-logical/#caption-side
 #[derive(Clone)]
 pub enum CaptionSide {
-    Top,
-    Bottom,
+	Top,
+	Bottom,
 }
 
 property_keywords_impl! { CaptionSide,
-    CaptionSide::Top, "top",
-    CaptionSide::Bottom, "bottom",
+	CaptionSide::Top, "top",
+	CaptionSide::Bottom, "bottom",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    CaptionSide::parse(input).map(PropertyDeclaration::CaptionSide)
+	CaptionSide::parse(input).map(PropertyDeclaration::CaptionSide)
 }

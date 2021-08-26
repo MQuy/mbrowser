@@ -8,22 +8,22 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-flexbox/#flex-direction-property
 #[derive(Clone)]
 pub enum FlexDirection {
-    Row,
-    RowReverse,
-    Column,
-    ColumnReverse,
+	Row,
+	RowReverse,
+	Column,
+	ColumnReverse,
 }
 
 property_keywords_impl! { FlexDirection,
-    FlexDirection::Row, "row",
-    FlexDirection::RowReverse, "row-reverse",
-    FlexDirection::Column, "column",
-    FlexDirection::ColumnReverse, "column-reverse",
+	FlexDirection::Row, "row",
+	FlexDirection::RowReverse, "row-reverse",
+	FlexDirection::Column, "column",
+	FlexDirection::ColumnReverse, "column-reverse",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    FlexDirection::parse(input).map(PropertyDeclaration::FlexDirection)
+	FlexDirection::parse(input).map(PropertyDeclaration::FlexDirection)
 }

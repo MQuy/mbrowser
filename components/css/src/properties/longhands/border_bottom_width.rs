@@ -7,8 +7,8 @@ use crate::values::specified::line::LineWidth;
 
 /// https://drafts.csswg.org/css-backgrounds/#propdef-border-bottom-width
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LineWidth::parse(context, input).map(PropertyDeclaration::BorderBottomWidth)
+	LineWidth::parse(context, input).map(PropertyDeclaration::BorderBottomWidth)
 }

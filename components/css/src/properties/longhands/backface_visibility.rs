@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-transforms-2/#backface-visibility-property
 #[derive(Clone)]
 pub enum BackfaceVisibility {
-    Visible,
-    Hidden,
+	Visible,
+	Hidden,
 }
 
 property_keywords_impl! { BackfaceVisibility,
-    BackfaceVisibility::Visible, "visible",
-    BackfaceVisibility::Hidden, "hidden",
+	BackfaceVisibility::Visible, "visible",
+	BackfaceVisibility::Hidden, "hidden",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BackfaceVisibility::parse(input).map(PropertyDeclaration::BackfaceVisibility)
+	BackfaceVisibility::parse(input).map(PropertyDeclaration::BackfaceVisibility)
 }

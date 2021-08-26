@@ -7,8 +7,8 @@ use crate::values::number::NonNegativeNumber;
 
 /// https://drafts.csswg.org/css-flexbox/#flex-shrink-property
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    NonNegativeNumber::parse(context, input).map(PropertyDeclaration::FlexShrink)
+	NonNegativeNumber::parse(context, input).map(PropertyDeclaration::FlexShrink)
 }

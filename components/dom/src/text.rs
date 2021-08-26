@@ -9,23 +9,23 @@ use crate::nodetype::{CharacterDataTypeId, NodeTypeId, TextTypeId};
 #[derive(Clone)]
 #[repr(C)]
 pub struct Text {
-    character_data: CharacterData,
+	character_data: CharacterData,
 }
 
 impl Text {
-    pub fn new(text: String, document: Rc<Document>) -> Self {
-        Text::new_inherited(
-            NodeTypeId::CharacterData(CharacterDataTypeId::Text(TextTypeId::Text)),
-            text,
-            document,
-        )
-    }
+	pub fn new(text: String, document: Rc<Document>) -> Self {
+		Text::new_inherited(
+			NodeTypeId::CharacterData(CharacterDataTypeId::Text(TextTypeId::Text)),
+			text,
+			document,
+		)
+	}
 
-    pub fn new_inherited(node_type_id: NodeTypeId, text: String, document: Rc<Document>) -> Self {
-        Self {
-            character_data: CharacterData::new_inherited(node_type_id, text, document),
-        }
-    }
+	pub fn new_inherited(node_type_id: NodeTypeId, text: String, document: Rc<Document>) -> Self {
+		Self {
+			character_data: CharacterData::new_inherited(node_type_id, text, document),
+		}
+	}
 }
 
 impl Castable for Text {}

@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-writing-modes/#direction
 #[derive(Clone)]
 pub enum Direction {
-    Ltr,
-    Rtl,
+	Ltr,
+	Rtl,
 }
 
 property_keywords_impl! { Direction,
-    Direction::Ltr, "ltr",
-    Direction::Rtl, "rtl",
+	Direction::Ltr, "ltr",
+	Direction::Rtl, "rtl",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Direction::parse(input).map(PropertyDeclaration::Direction)
+	Direction::parse(input).map(PropertyDeclaration::Direction)
 }

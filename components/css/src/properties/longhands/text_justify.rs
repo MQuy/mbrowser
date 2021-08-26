@@ -8,22 +8,22 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-text/#text-justify-property
 #[derive(Clone)]
 pub enum TextJustify {
-    Auto,
-    None,
-    InterWord,
-    InterCharacter,
+	Auto,
+	None,
+	InterWord,
+	InterCharacter,
 }
 
 property_keywords_impl! { TextJustify,
-    TextJustify::Auto, "auto",
-    TextJustify::None, "none",
-    TextJustify::InterWord, "inter-word",
-    TextJustify::InterCharacter, "inter-character",
+	TextJustify::Auto, "auto",
+	TextJustify::None, "none",
+	TextJustify::InterWord, "inter-word",
+	TextJustify::InterCharacter, "inter-character",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TextJustify::parse(input).map(PropertyDeclaration::TextJustify)
+	TextJustify::parse(input).map(PropertyDeclaration::TextJustify)
 }

@@ -8,20 +8,20 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css2/#visibility
 #[derive(Clone)]
 pub enum Visibility {
-    Visible,
-    Hidden,
-    Collapse,
+	Visible,
+	Hidden,
+	Collapse,
 }
 
 property_keywords_impl! { Visibility,
-    Visibility::Visible, "visible",
-    Visibility::Hidden, "hidden",
-    Visibility::Collapse, "collapse",
+	Visibility::Visible, "visible",
+	Visibility::Hidden, "hidden",
+	Visibility::Collapse, "collapse",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Visibility::parse(input).map(PropertyDeclaration::Visibility)
+	Visibility::parse(input).map(PropertyDeclaration::Visibility)
 }

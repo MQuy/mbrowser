@@ -8,84 +8,84 @@ use crate::values::length::LengthPercentage;
 
 #[derive(Clone, PartialEq)]
 pub enum OffsetKeyword {
-    Left,
-    Center,
-    Right,
-    Top,
-    Bottom,
+	Left,
+	Center,
+	Right,
+	Top,
+	Bottom,
 }
 
 impl OffsetKeyword {
-    pub fn parse<'i, 't>(
-        _context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-        allowed_keywords: &[OffsetKeyword],
-    ) -> Result<Self, ParseError<'i>> {
-        let location = input.current_source_location();
-        let ident = input.expect_ident()?;
-        let keyword = match_ignore_ascii_case! { ident,
-            "left" => OffsetKeyword::Left,
-            "center" => OffsetKeyword::Center,
-            "right" => OffsetKeyword::Right,
-            "top" => OffsetKeyword::Top,
-            "bottom" => OffsetKeyword::Bottom,
-            _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
-        };
-        if allowed_keywords.contains(&keyword) {
-            Ok(keyword)
-        } else {
-            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
-        }
-    }
+	pub fn parse<'i, 't>(
+		_context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+		allowed_keywords: &[OffsetKeyword],
+	) -> Result<Self, ParseError<'i>> {
+		let location = input.current_source_location();
+		let ident = input.expect_ident()?;
+		let keyword = match_ignore_ascii_case! { ident,
+			"left" => OffsetKeyword::Left,
+			"center" => OffsetKeyword::Center,
+			"right" => OffsetKeyword::Right,
+			"top" => OffsetKeyword::Top,
+			"bottom" => OffsetKeyword::Bottom,
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+		};
+		if allowed_keywords.contains(&keyword) {
+			Ok(keyword)
+		} else {
+			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+		}
+	}
 }
 
 impl ToCss for OffsetKeyword {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        dest.write_str(match self {
-            OffsetKeyword::Left => "left",
-            OffsetKeyword::Center => "center",
-            OffsetKeyword::Right => "right",
-            OffsetKeyword::Top => "top",
-            OffsetKeyword::Bottom => "bottom",
-        })
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		dest.write_str(match self {
+			OffsetKeyword::Left => "left",
+			OffsetKeyword::Center => "center",
+			OffsetKeyword::Right => "right",
+			OffsetKeyword::Top => "top",
+			OffsetKeyword::Bottom => "bottom",
+		})
+	}
 }
 
 #[derive(Clone)]
 pub enum LengthPercentageOrKeyword {
-    LengthPercentage(LengthPercentage),
-    Keyword(OffsetKeyword),
+	LengthPercentage(LengthPercentage),
+	Keyword(OffsetKeyword),
 }
 
 impl ToCss for LengthPercentageOrKeyword {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        match self {
-            LengthPercentageOrKeyword::LengthPercentage(value) => value.to_css(dest),
-            LengthPercentageOrKeyword::Keyword(value) => value.to_css(dest),
-        }
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			LengthPercentageOrKeyword::LengthPercentage(value) => value.to_css(dest),
+			LengthPercentageOrKeyword::Keyword(value) => value.to_css(dest),
+		}
+	}
 }
 
 /// https://drafts.csswg.org/css-transforms-1/#transform-origin-property
 #[derive(Clone)]
 pub struct TransformOrigin {
-    x: LengthPercentageOrKeyword,
-    y: LengthPercentageOrKeyword,
-    z: LengthPercentageOrKeyword,
+	x: LengthPercentageOrKeyword,
+	y: LengthPercentageOrKeyword,
+	z: LengthPercentageOrKeyword,
 }
 
 impl TransformOrigin {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        input
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		input
             .try_parse(|input| -> Result<Self, ParseError<'i>> {
                 let mut x = None;
                 let mut y = None;
@@ -183,26 +183,26 @@ impl TransformOrigin {
                 })?;
                 Ok(TransformOrigin {x, y: LengthPercentageOrKeyword::Keyword(OffsetKeyword::Center), z: LengthPercentageOrKeyword::LengthPercentage("0px".into())})
             })
-    }
+	}
 }
 
 impl ToCss for TransformOrigin {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        self.x.to_css(dest)?;
-        dest.write_char(' ')?;
-        self.y.to_css(dest)?;
-        dest.write_char(' ')?;
-        self.z.to_css(dest)?;
-        dest.write_char(' ')
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		self.x.to_css(dest)?;
+		dest.write_char(' ')?;
+		self.y.to_css(dest)?;
+		dest.write_char(' ')?;
+		self.z.to_css(dest)?;
+		dest.write_char(' ')
+	}
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TransformOrigin::parse(context, input).map(PropertyDeclaration::TransformOrigin)
+	TransformOrigin::parse(context, input).map(PropertyDeclaration::TransformOrigin)
 }

@@ -7,8 +7,8 @@ use crate::values::layout::Overflow;
 
 /// https://drafts.csswg.org/css-overflow/#propdef-overflow-block
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Overflow::parse(input).map(PropertyDeclaration::OverflowBlock)
+	Overflow::parse(input).map(PropertyDeclaration::OverflowBlock)
 }

@@ -9,36 +9,36 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::image::Image;
 
 pub struct Longhands {
-    pub list_style_position: ListStylePosition,
-    pub list_style_image: Image,
-    pub list_style_type: ListStyleType,
+	pub list_style_position: ListStylePosition,
+	pub list_style_image: Image,
+	pub list_style_type: ListStyleType,
 }
 
 pub fn parse_value<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<Longhands, ParseError<'i>> {
-    todo!()
+	todo!()
 }
 
 /// Parse the given shorthand and fill the result into the
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
-    declarations: &mut SourcePropertyDeclaration,
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	declarations: &mut SourcePropertyDeclaration,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
-    input
-        .parse_entirely(|input| parse_value(context, input))
-        .map(|longhands| {
-            declarations.push(PropertyDeclaration::ListStylePosition(
-                longhands.list_style_position,
-            ));
-            declarations.push(PropertyDeclaration::ListStyleImage(
-                longhands.list_style_image,
-            ));
-            declarations.push(PropertyDeclaration::ListStyleType(
-                longhands.list_style_type,
-            ));
-        })
+	input
+		.parse_entirely(|input| parse_value(context, input))
+		.map(|longhands| {
+			declarations.push(PropertyDeclaration::ListStylePosition(
+				longhands.list_style_position,
+			));
+			declarations.push(PropertyDeclaration::ListStyleImage(
+				longhands.list_style_image,
+			));
+			declarations.push(PropertyDeclaration::ListStyleType(
+				longhands.list_style_type,
+			));
+		})
 }

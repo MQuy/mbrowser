@@ -7,8 +7,8 @@ use crate::values::border::BorderCornerRadius;
 
 /// https://drafts.csswg.org/css-backgrounds-3/#propdef-border-top-right-radius
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BorderCornerRadius::parse(context, input).map(PropertyDeclaration::BorderTopRightRadius)
+	BorderCornerRadius::parse(context, input).map(PropertyDeclaration::BorderTopRightRadius)
 }

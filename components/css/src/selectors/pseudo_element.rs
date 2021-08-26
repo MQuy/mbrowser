@@ -10,28 +10,28 @@ use super::select_impl::SelectorImpl;
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 #[repr(usize)]
 pub enum PseudoElement {
-    After = 0,
-    Before,
-    Selection,
+	After = 0,
+	Before,
+	Selection,
 }
 
 /// The count of all pseudo-elements.
 pub const PSEUDO_COUNT: usize = PseudoElement::Selection as usize + 1;
 
 impl ToCss for PseudoElement {
-    fn to_css<W>(&self, dest: &mut W) -> fmt::Result
-    where
-        W: fmt::Write,
-    {
-        use self::PseudoElement::*;
-        dest.write_str(match *self {
-            After => "::after",
-            Before => "::before",
-            Selection => "::selection",
-        })
-    }
+	fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+	where
+		W: fmt::Write,
+	{
+		use self::PseudoElement::*;
+		dest.write_str(match *self {
+			After => "::after",
+			Before => "::before",
+			Selection => "::selection",
+		})
+	}
 }
 
 impl ::selectors::parser::PseudoElement for PseudoElement {
-    type Impl = SelectorImpl;
+	type Impl = SelectorImpl;
 }

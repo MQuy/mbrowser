@@ -7,8 +7,8 @@ use crate::values::length::NonNegativeLengthPercentage;
 
 /// https://drafts.csswg.org/css-box-4/#propdef-padding-left
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingLeft)
+	NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingLeft)
 }

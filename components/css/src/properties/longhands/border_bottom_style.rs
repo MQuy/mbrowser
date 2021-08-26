@@ -7,8 +7,8 @@ use crate::values::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-backgrounds/#propdef-border-bottom-style
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LineStyle::parse(input).map(PropertyDeclaration::BorderBottomStyle)
+	LineStyle::parse(input).map(PropertyDeclaration::BorderBottomStyle)
 }

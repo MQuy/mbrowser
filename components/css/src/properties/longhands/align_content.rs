@@ -8,26 +8,26 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-align-3/#propdef-align-content
 #[derive(Clone)]
 pub enum AlignContent {
-    Stretch,
-    FlexStart,
-    FlexEnd,
-    Center,
-    SpaceBetween,
-    SpaceAround,
+	Stretch,
+	FlexStart,
+	FlexEnd,
+	Center,
+	SpaceBetween,
+	SpaceAround,
 }
 
 property_keywords_impl! { AlignContent,
-    AlignContent::Stretch, "stretch",
-    AlignContent::FlexStart, "flex-start",
-    AlignContent::FlexEnd, "flex-end",
-    AlignContent::Center, "center",
-    AlignContent::SpaceBetween, "space-between",
-    AlignContent::SpaceAround, "space-around",
+	AlignContent::Stretch, "stretch",
+	AlignContent::FlexStart, "flex-start",
+	AlignContent::FlexEnd, "flex-end",
+	AlignContent::Center, "center",
+	AlignContent::SpaceBetween, "space-between",
+	AlignContent::SpaceAround, "space-around",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    AlignContent::parse(input).map(PropertyDeclaration::AlignContent)
+	AlignContent::parse(input).map(PropertyDeclaration::AlignContent)
 }

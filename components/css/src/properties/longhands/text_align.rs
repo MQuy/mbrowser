@@ -8,30 +8,30 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-text/#text-align-property
 #[derive(Clone)]
 pub enum TextAlign {
-    Start,
-    End,
-    Left,
-    Right,
-    Center,
-    Justify,
-    MatchParent,
-    JustifyAll,
+	Start,
+	End,
+	Left,
+	Right,
+	Center,
+	Justify,
+	MatchParent,
+	JustifyAll,
 }
 
 property_keywords_impl! { TextAlign,
-    TextAlign::Start, "start",
-    TextAlign::Left, "left",
-    TextAlign::Right, "right",
-    TextAlign::Center, "center",
-    TextAlign::Justify, "justify",
-    TextAlign::End, "end",
-    TextAlign::MatchParent, "match-parent",
-    TextAlign::JustifyAll, "justify-all",
+	TextAlign::Start, "start",
+	TextAlign::Left, "left",
+	TextAlign::Right, "right",
+	TextAlign::Center, "center",
+	TextAlign::Justify, "justify",
+	TextAlign::End, "end",
+	TextAlign::MatchParent, "match-parent",
+	TextAlign::JustifyAll, "justify-all",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TextAlign::parse(input).map(PropertyDeclaration::TextAlign)
+	TextAlign::parse(input).map(PropertyDeclaration::TextAlign)
 }

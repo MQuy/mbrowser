@@ -7,50 +7,50 @@ use crate::values::specified::counter::CounterStyle;
 
 #[derive(Clone)]
 pub enum ListStyleType {
-    None,
-    String(String),
-    Style(CounterStyle),
+	None,
+	String(String),
+	Style(CounterStyle),
 }
 
 impl ListStyleType {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        input
-            .try_parse(|input| {
-                input.expect_ident_matching("none")?;
-                Ok(ListStyleType::None)
-            })
-            .or_else(|_err: ParseError<'i>| {
-                input.try_parse(|input| {
-                    let value = input.expect_string()?.to_string();
-                    Ok(ListStyleType::String(value))
-                })
-            })
-            .or_else(|_err: ParseError<'i>| {
-                let style = CounterStyle::parse(context, input)?;
-                Ok(ListStyleType::Style(style))
-            })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		input
+			.try_parse(|input| {
+				input.expect_ident_matching("none")?;
+				Ok(ListStyleType::None)
+			})
+			.or_else(|_err: ParseError<'i>| {
+				input.try_parse(|input| {
+					let value = input.expect_string()?.to_string();
+					Ok(ListStyleType::String(value))
+				})
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let style = CounterStyle::parse(context, input)?;
+				Ok(ListStyleType::Style(style))
+			})
+	}
 }
 
 impl ToCss for ListStyleType {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        match self {
-            ListStyleType::None => dest.write_str("none"),
-            ListStyleType::String(value) => dest.write_str(value),
-            ListStyleType::Style(value) => value.to_css(dest),
-        }
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			ListStyleType::None => dest.write_str("none"),
+			ListStyleType::String(value) => dest.write_str(value),
+			ListStyleType::Style(value) => value.to_css(dest),
+		}
+	}
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    ListStyleType::parse(context, input).map(PropertyDeclaration::ListStyleType)
+	ListStyleType::parse(context, input).map(PropertyDeclaration::ListStyleType)
 }

@@ -8,22 +8,22 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://svgwg.org/svg2-draft/painting.html#TextRendering
 #[derive(Clone)]
 pub enum TextRendering {
-    Auto,
-    Optimizespeed,
-    Optimizelegibility,
-    Geometricprecision,
+	Auto,
+	Optimizespeed,
+	Optimizelegibility,
+	Geometricprecision,
 }
 
 property_keywords_impl! { TextRendering,
-    TextRendering::Auto, "auto",
-    TextRendering::Optimizespeed, "optimizespeed",
-    TextRendering::Optimizelegibility, "optimizelegibility",
-    TextRendering::Geometricprecision, "geometricprecision",
+	TextRendering::Auto, "auto",
+	TextRendering::Optimizespeed, "optimizespeed",
+	TextRendering::Optimizelegibility, "optimizelegibility",
+	TextRendering::Geometricprecision, "geometricprecision",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TextRendering::parse(input).map(PropertyDeclaration::TextRendering)
+	TextRendering::parse(input).map(PropertyDeclaration::TextRendering)
 }

@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css2/#borders
 #[derive(Clone)]
 pub enum BorderCollapse {
-    Separate,
-    Collapse,
+	Separate,
+	Collapse,
 }
 
 property_keywords_impl! { BorderCollapse,
-    BorderCollapse::Separate, "separate",
-    BorderCollapse::Collapse, "collapse",
+	BorderCollapse::Separate, "separate",
+	BorderCollapse::Collapse, "collapse",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BorderCollapse::parse(input).map(PropertyDeclaration::BorderCollapse)
+	BorderCollapse::parse(input).map(PropertyDeclaration::BorderCollapse)
 }

@@ -9,8 +9,8 @@ pub type ColumnCount = IntegerAuto;
 
 /// https://drafts.csswg.org/css-multicol/#cc
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    ColumnCount::parse(context, input).map(PropertyDeclaration::ColumnCount)
+	ColumnCount::parse(context, input).map(PropertyDeclaration::ColumnCount)
 }

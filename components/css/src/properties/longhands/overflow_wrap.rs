@@ -8,20 +8,20 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-text-3/#propdef-overflow-wrap
 #[derive(Clone)]
 pub enum OverflowWrap {
-    Normal,
-    BreakWord,
-    Anywhere,
+	Normal,
+	BreakWord,
+	Anywhere,
 }
 
 property_keywords_impl! { OverflowWrap,
-    OverflowWrap::Normal, "normal",
-    OverflowWrap::BreakWord, "break-word",
-    OverflowWrap::Anywhere, "anywhere",
+	OverflowWrap::Normal, "normal",
+	OverflowWrap::BreakWord, "break-word",
+	OverflowWrap::Anywhere, "anywhere",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    OverflowWrap::parse(input).map(PropertyDeclaration::OverflowWrap)
+	OverflowWrap::parse(input).map(PropertyDeclaration::OverflowWrap)
 }

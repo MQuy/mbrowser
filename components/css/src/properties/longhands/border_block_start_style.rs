@@ -7,8 +7,8 @@ use crate::values::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-block-start-style
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LineStyle::parse(input).map(PropertyDeclaration::BorderBlockStartStyle)
+	LineStyle::parse(input).map(PropertyDeclaration::BorderBlockStartStyle)
 }

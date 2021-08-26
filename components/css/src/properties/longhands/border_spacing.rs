@@ -9,17 +9,17 @@ use crate::values::length::{NonNegativeLength, Pair};
 pub type BorderSpacing = Pair<NonNegativeLength>;
 
 impl BorderSpacing {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<BorderSpacing, ParseError<'i>> {
-        Pair::parse_with(input, |input| NonNegativeLength::parse(context, input))
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<BorderSpacing, ParseError<'i>> {
+		Pair::parse_with(input, |input| NonNegativeLength::parse(context, input))
+	}
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BorderSpacing::parse(context, input).map(PropertyDeclaration::BorderSpacing)
+	BorderSpacing::parse(context, input).map(PropertyDeclaration::BorderSpacing)
 }

@@ -11,7 +11,7 @@ use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 #[derive(Clone)]
 #[repr(C)]
 pub struct HTMLSpanElement {
-    htmlelement: HTMLElement,
+	htmlelement: HTMLElement,
 }
 
 impl crate::inheritance::Castable for HTMLSpanElement {}
@@ -20,16 +20,16 @@ impl crate::inheritance::DerivedFrom<Element> for HTMLSpanElement {}
 impl crate::inheritance::DerivedFrom<HTMLElement> for HTMLSpanElement {}
 
 impl HTMLSpanElement {
-    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
-        Self {
-            htmlelement: HTMLElement::new_inherited(
-                NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLSpanElement,
-                )),
-                local_name,
-                prefix,
-                document,
-            ),
-        }
-    }
+	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
+		Self {
+			htmlelement: HTMLElement::new_inherited(
+				NodeTypeId::Element(ElementTypeId::HTMLElement(
+					HTMLElementTypeId::HTMLSpanElement,
+				)),
+				local_name,
+				prefix,
+				document,
+			),
+		}
+	}
 }

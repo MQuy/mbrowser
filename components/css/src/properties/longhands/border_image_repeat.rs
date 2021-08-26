@@ -8,34 +8,34 @@ use crate::values::length::Pair;
 
 #[derive(Clone)]
 pub enum BorderImageRepeatKeyword {
-    Stretch,
-    Repeat,
-    Round,
-    Space,
+	Stretch,
+	Repeat,
+	Round,
+	Space,
 }
 
 property_keywords_impl! { BorderImageRepeatKeyword,
-    BorderImageRepeatKeyword::Stretch, "stretch",
-    BorderImageRepeatKeyword::Repeat, "repeat",
-    BorderImageRepeatKeyword::Round, "round",
-    BorderImageRepeatKeyword::Space, "space",
+	BorderImageRepeatKeyword::Stretch, "stretch",
+	BorderImageRepeatKeyword::Repeat, "repeat",
+	BorderImageRepeatKeyword::Round, "round",
+	BorderImageRepeatKeyword::Space, "space",
 }
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-repeat
 pub type BorderImageRepeat = Pair<BorderImageRepeatKeyword>;
 
 impl BorderImageRepeat {
-    pub fn parse<'i, 't>(
-        _context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        BorderImageRepeat::parse_with(input, |input| BorderImageRepeatKeyword::parse(input))
-    }
+	pub fn parse<'i, 't>(
+		_context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		BorderImageRepeat::parse_with(input, |input| BorderImageRepeatKeyword::parse(input))
+	}
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BorderImageRepeat::parse(context, input).map(PropertyDeclaration::BorderImageRepeat)
+	BorderImageRepeat::parse(context, input).map(PropertyDeclaration::BorderImageRepeat)
 }

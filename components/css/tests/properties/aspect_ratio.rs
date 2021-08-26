@@ -5,11 +5,11 @@ mod setup;
 
 #[test]
 pub fn parse_page() {
-    let css = r#"
+	let css = r#"
 .xxx {
 	aspect-ratio: auto;
 }
     "#;
-    let (stylesheet, _) = parse(css);
-    assert_stylesheet(&stylesheet, css);
+	let (stylesheet, _) = parse(css);
+	assert_stylesheet(&stylesheet, css);
 }

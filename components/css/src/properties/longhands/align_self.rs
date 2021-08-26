@@ -8,26 +8,26 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-align-3/#align-self-property
 #[derive(Clone)]
 pub enum AlignSelf {
-    Auto,
-    Stretch,
-    FlexStart,
-    FlexEnd,
-    Center,
-    Baseline,
+	Auto,
+	Stretch,
+	FlexStart,
+	FlexEnd,
+	Center,
+	Baseline,
 }
 
 property_keywords_impl! { AlignSelf,
-    AlignSelf::Auto, "auto",
-    AlignSelf::Stretch, "stretch",
-    AlignSelf::FlexStart, "flex-start",
-    AlignSelf::FlexEnd, "flex-end",
-    AlignSelf::Center, "center",
-    AlignSelf::Baseline, "baseline",
+	AlignSelf::Auto, "auto",
+	AlignSelf::Stretch, "stretch",
+	AlignSelf::FlexStart, "flex-start",
+	AlignSelf::FlexEnd, "flex-end",
+	AlignSelf::Center, "center",
+	AlignSelf::Baseline, "baseline",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    AlignSelf::parse(input).map(PropertyDeclaration::AlignSelf)
+	AlignSelf::parse(input).map(PropertyDeclaration::AlignSelf)
 }

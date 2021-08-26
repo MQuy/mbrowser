@@ -8,28 +8,28 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-fonts/#font-variant-caps-prop
 #[derive(Clone)]
 pub enum FontVariantCaps {
-    Normal,
-    SmallCaps,
-    AllSmallCaps,
-    PetiteCaps,
-    AllPetiteCaps,
-    Unicase,
-    TitlingCaps,
+	Normal,
+	SmallCaps,
+	AllSmallCaps,
+	PetiteCaps,
+	AllPetiteCaps,
+	Unicase,
+	TitlingCaps,
 }
 
 property_keywords_impl! { FontVariantCaps,
-    FontVariantCaps::Normal, "normal",
-    FontVariantCaps::SmallCaps, "small-caps",
-    FontVariantCaps::AllSmallCaps, "all-small-caps",
-    FontVariantCaps::PetiteCaps, "petite-caps",
-    FontVariantCaps::AllPetiteCaps, "all-petite-caps",
-    FontVariantCaps::Unicase, "unicase",
-    FontVariantCaps::TitlingCaps, "titling-caps",
+	FontVariantCaps::Normal, "normal",
+	FontVariantCaps::SmallCaps, "small-caps",
+	FontVariantCaps::AllSmallCaps, "all-small-caps",
+	FontVariantCaps::PetiteCaps, "petite-caps",
+	FontVariantCaps::AllPetiteCaps, "all-petite-caps",
+	FontVariantCaps::Unicase, "unicase",
+	FontVariantCaps::TitlingCaps, "titling-caps",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    FontVariantCaps::parse(input).map(PropertyDeclaration::FontVariantCaps)
+	FontVariantCaps::parse(input).map(PropertyDeclaration::FontVariantCaps)
 }

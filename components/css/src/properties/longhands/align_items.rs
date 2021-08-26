@@ -8,24 +8,24 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-align-3/#align-items-property
 #[derive(Clone)]
 pub enum AlignItems {
-    Stretch,
-    FlexStart,
-    FlexEnd,
-    Center,
-    Baseline,
+	Stretch,
+	FlexStart,
+	FlexEnd,
+	Center,
+	Baseline,
 }
 
 property_keywords_impl! { AlignItems,
-    AlignItems::Stretch, "stretch",
-    AlignItems::FlexStart, "flex-start",
-    AlignItems::FlexEnd, "flex-end",
-    AlignItems::Center, "center",
-    AlignItems::Baseline, "baseline",
+	AlignItems::Stretch, "stretch",
+	AlignItems::FlexStart, "flex-start",
+	AlignItems::FlexEnd, "flex-end",
+	AlignItems::Center, "center",
+	AlignItems::Baseline, "baseline",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    AlignItems::parse(input).map(PropertyDeclaration::AlignItems)
+	AlignItems::parse(input).map(PropertyDeclaration::AlignItems)
 }

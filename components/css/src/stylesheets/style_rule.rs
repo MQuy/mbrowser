@@ -10,23 +10,23 @@ use crate::selectors::select_impl::SelectorImpl;
 /// A style rule, with selectors and declarations.
 #[derive(Clone)]
 pub struct StyleRule {
-    /// The list of selectors in this rule.
-    pub selectors: SelectorList<SelectorImpl>,
-    /// The declaration block with the properties it contains.
-    pub block: PropertyDeclarationBlock,
-    /// The location in the sheet where it was found.
-    pub source_location: SourceLocation,
+	/// The list of selectors in this rule.
+	pub selectors: SelectorList<SelectorImpl>,
+	/// The declaration block with the properties it contains.
+	pub block: PropertyDeclarationBlock,
+	/// The location in the sheet where it was found.
+	pub source_location: SourceLocation,
 }
 
 impl ToCss for StyleRule {
-    fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        use cssparser::ToCss;
-        self.selectors.to_css(dest)?;
-        dest.write_str(" {\n")?;
-        self.block.to_css(dest)?;
-        dest.write_str("}")
-    }
+	fn to_css<W>(&self, dest: &mut crate::css_writer::CssWriter<W>) -> core::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		use cssparser::ToCss;
+		self.selectors.to_css(dest)?;
+		dest.write_str(" {\n")?;
+		self.block.to_css(dest)?;
+		dest.write_str("}")
+	}
 }

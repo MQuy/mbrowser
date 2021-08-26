@@ -9,8 +9,8 @@ use crate::values::length::LengthOrAutoRectAuto;
 pub type Clip = LengthOrAutoRectAuto;
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Clip::parse(context, input).map(PropertyDeclaration::Clip)
+	Clip::parse(context, input).map(PropertyDeclaration::Clip)
 }

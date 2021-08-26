@@ -7,8 +7,8 @@ use crate::values::length::Length;
 
 /// https://drafts.csswg.org/css-ui/#outline-offset
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Length::parse(context, input).map(PropertyDeclaration::OutlineOffset)
+	Length::parse(context, input).map(PropertyDeclaration::OutlineOffset)
 }

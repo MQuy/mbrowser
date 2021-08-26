@@ -8,20 +8,20 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-flexbox/#flex-wrap-property
 #[derive(Clone)]
 pub enum FlexWrap {
-    Nowrap,
-    Wrap,
-    WrapReverse,
+	Nowrap,
+	Wrap,
+	WrapReverse,
 }
 
 property_keywords_impl! { FlexWrap,
-    FlexWrap::Nowrap, "no-wrap",
-    FlexWrap::Wrap, "wrap",
-    FlexWrap::WrapReverse, "wrap-reverse",
+	FlexWrap::Nowrap, "no-wrap",
+	FlexWrap::Wrap, "wrap",
+	FlexWrap::WrapReverse, "wrap-reverse",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    FlexWrap::parse(input).map(PropertyDeclaration::FlexWrap)
+	FlexWrap::parse(input).map(PropertyDeclaration::FlexWrap)
 }

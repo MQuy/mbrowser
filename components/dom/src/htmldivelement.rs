@@ -12,22 +12,22 @@ use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 #[derive(Clone)]
 #[repr(C)]
 pub struct HTMLDivElement {
-    htmlelement: HTMLElement,
+	htmlelement: HTMLElement,
 }
 
 impl HTMLDivElement {
-    pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
-        Self {
-            htmlelement: HTMLElement::new_inherited(
-                NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLDivElement,
-                )),
-                local_name,
-                prefix,
-                document,
-            ),
-        }
-    }
+	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
+		Self {
+			htmlelement: HTMLElement::new_inherited(
+				NodeTypeId::Element(ElementTypeId::HTMLElement(
+					HTMLElementTypeId::HTMLDivElement,
+				)),
+				local_name,
+				prefix,
+				document,
+			),
+		}
+	}
 }
 
 impl Castable for HTMLDivElement {}

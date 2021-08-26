@@ -11,40 +11,40 @@ use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 
 #[derive(Clone)]
 pub enum HeadingLevel {
-    Heading1,
-    Heading2,
-    Heading3,
-    Heading4,
-    Heading5,
-    Heading6,
+	Heading1,
+	Heading2,
+	Heading3,
+	Heading4,
+	Heading5,
+	Heading6,
 }
 
 #[derive(Clone)]
 #[repr(C)]
 pub struct HTMLHeadingElement {
-    htmlelement: HTMLElement,
-    level: HeadingLevel,
+	htmlelement: HTMLElement,
+	level: HeadingLevel,
 }
 
 impl HTMLHeadingElement {
-    pub fn new(
-        local_name: LocalName,
-        prefix: Option<Prefix>,
-        document: Rc<Document>,
-        level: HeadingLevel,
-    ) -> Self {
-        Self {
-            htmlelement: HTMLElement::new_inherited(
-                NodeTypeId::Element(ElementTypeId::HTMLElement(
-                    HTMLElementTypeId::HTMLHeadingElement,
-                )),
-                local_name,
-                prefix,
-                document,
-            ),
-            level,
-        }
-    }
+	pub fn new(
+		local_name: LocalName,
+		prefix: Option<Prefix>,
+		document: Rc<Document>,
+		level: HeadingLevel,
+	) -> Self {
+		Self {
+			htmlelement: HTMLElement::new_inherited(
+				NodeTypeId::Element(ElementTypeId::HTMLElement(
+					HTMLElementTypeId::HTMLHeadingElement,
+				)),
+				local_name,
+				prefix,
+				document,
+			),
+			level,
+		}
+	}
 }
 
 impl Castable for HTMLHeadingElement {}

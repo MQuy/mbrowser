@@ -12,262 +12,262 @@ use crate::values::CustomIdent;
 pub type CounterWithInteger = GenericCounterOrNone<GenericCounter<Integer>>;
 
 impl CounterWithInteger {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        GenericCounterOrNone::parse_with(input, |input| {
-            GenericCounter::parse_with(input, |input| Integer::parse(context, input))
-        })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		GenericCounterOrNone::parse_with(input, |input| {
+			GenericCounter::parse_with(input, |input| Integer::parse(context, input))
+		})
+	}
 }
 
 #[derive(Clone)]
 pub enum SymbolsType {
-    Cyclic,
-    Numeric,
-    Alphabetic,
-    Symbolic,
-    Fixed,
+	Cyclic,
+	Numeric,
+	Alphabetic,
+	Symbolic,
+	Fixed,
 }
 
 property_keywords_impl! { SymbolsType,
-    SymbolsType::Cyclic, "cyclic",
-    SymbolsType::Numeric, "numeric",
-    SymbolsType::Alphabetic, "alphabetic",
-    SymbolsType::Symbolic, "symbolic",
-    SymbolsType::Fixed, "fixed",
+	SymbolsType::Cyclic, "cyclic",
+	SymbolsType::Numeric, "numeric",
+	SymbolsType::Alphabetic, "alphabetic",
+	SymbolsType::Symbolic, "symbolic",
+	SymbolsType::Fixed, "fixed",
 }
 
 #[derive(Clone)]
 pub enum StringOrImage {
-    String(String),
-    Image(Image),
+	String(String),
+	Image(Image),
 }
 
 impl StringOrImage {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        input
-            .try_parse(|input| {
-                let value = input.expect_string()?.to_string();
-                Ok(StringOrImage::String(value))
-            })
-            .or_else(|_err: ParseError<'i>| {
-                let image = Image::parse(context, input)?;
-                Ok(StringOrImage::Image(image))
-            })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		input
+			.try_parse(|input| {
+				let value = input.expect_string()?.to_string();
+				Ok(StringOrImage::String(value))
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let image = Image::parse(context, input)?;
+				Ok(StringOrImage::Image(image))
+			})
+	}
 }
 
 impl ToCss for StringOrImage {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        match self {
-            StringOrImage::String(value) => dest.write_str(value),
-            StringOrImage::Image(value) => value.to_css(dest),
-        }
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			StringOrImage::String(value) => dest.write_str(value),
+			StringOrImage::Image(value) => value.to_css(dest),
+		}
+	}
 }
 
 #[derive(Clone)]
 pub struct Symbols {
-    symbols_type: SymbolsType,
-    idents: Vec<StringOrImage>,
+	symbols_type: SymbolsType,
+	idents: Vec<StringOrImage>,
 }
 
 impl Symbols {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        input.expect_function_matching("symbols")?;
-        input.parse_nested_block(|input| {
-            let symbols_type = SymbolsType::parse(input)?;
-            let idents =
-                parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
-            Ok(Symbols {
-                symbols_type,
-                idents,
-            })
-        })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		input.expect_function_matching("symbols")?;
+		input.parse_nested_block(|input| {
+			let symbols_type = SymbolsType::parse(input)?;
+			let idents =
+				parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
+			Ok(Symbols {
+				symbols_type,
+				idents,
+			})
+		})
+	}
 }
 
 impl ToCss for Symbols {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        dest.write_fmt(format_args!(
-            "symbols({} {})",
-            self.symbols_type.to_css_string(),
-            self.idents
-                .iter()
-                .map(|v| v.to_css_string())
-                .collect::<Vec<String>>()
-                .join(" ")
-        ))
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		dest.write_fmt(format_args!(
+			"symbols({} {})",
+			self.symbols_type.to_css_string(),
+			self.idents
+				.iter()
+				.map(|v| v.to_css_string())
+				.collect::<Vec<String>>()
+				.join(" ")
+		))
+	}
 }
 
 #[derive(Clone)]
 pub enum CounterStyle {
-    Name(CustomIdent),
-    Symbols(Symbols),
+	Name(CustomIdent),
+	Symbols(Symbols),
 }
 
 impl CounterStyle {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        input
-            .try_parse(|input| {
-                let name = CustomIdent::parse(input)?;
-                Ok(CounterStyle::Name(name))
-            })
-            .or_else(|_err: ParseError<'i>| {
-                let symbols = Symbols::parse(context, input)?;
-                Ok(CounterStyle::Symbols(symbols))
-            })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		input
+			.try_parse(|input| {
+				let name = CustomIdent::parse(input)?;
+				Ok(CounterStyle::Name(name))
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let symbols = Symbols::parse(context, input)?;
+				Ok(CounterStyle::Symbols(symbols))
+			})
+	}
 }
 
 impl ToCss for CounterStyle {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        match self {
-            CounterStyle::Name(value) => value.to_css(dest),
-            CounterStyle::Symbols(value) => value.to_css(dest),
-        }
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			CounterStyle::Name(value) => value.to_css(dest),
+			CounterStyle::Symbols(value) => value.to_css(dest),
+		}
+	}
 }
 
 #[derive(Clone)]
 pub struct InnerMostCounter {
-    name: CustomIdent,
-    style: Option<CounterStyle>,
+	name: CustomIdent,
+	style: Option<CounterStyle>,
 }
 
 impl InnerMostCounter {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        let name = CustomIdent::parse_excluding(input, &["none"])?;
-        let style = input
-            .try_parse(|input| {
-                input.expect_delim(',')?;
-                CounterStyle::parse(context, input)
-            })
-            .ok();
-        Ok(InnerMostCounter { name, style })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		let name = CustomIdent::parse_excluding(input, &["none"])?;
+		let style = input
+			.try_parse(|input| {
+				input.expect_delim(',')?;
+				CounterStyle::parse(context, input)
+			})
+			.ok();
+		Ok(InnerMostCounter { name, style })
+	}
 }
 
 impl ToCss for InnerMostCounter {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        dest.write_fmt(format_args!(
-            "counter({}, {})",
-            self.name.to_css_string(),
-            self.style
-                .as_ref()
-                .map_or(String::from(""), |v| std::format!(
-                    ", {}",
-                    v.to_css_string()
-                ))
-        ))
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		dest.write_fmt(format_args!(
+			"counter({}, {})",
+			self.name.to_css_string(),
+			self.style
+				.as_ref()
+				.map_or(String::from(""), |v| std::format!(
+					", {}",
+					v.to_css_string()
+				))
+		))
+	}
 }
 
 #[derive(Clone)]
 pub struct AllCounters {
-    name: CustomIdent,
-    string: String,
-    style: Option<CounterStyle>,
+	name: CustomIdent,
+	string: String,
+	style: Option<CounterStyle>,
 }
 
 impl AllCounters {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        let name = CustomIdent::parse_excluding(input, &["none"])?;
-        input.expect_delim(',')?;
-        let str = input.expect_string()?.to_string();
-        let style = input
-            .try_parse(|input| {
-                input.expect_delim(',')?;
-                CounterStyle::parse(context, input)
-            })
-            .ok();
-        Ok(AllCounters {
-            name,
-            string: str,
-            style,
-        })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		let name = CustomIdent::parse_excluding(input, &["none"])?;
+		input.expect_delim(',')?;
+		let str = input.expect_string()?.to_string();
+		let style = input
+			.try_parse(|input| {
+				input.expect_delim(',')?;
+				CounterStyle::parse(context, input)
+			})
+			.ok();
+		Ok(AllCounters {
+			name,
+			string: str,
+			style,
+		})
+	}
 }
 
 impl ToCss for AllCounters {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        dest.write_fmt(format_args!(
-            "counters({}, {}{})",
-            self.name.to_css_string(),
-            self.string,
-            self.style
-                .as_ref()
-                .map_or(String::from(""), |v| std::format!(
-                    ", {}",
-                    v.to_css_string()
-                ))
-        ))
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		dest.write_fmt(format_args!(
+			"counters({}, {}{})",
+			self.name.to_css_string(),
+			self.string,
+			self.style
+				.as_ref()
+				.map_or(String::from(""), |v| std::format!(
+					", {}",
+					v.to_css_string()
+				))
+		))
+	}
 }
 
 /// https://drafts.csswg.org/css-lists-3/#typedef-counter
 #[derive(Clone)]
 pub enum Counter {
-    Counter(InnerMostCounter),
-    Counters(AllCounters),
+	Counter(InnerMostCounter),
+	Counters(AllCounters),
 }
 
 impl Counter {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        let location = input.current_source_location();
-        let name = input.expect_function()?;
-        Ok(match_ignore_ascii_case! { name,
-            "counter" => Counter::Counter(InnerMostCounter::parse(context, input)?),
-            "counters" => Counter::Counters(AllCounters::parse(context, input)?),
-            _ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
-        })
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		let location = input.current_source_location();
+		let name = input.expect_function()?;
+		Ok(match_ignore_ascii_case! { name,
+			"counter" => Counter::Counter(InnerMostCounter::parse(context, input)?),
+			"counters" => Counter::Counters(AllCounters::parse(context, input)?),
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
+		})
+	}
 }
 
 impl ToCss for Counter {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        match self {
-            Counter::Counter(value) => value.to_css(dest),
-            Counter::Counters(value) => value.to_css(dest),
-        }
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			Counter::Counter(value) => value.to_css(dest),
+			Counter::Counters(value) => value.to_css(dest),
+		}
+	}
 }

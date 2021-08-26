@@ -9,22 +9,22 @@ use crate::stylesheets::stylesheet::ParserContext;
 #[derive(Clone)]
 #[repr(u8)]
 pub enum WordBreak {
-    Normal,
-    BreakAll,
-    KeepAll,
-    BreakWord,
+	Normal,
+	BreakAll,
+	KeepAll,
+	BreakWord,
 }
 
 property_keywords_impl! { WordBreak,
-    WordBreak::Normal, "normal",
-    WordBreak::BreakAll, "break-all",
-    WordBreak::KeepAll, "keep-all",
-    WordBreak::BreakWord, "break-word",
+	WordBreak::Normal, "normal",
+	WordBreak::BreakAll, "break-all",
+	WordBreak::KeepAll, "keep-all",
+	WordBreak::BreakWord, "break-word",
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    WordBreak::parse(input).map(PropertyDeclaration::WordBreak)
+	WordBreak::parse(input).map(PropertyDeclaration::WordBreak)
 }

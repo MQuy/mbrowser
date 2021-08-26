@@ -8,24 +8,24 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css2/#float-position
 #[derive(Clone)]
 pub enum Float {
-    Left,
-    Right,
-    None,
-    InlineStart,
-    InlineEnd,
+	Left,
+	Right,
+	None,
+	InlineStart,
+	InlineEnd,
 }
 
 property_keywords_impl! { Float,
-    Float::Left, "left",
-    Float::Right, "right",
-    Float::None, "none",
-    Float::InlineStart, "inline-start",
-    Float::InlineEnd, "inline-end",
+	Float::Left, "left",
+	Float::Right, "right",
+	Float::None, "none",
+	Float::InlineStart, "inline-start",
+	Float::InlineEnd, "inline-end",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Float::parse(input).map(PropertyDeclaration::Float)
+	Float::parse(input).map(PropertyDeclaration::Float)
 }

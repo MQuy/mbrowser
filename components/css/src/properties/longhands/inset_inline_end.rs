@@ -7,8 +7,8 @@ use crate::values::length::LengthPercentageOrAuto;
 
 /// https://drafts.csswg.org/css-logical/#propdef-inset-inline-end
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::InsetInlineEnd)
+	LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::InsetInlineEnd)
 }

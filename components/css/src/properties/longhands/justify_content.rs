@@ -8,26 +8,26 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-flexbox-1/#justify-content-property
 #[derive(Clone)]
 pub enum JustifyContent {
-    FlexStart,
-    Stretch,
-    FlexEnd,
-    Center,
-    SpaceBetween,
-    SpaceAround,
+	FlexStart,
+	Stretch,
+	FlexEnd,
+	Center,
+	SpaceBetween,
+	SpaceAround,
 }
 
 property_keywords_impl! { JustifyContent,
-    JustifyContent::FlexStart, "flex-start",
-    JustifyContent::Stretch, "stretch",
-    JustifyContent::FlexEnd, "flex-end",
-    JustifyContent::Center, "center",
-    JustifyContent::SpaceBetween, "space-between",
-    JustifyContent::SpaceAround, "space-around",
+	JustifyContent::FlexStart, "flex-start",
+	JustifyContent::Stretch, "stretch",
+	JustifyContent::FlexEnd, "flex-end",
+	JustifyContent::Center, "center",
+	JustifyContent::SpaceBetween, "space-between",
+	JustifyContent::SpaceAround, "space-around",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    JustifyContent::parse(input).map(PropertyDeclaration::JustifyContent)
+	JustifyContent::parse(input).map(PropertyDeclaration::JustifyContent)
 }

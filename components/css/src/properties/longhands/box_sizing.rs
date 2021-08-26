@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-sizing/#box-sizing
 #[derive(Clone)]
 pub enum BoxSizing {
-    ContentBox,
-    BorderBox,
+	ContentBox,
+	BorderBox,
 }
 
 property_keywords_impl! { BoxSizing,
-    BoxSizing::ContentBox, "content-box",
-    BoxSizing::BorderBox, "border-box",
+	BoxSizing::ContentBox, "content-box",
+	BoxSizing::BorderBox, "border-box",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    BoxSizing::parse(input).map(PropertyDeclaration::BoxSizing)
+	BoxSizing::parse(input).map(PropertyDeclaration::BoxSizing)
 }

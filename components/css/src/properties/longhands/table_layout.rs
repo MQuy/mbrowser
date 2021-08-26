@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css2/#width-layout
 #[derive(Clone)]
 pub enum TableLayout {
-    Auto,
-    Fixed,
+	Auto,
+	Fixed,
 }
 
 property_keywords_impl! { TableLayout,
-    TableLayout::Auto, "auto",
-    TableLayout::Fixed, "fixed",
+	TableLayout::Auto, "auto",
+	TableLayout::Fixed, "fixed",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TableLayout::parse(input).map(PropertyDeclaration::TableLayout)
+	TableLayout::parse(input).map(PropertyDeclaration::TableLayout)
 }

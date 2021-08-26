@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-lists/#list-style-position-property
 #[derive(Clone)]
 pub enum ListStylePosition {
-    Outside,
-    Inside,
+	Outside,
+	Inside,
 }
 
 property_keywords_impl! { ListStylePosition,
-    ListStylePosition::Outside, "outside",
-    ListStylePosition::Inside, "inside",
+	ListStylePosition::Outside, "outside",
+	ListStylePosition::Inside, "inside",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    ListStylePosition::parse(input).map(PropertyDeclaration::ListStylePosition)
+	ListStylePosition::parse(input).map(PropertyDeclaration::ListStylePosition)
 }

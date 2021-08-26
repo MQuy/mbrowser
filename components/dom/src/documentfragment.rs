@@ -8,18 +8,18 @@ use crate::nodetype::{DocumentFragmentTypeId, NodeTypeId};
 #[derive(Clone)]
 #[repr(C)]
 pub struct DocumentFragment {
-    node: Node,
+	node: Node,
 }
 
 impl DocumentFragment {
-    pub fn new(document: Rc<Document>) -> Self {
-        Self {
-            node: Node::new(
-                NodeTypeId::DocumentFragment(DocumentFragmentTypeId::DocumentFragment),
-                Some(document),
-            ),
-        }
-    }
+	pub fn new(document: Rc<Document>) -> Self {
+		Self {
+			node: Node::new(
+				NodeTypeId::DocumentFragment(DocumentFragmentTypeId::DocumentFragment),
+				Some(document),
+			),
+		}
+	}
 }
 
 impl Castable for DocumentFragment {}

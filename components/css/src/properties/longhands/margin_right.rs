@@ -7,8 +7,8 @@ use crate::values::length::LengthPercentageOrAuto;
 
 /// https://drafts.csswg.org/css-box-4/#propdef-margin-right
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::MarginRight)
+	LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::MarginRight)
 }

@@ -10,29 +10,29 @@ use crate::values::specified::easing::EasingFunction;
 pub struct TransitionTimingFunction(Vec<EasingFunction>);
 
 impl TransitionTimingFunction {
-    pub fn parse<'i, 't>(
-        context: &ParserContext,
-        input: &mut Parser<'i, 't>,
-    ) -> Result<Self, ParseError<'i>> {
-        let values = input.parse_comma_separated(|input| EasingFunction::parse(context, input))?;
-        Ok(TransitionTimingFunction(values))
-    }
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		let values = input.parse_comma_separated(|input| EasingFunction::parse(context, input))?;
+		Ok(TransitionTimingFunction(values))
+	}
 }
 
 impl ToCss for TransitionTimingFunction {
-    fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-    where
-        W: std::fmt::Write,
-    {
-        let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
-        dest.write_str(&values.join(", "))
-    }
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
+		dest.write_str(&values.join(", "))
+	}
 }
 
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    TransitionTimingFunction::parse(context, input)
-        .map(PropertyDeclaration::TransitionTimingFunction)
+	TransitionTimingFunction::parse(context, input)
+		.map(PropertyDeclaration::TransitionTimingFunction)
 }

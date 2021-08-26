@@ -7,8 +7,8 @@ use crate::values::length::NonNegativeLengthOrAuto;
 
 /// https://drafts.csswg.org/css-multicol-1/#cw
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    NonNegativeLengthOrAuto::parse(context, input).map(PropertyDeclaration::ColumnWidth)
+	NonNegativeLengthOrAuto::parse(context, input).map(PropertyDeclaration::ColumnWidth)
 }

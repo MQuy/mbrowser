@@ -8,24 +8,24 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css-text/#white-space-property
 #[derive(Clone)]
 pub enum WhiteSpace {
-    Normal,
-    Pre,
-    Nowrap,
-    PreWrap,
-    PreLine,
+	Normal,
+	Pre,
+	Nowrap,
+	PreWrap,
+	PreLine,
 }
 
 property_keywords_impl! { WhiteSpace,
-    WhiteSpace::Normal, "normal",
-    WhiteSpace::Pre, "pre",
-    WhiteSpace::Nowrap, "nowrap",
-    WhiteSpace::PreWrap, "pre-wrap",
-    WhiteSpace::PreLine, "pre-line",
+	WhiteSpace::Normal, "normal",
+	WhiteSpace::Pre, "pre",
+	WhiteSpace::Nowrap, "nowrap",
+	WhiteSpace::PreWrap, "pre-wrap",
+	WhiteSpace::PreLine, "pre-line",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    WhiteSpace::parse(input).map(PropertyDeclaration::WhiteSpace)
+	WhiteSpace::parse(input).map(PropertyDeclaration::WhiteSpace)
 }

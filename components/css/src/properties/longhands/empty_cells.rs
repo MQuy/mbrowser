@@ -8,18 +8,18 @@ use crate::stylesheets::stylesheet::ParserContext;
 /// https://drafts.csswg.org/css2/#empty-cells
 #[derive(Clone)]
 pub enum EmptyCells {
-    Show,
-    Hide,
+	Show,
+	Hide,
 }
 
 property_keywords_impl! { EmptyCells,
-    EmptyCells::Show, "show",
-    EmptyCells::Hide, "hide",
+	EmptyCells::Show, "show",
+	EmptyCells::Hide, "hide",
 }
 
 pub fn parse_declared<'i, 't>(
-    _context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	_context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    EmptyCells::parse(input).map(PropertyDeclaration::EmptyCells)
+	EmptyCells::parse(input).map(PropertyDeclaration::EmptyCells)
 }

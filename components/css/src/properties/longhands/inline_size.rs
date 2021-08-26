@@ -7,8 +7,8 @@ use crate::values::length::Size;
 
 /// https://drafts.csswg.org/css-logical/#propdef-inline-size
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    Size::parse(context, input).map(PropertyDeclaration::InlineSize)
+	Size::parse(context, input).map(PropertyDeclaration::InlineSize)
 }

@@ -7,8 +7,8 @@ use crate::values::length::LengthPercentageOrNormal;
 
 /// https://drafts.csswg.org/css-text/#letter-spacing-property
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    LengthPercentageOrNormal::parse(context, input).map(PropertyDeclaration::LetterSpacing)
+	LengthPercentageOrNormal::parse(context, input).map(PropertyDeclaration::LetterSpacing)
 }

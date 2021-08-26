@@ -7,8 +7,8 @@ use crate::values::length::NonNegativeLengthOrNone;
 
 /// https://drafts.csswg.org/css-transforms-2/#perspective-property
 pub fn parse_declared<'i, 't>(
-    context: &ParserContext,
-    input: &mut Parser<'i, 't>,
+	context: &ParserContext,
+	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-    NonNegativeLengthOrNone::parse(context, input).map(PropertyDeclaration::Perspective)
+	NonNegativeLengthOrNone::parse(context, input).map(PropertyDeclaration::Perspective)
 }
