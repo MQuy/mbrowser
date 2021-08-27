@@ -35,7 +35,7 @@ impl ToCss for KeyframesName {
 	{
 		match self {
 			KeyframesName::Ident(ident) => ident.to_css(dest),
-			KeyframesName::QuotedString(value) => dest.write_str(value),
+			KeyframesName::QuotedString(value) => dest.write_fmt(format_args!("\"{}\"", value)),
 		}
 	}
 }

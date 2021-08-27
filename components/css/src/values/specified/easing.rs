@@ -72,25 +72,41 @@ impl EasingFunction {
 				Ok(EasingFunction::Keyword(keyword))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let x1 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
-				let y1 = Number::parse(context, input)?;
-				let x2 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
-				let y2 = Number::parse(context, input)?;
-				Ok(EasingFunction::CubicBezier { x1, y1, x2, y2 })
+				input.try_parse(|input| {
+					input.expect_function_matching("cubic-bezier")?;
+					input.parse_nested_block(|input| {
+						let x1 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
+						input.expect_comma()?;
+						let y1 = Number::parse(context, input)?;
+						input.expect_comma()?;
+						let x2 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
+						input.expect_comma()?;
+						let y2 = Number::parse(context, input)?;
+						Ok(EasingFunction::CubicBezier { x1, y1, x2, y2 })
+					})
+				})
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let intervals = NonNegativeNumber::parse(context, input)?;
-				let position = StepPosition::parse(input)?;
-				let lower_limit = if position == StepPosition::JumpNone {
-					1
-				} else {
-					0
-				};
-				if intervals > lower_limit {
-					Ok(EasingFunction::Steps(intervals, position))
-				} else {
-					Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
-				}
+				input.expect_function_matching("steps")?;
+				input.parse_nested_block(|input| {
+					let intervals = NonNegativeNumber::parse(context, input)?;
+					let position = input
+						.try_parse(|input| {
+							input.expect_comma()?;
+							StepPosition::parse(input)
+						})
+						.map_or(StepPosition::End, |v| v);
+					let lower_limit = if position == StepPosition::JumpNone {
+						1.0
+					} else {
+						0.0
+					};
+					if intervals > lower_limit {
+						Ok(EasingFunction::Steps(intervals, position))
+					} else {
+						Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+					}
+				})
 			})
 	}
 }

@@ -254,3 +254,105 @@ impl ToCss for Position {
 		self.vertical.to_css(dest)
 	}
 }
+
+#[derive(Clone)]
+pub enum FirstOrLast {
+	First,
+	Last,
+}
+
+property_keywords_impl! { FirstOrLast,
+	FirstOrLast::First, "first",
+	FirstOrLast::Last, "last",
+}
+
+#[derive(Clone)]
+pub struct BaselinePosition {
+	preference: FirstOrLast,
+}
+
+impl BaselinePosition {
+	pub fn parse<'i, 't>(
+		_context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		let preference = input
+			.try_parse(|input| FirstOrLast::parse(input))
+			.map_or(FirstOrLast::First, |v| v);
+		input.expect_ident_matching("baseline")?;
+		Ok(BaselinePosition { preference })
+	}
+}
+
+impl ToCss for BaselinePosition {
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		self.preference.to_css(dest)?;
+		dest.write_str(" baseline")
+	}
+}
+
+#[derive(Clone)]
+pub enum ContentDistribution {
+	SpaceBetween,
+	SpaceAround,
+	SpaceEvenly,
+	Stretch,
+}
+
+property_keywords_impl! { ContentDistribution,
+	ContentDistribution::SpaceBetween, "space-between",
+	ContentDistribution::SpaceAround, "space-around",
+	ContentDistribution::SpaceEvenly, "space-evenly",
+	ContentDistribution::Stretch, "stretch",
+}
+
+#[derive(Clone)]
+pub enum OverflowPosition {
+	Unsafe,
+	Safe,
+}
+
+property_keywords_impl! { OverflowPosition,
+	OverflowPosition::Unsafe, "unsafe",
+	OverflowPosition::Safe, "safe",
+}
+
+#[derive(Clone)]
+pub enum ContentPosition {
+	Center,
+	Start,
+	End,
+	FlexStart,
+	FlexEnd,
+}
+
+property_keywords_impl! { ContentPosition,
+	ContentPosition::Center, "center",
+	ContentPosition::Start, "start",
+	ContentPosition::End, "end",
+	ContentPosition::FlexStart, "flex-start",
+	ContentPosition::FlexEnd, "flex-end",
+}
+#[derive(Clone)]
+pub enum SelfPosition {
+	Center,
+	Start,
+	End,
+	SelfStart,
+	SelfEnd,
+	FlexStart,
+	FlexEnd,
+}
+
+property_keywords_impl! { SelfPosition,
+	SelfPosition::Center, "center",
+	SelfPosition::Start, "start",
+	SelfPosition::End, "end",
+	SelfPosition::SelfStart, "self-start",
+	SelfPosition::SelfEnd, "self-end",
+	SelfPosition::FlexStart, "flex-start",
+	SelfPosition::FlexEnd, "flex-end",
+}

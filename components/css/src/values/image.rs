@@ -45,7 +45,7 @@ impl Annotation {
 				input.try_parse(|input| CssUrl::parse_string(context, input))
 			})
 			.ok();
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let color = input.try_parse(|input| Color::parse(context, input)).ok();
 		Ok(Annotation { tag, src, color })
 	}
@@ -595,7 +595,7 @@ impl RadialGradient {
 				Position::parse(context, input)
 			})
 			.ok();
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let color_stop = ColorStopList::parse(context, input, &mut |input| {
 			LengthPercentage::parse(context, input)
 		})?;
@@ -663,7 +663,7 @@ impl ConicRadient {
 			})
 			.ok();
 
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let color_stop = ColorStopList::parse(context, input, &mut |input| {
 			AnglePercentage::parse(context, input)
 		})?;

@@ -197,6 +197,25 @@ impl PartialOrd<i32> for NonNegativeNumber {
 	}
 }
 
+impl PartialEq<f32> for NonNegativeNumber {
+	fn eq(&self, other: &f32) -> bool {
+		self.get() == *other
+	}
+}
+
+impl PartialOrd<f32> for NonNegativeNumber {
+	fn partial_cmp(&self, other: &f32) -> Option<Ordering> {
+		let value = self.get();
+		if value > *other {
+			Some(Ordering::Greater)
+		} else if value < *other {
+			Some(Ordering::Less)
+		} else {
+			Some(Ordering::Equal)
+		}
+	}
+}
+
 /// Generic for Number/Auto
 #[derive(Clone)]
 pub enum GenericNumberOrAuto<Number> {

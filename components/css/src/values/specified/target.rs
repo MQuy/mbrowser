@@ -23,11 +23,11 @@ impl TargetCounter {
 		let url = input
 			.try_parse(|input| CssUrl::parse(context, input))
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let ident = CustomIdent::parse(input)?;
 		let style = input
 			.try_parse(|input| {
-				input.expect_delim(',')?;
+				input.expect_comma()?;
 				CounterStyle::parse(context, input)
 			})
 			.ok();
@@ -67,13 +67,13 @@ impl TargetCounters {
 		let url = input
 			.try_parse(|input| CssUrl::parse(context, input))
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let ident = CustomIdent::parse(input)?;
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let str = input.expect_string()?.to_string();
 		let style = input
 			.try_parse(|input| {
-				input.expect_delim(',')?;
+				input.expect_comma()?;
 				CounterStyle::parse(context, input)
 			})
 			.ok();
@@ -134,7 +134,7 @@ impl TargetText {
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
 		let keyword = input
 			.try_parse(|input| {
-				input.expect_delim(',')?;
+				input.expect_comma()?;
 				TargetTextKeyword::parse(input)
 			})
 			.ok();

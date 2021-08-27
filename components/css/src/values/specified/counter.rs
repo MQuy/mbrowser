@@ -164,7 +164,7 @@ impl InnerMostCounter {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
 		let style = input
 			.try_parse(|input| {
-				input.expect_delim(',')?;
+				input.expect_comma()?;
 				CounterStyle::parse(context, input)
 			})
 			.ok();
@@ -203,11 +203,11 @@ impl AllCounters {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
-		input.expect_delim(',')?;
+		input.expect_comma()?;
 		let str = input.expect_string()?.to_string();
 		let style = input
 			.try_parse(|input| {
-				input.expect_delim(',')?;
+				input.expect_comma()?;
 				CounterStyle::parse(context, input)
 			})
 			.ok();

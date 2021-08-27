@@ -17,7 +17,7 @@ property_keywords_impl! { SingleAnimationDirection,
 	SingleAnimationDirection::Normal, "normal",
 	SingleAnimationDirection::Reverse, "reverse",
 	SingleAnimationDirection::Alternate, "alternate",
-	SingleAnimationDirection::AlternateReverse, "laternate-reverse",
+	SingleAnimationDirection::AlternateReverse, "alternate-reverse",
 }
 
 /// https://drafts.csswg.org/css-animations-1/#animation-direction
