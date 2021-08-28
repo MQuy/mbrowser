@@ -1,4 +1,5 @@
-use setup::{assert_stylesheet, parse};
+use common::vector::permutate;
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
@@ -15,7 +16,7 @@ pub fn keyword() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -31,16 +32,16 @@ pub fn baseline() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
 #[test]
 pub fn overflow_and_content() {
-	for (prefix, content) in ["unsafe", "safe"]
-		.iter()
-		.zip(["center", "start", "end", "flex-start", "flex-end"].iter())
-	{
+	for (prefix, content) in permutate(
+		["unsafe", "safe"].iter(),
+		["center", "start", "end", "flex-start", "flex-end"].iter(),
+	) {
 		let css = &std::format!(
 			r#"
 .name {{
@@ -51,7 +52,7 @@ pub fn overflow_and_content() {
 			content
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -67,6 +68,6 @@ pub fn only_content() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }

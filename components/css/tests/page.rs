@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 mod setup;
 
@@ -8,5 +8,5 @@ pub fn parse_page() {
     @page {}
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }

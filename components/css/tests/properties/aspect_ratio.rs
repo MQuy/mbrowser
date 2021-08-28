@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
@@ -11,7 +11,7 @@ pub fn only_auto() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -22,7 +22,7 @@ pub fn only_ratio() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -38,7 +38,7 @@ pub fn auto_and_ratio() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, output);
+	assert_css(&stylesheet, output);
 }
 
 #[test]
@@ -54,5 +54,5 @@ pub fn ratio_and_auto() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, output);
+	assert_css(&stylesheet, output);
 }

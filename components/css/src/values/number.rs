@@ -296,7 +296,7 @@ impl From<&str> for NumberOrPercentage {
 	fn from(text: &str) -> Self {
 		if let Some(index) = text.find(|ch: char| ch == '%') {
 			let value = text[..index].parse::<f32>().unwrap();
-			Self::Percentage(Percentage::new(value))
+			Self::Percentage(Percentage::new(value / 100.0))
 		} else {
 			let value = text.parse::<f32>().unwrap();
 			Self::Number(Number::new(value))

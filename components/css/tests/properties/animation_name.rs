@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
@@ -11,7 +11,7 @@ pub fn keyword() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -35,7 +35,7 @@ pub fn keyframe_name() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -47,5 +47,5 @@ pub fn mixed_keyword_and_keyframe_name() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }

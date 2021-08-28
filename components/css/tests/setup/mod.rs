@@ -3,9 +3,10 @@ use std::rc::Rc;
 
 use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use css::media_queries::media_list::MediaList;
+use css::parser::ParseError;
 use css::stylesheets::origin::Origin;
-use css::stylesheets::stylesheet::{QuirksMode, Stylesheet};
-use cssparser::SourceLocation;
+use css::stylesheets::stylesheet::{ParserContext, QuirksMode, Stylesheet};
+use cssparser::{Parser, ParserInput, SourceLocation, ToCss};
 
 #[derive(Debug)]
 pub struct CSSError {
@@ -52,6 +53,24 @@ pub fn parse(css: &str) -> (Stylesheet, TestingErrorReporter) {
 	)
 }
 
+pub fn parse_value<'i, F, T: ToCss>(text: &'i str, func: F) -> Result<String, ParseError<'i>>
+where
+	F: for<'t> Fn(&ParserContext, &mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
+{
+	let error_reporter = TestingErrorReporter::new();
+	let mut input = ParserInput::new_with_line_number_offset(text, 0);
+	let mut input = Parser::new(&mut input);
+
+	let context = ParserContext::new(
+		Origin::UserAgent,
+		None,
+		QuirksMode::NoQuirks,
+		Some(&error_reporter),
+	);
+	let ret = func(&context, &mut input)?;
+	Ok(ret.to_css_string())
+}
+
 fn trim(text: &str) -> String {
 	fn is_newline_or_space(ch: char) -> bool {
 		ch == '\n' || ch == ' ' || ch == '\t'
@@ -62,6 +81,6 @@ fn trim(text: &str) -> String {
 		.to_owned()
 }
 
-pub fn assert_stylesheet(style: &Stylesheet, text: &str) {
+pub fn assert_css<T: ToString>(style: &T, text: &str) {
 	assert_eq!(trim(&style.to_string()), trim(text))
 }

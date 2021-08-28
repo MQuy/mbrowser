@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
@@ -11,12 +11,12 @@ pub fn keyword() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
 pub fn number() {
-	for value in [0, 1, 500000].iter() {
+	for value in ["0", "1", "500000", "0.25", "1.5"].iter() {
 		let css = &std::format!(
 			r#"
 .name {{
@@ -26,20 +26,7 @@ pub fn number() {
 			value,
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
-	}
-
-	for value in [0.25, 1.5, 500.000].iter() {
-		let css = &std::format!(
-			r#"
-.name {{
-	animation-iteration-count: {};
-}}
-    "#,
-			value,
-		);
-		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -51,5 +38,5 @@ pub fn mixed_keyword_and_number() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }

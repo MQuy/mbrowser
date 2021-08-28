@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 mod setup;
 
@@ -9,7 +9,7 @@ pub fn parse_media_empty_all() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -19,7 +19,7 @@ pub fn parse_media_not_screen_with_and() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -29,7 +29,7 @@ pub fn parse_media_and_or_with_keyword() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(
+	assert_css(
 		&stylesheet,
 		r#"
 @media ((orientation = portrait) and (hover = none)) or (color = 8) {
@@ -45,7 +45,7 @@ pub fn parse_media_with_range() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(
+	assert_css(
 		&stylesheet,
 		r#"
 @media (height >= 640px and height <= 900px) {
@@ -61,7 +61,7 @@ pub fn parse_media_negative_feature() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -71,7 +71,7 @@ pub fn parse_media_multiple_queries() {
 }
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(
+	assert_css(
 		&stylesheet,
 		r#"
 @media (min-height: 680px), screen and (orientation = portrait) {

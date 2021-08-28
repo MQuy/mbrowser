@@ -1,11 +1,15 @@
-use setup::{assert_stylesheet, parse};
+use common::vector::permutate;
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
 
 #[test]
 pub fn second_or_milisecond() {
-	for (value, unit) in [0, 1, 500000].iter().zip(["s", "ms"].iter()) {
+	for (value, unit) in permutate(
+		["0", "1", "500000", "0.25", "1.5"].iter(),
+		["s", "ms"].iter(),
+	) {
 		let css = &std::format!(
 			r#"
 .name {{
@@ -16,21 +20,7 @@ pub fn second_or_milisecond() {
 			unit
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
-	}
-
-	for (value, unit) in [0.25, 1.5, 500.000].iter().zip(["s", "ms"].iter()) {
-		let css = &std::format!(
-			r#"
-.name {{
-	animation-duration: {}{};
-}}
-    "#,
-			value,
-			unit
-		);
-		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -44,5 +34,5 @@ pub fn mixed_seconds_and_miliseconds() {
     "#,
 	);
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }

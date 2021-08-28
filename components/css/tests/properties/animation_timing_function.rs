@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 #[path = "../setup/mod.rs"]
 mod setup;
@@ -11,7 +11,7 @@ pub fn linear() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -26,7 +26,7 @@ pub fn cubic_bezier_keyword() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -38,7 +38,7 @@ pub fn cubic_bezier_function() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css)
+	assert_css(&stylesheet, css)
 }
 
 #[test]
@@ -53,7 +53,7 @@ pub fn step_keyword() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -78,7 +78,7 @@ pub fn step_function() {
 			prefix
 		);
 		let (stylesheet, _) = parse(css);
-		assert_stylesheet(&stylesheet, css);
+		assert_css(&stylesheet, css);
 	}
 }
 
@@ -95,5 +95,5 @@ pub fn step_function_only_steps() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, output);
+	assert_css(&stylesheet, output);
 }

@@ -5,11 +5,11 @@ mod setup;
 
 #[test]
 pub fn keyword() {
-	for prefix in ["normal", "reverse", "alternate", "alternate-reverse"].iter() {
+	for prefix in ["scroll", "fixed", "local"].iter() {
 		let css = &std::format!(
 			r#"
 .name {{
-	animation-direction: {};
+	background-attachment: {};
 }}
     "#,
 			prefix
@@ -23,7 +23,7 @@ pub fn keyword() {
 pub fn keywords() {
 	let css = r#"
 .name {
-	animation-direction: normal, reverse, alternate;
+	background-attachment: local, local, fixed;
 }
     "#;
 	let (stylesheet, _) = parse(css);

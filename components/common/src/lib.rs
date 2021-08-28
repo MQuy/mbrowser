@@ -1,4 +1,5 @@
 pub mod url;
+pub mod vector;
 
 #[macro_export]
 macro_rules! not_reached {

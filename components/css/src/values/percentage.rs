@@ -25,9 +25,7 @@ impl Percentage {
 	) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		match token {
-			Token::Dimension {
-				value, ref unit, ..
-			} if unit == &"%" => Ok(Percentage { value }),
+			Token::Percentage { unit_value, .. } => Ok(Percentage { value: unit_value }),
 			_ => Err(input.new_custom_error(StyleParseErrorKind::UnexpectedToken(token))),
 		}
 	}
@@ -42,7 +40,7 @@ impl ToCss for Percentage {
 	where
 		W: std::fmt::Write,
 	{
-		dest.write_fmt(format_args!("{}%", self.value))
+		dest.write_fmt(format_args!("{}%", self.value * 100.0))
 	}
 }
 

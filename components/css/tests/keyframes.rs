@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 mod setup;
 
@@ -6,7 +6,7 @@ mod setup;
 pub fn parse_keyframes_string_from_to() {
 	let css = r#"@keyframes "foo" { from {} to {} }"#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(
+	assert_css(
 		&stylesheet,
 		r#"
 @keyframes foo {
@@ -32,7 +32,7 @@ pub fn parse_keyframes_duplicate_in_selectors() {
 }
     "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(
+	assert_css(
 		&stylesheet,
 		r#"
 @keyframes identifier {

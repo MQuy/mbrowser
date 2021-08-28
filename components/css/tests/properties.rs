@@ -11,4 +11,8 @@ mod properties {
 	mod animation_play_state;
 	mod animation_timing_function;
 	mod aspect_ratio;
+	mod backface_visibility;
+	mod background_attachment;
+	mod background_clip;
+	mod background_color;
 }

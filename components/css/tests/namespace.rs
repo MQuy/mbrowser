@@ -1,4 +1,4 @@
-use setup::{assert_stylesheet, parse};
+use setup::{assert_css, parse};
 
 mod setup;
 
@@ -9,7 +9,7 @@ pub fn parse_namespace_with_string() {
 @namespace "http://example.com/foo";
 "#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
 
 #[test]
@@ -18,5 +18,5 @@ pub fn parse_namespace_with_url() {
 @namespace url(http://www.w3.org/1999/xhtml);
 @namespace svg url(http://www.w3.org/2000/svg);"#;
 	let (stylesheet, _) = parse(css);
-	assert_stylesheet(&stylesheet, css);
+	assert_css(&stylesheet, css);
 }
