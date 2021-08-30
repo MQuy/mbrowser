@@ -7,6 +7,7 @@ use css::parser::ParseError;
 use css::stylesheets::origin::Origin;
 use css::stylesheets::stylesheet::{ParserContext, QuirksMode, Stylesheet};
 use cssparser::{Parser, ParserInput, SourceLocation, ToCss};
+use dyn_fmt::AsStrFormatExt;
 
 #[derive(Debug)]
 pub struct CSSError {
@@ -83,4 +84,22 @@ fn trim(text: &str) -> String {
 
 pub fn assert_css<T: ToString>(style: &T, text: &str) {
 	assert_eq!(trim(&style.to_string()), trim(text))
+}
+
+pub fn assert_property(template: &str, input: &str, output: &str) {
+	let cin = template.format(&[input]);
+	let cout = template.format(&[output]);
+	let (stylesheet, _) = parse(&cin);
+	assert_css(&stylesheet, &cout);
+}
+
+macro_rules! test_property {
+	($name: ident, $data: ident) => {
+		#[test]
+		pub fn $name() {
+			for (input, output) in $data().iter() {
+				assert_property(TEMPLATE, input, output);
+			}
+		}
+	};
 }

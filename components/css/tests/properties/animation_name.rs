@@ -1,7 +1,16 @@
-use setup::{assert_css, parse};
+use animation::keyframe_name_data;
+use setup::{assert_css, assert_property, parse};
 
+#[path = "../values/animation.rs"]
+mod animation;
 #[path = "../setup/mod.rs"]
 mod setup;
+
+const TEMPLATE: &str = r#"
+.name {{
+	animation-name: {};
+}}
+    "#;
 
 #[test]
 pub fn keyword() {
@@ -16,26 +25,8 @@ pub fn keyword() {
 
 #[test]
 pub fn keyframe_name() {
-	for prefix in [
-		"nono79",
-		"ground-level",
-		"-test",
-		"_internal",
-		"chào",
-		"\"hello\"",
-	]
-	.iter()
-	{
-		let css = &std::format!(
-			r#"
-.name {{
-	animation-name: {};
-}}
-    "#,
-			prefix
-		);
-		let (stylesheet, _) = parse(css);
-		assert_css(&stylesheet, css);
+	for (input, output) in keyframe_name_data().iter() {
+		assert_property(TEMPLATE, input, output);
 	}
 }
 

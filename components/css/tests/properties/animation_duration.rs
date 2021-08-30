@@ -1,38 +1,18 @@
-use common::vector::permutate;
-use setup::{assert_css, parse};
+use setup::assert_property;
+use time::{second_or_milisecond_data, seconds_and_miliseconds_data};
 
+#[macro_use]
 #[path = "../setup/mod.rs"]
 mod setup;
+#[path = "../values/time.rs"]
+mod time;
 
-#[test]
-pub fn second_or_milisecond() {
-	for (value, unit) in permutate(
-		["0", "1", "500000", "0.25", "1.5"].iter(),
-		["s", "ms"].iter(),
-	) {
-		let css = &std::format!(
-			r#"
+static TEMPLATE: &str = r#"
 .name {{
-	animation-duration: {}{};
+	animation-duration: {};
 }}
-    "#,
-			value,
-			unit
-		);
-		let (stylesheet, _) = parse(css);
-		assert_css(&stylesheet, css);
-	}
-}
+    "#;
 
-#[test]
-pub fn mixed_seconds_and_miliseconds() {
-	let css = &std::format!(
-		r#"
-.name {{
-	animation-duration: 0s, 1.5s, 30ms;
-}}
-    "#,
-	);
-	let (stylesheet, _) = parse(css);
-	assert_css(&stylesheet, css);
-}
+test_property!(second_or_milisecond, second_or_milisecond_data);
+
+test_property!(seconds_and_miliseconds, seconds_and_miliseconds_data);

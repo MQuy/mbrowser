@@ -1,15 +1,11 @@
 use common::vector::permutate;
-use css::values::color::{Color, CMYK};
+use css::values::color::CMYK;
 use css::values::number::NumberOrPercentage;
 use cssparser::ToCss;
-use setup::{assert_css, parse_value};
 
-#[path = "../setup/mod.rs"]
-mod setup;
-
-#[test]
-pub fn keyword() {
-	for prefix in [
+pub fn keyword_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for name in [
 		"currentcolor",
 		"transparent",
 		"canvas",
@@ -30,46 +26,45 @@ pub fn keyword() {
 	]
 	.iter()
 	{
-		let css = prefix;
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, css);
+		data.push((name.to_string(), name.to_string()));
 	}
+	data
 }
 
-#[test]
-pub fn hue_6digits() {
-	let css = "#00ff00";
-	let output = "rgb(0 255 0 / 255)";
-	let value = parse_value(css, Color::parse).unwrap();
-	assert_css(&value, output);
+pub fn hue_6digits_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in [("#00ff00", "rgb(0 255 0 / 255)")].iter() {
+		data.push((input.to_string(), output.to_string()));
+	}
+	data
 }
 
-#[test]
-pub fn hue_8digits() {
-	let css = "#0000ffcc";
-	let output = "rgb(0 0 255 / 204)";
-	let value = parse_value(css, Color::parse).unwrap();
-	assert_css(&value, output);
+pub fn hue_8digits_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in [("#0000ffcc", "rgb(0 0 255 / 204)")].iter() {
+		data.push((input.to_string(), output.to_string()));
+	}
+	data
 }
 
-#[test]
-pub fn hue_3digits() {
-	let css = "#123";
-	let output = "rgb(17 34 51 / 255)";
-	let value = parse_value(css, Color::parse).unwrap();
-	assert_css(&value, output);
+pub fn hue_3digits_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in [("#123", "rgb(17 34 51 / 255)")].iter() {
+		data.push((input.to_string(), output.to_string()));
+	}
+	data
 }
 
-#[test]
-pub fn hue_4digits() {
-	let css = "#8925";
-	let output = "rgb(136 153 34 / 85)";
-	let value = parse_value(css, Color::parse).unwrap();
-	assert_css(&value, output);
+pub fn hue_4digits_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in [("#8925", "rgb(136 153 34 / 85)")].iter() {
+		data.push((input.to_string(), output.to_string()));
+	}
+	data
 }
 
-#[test]
-pub fn rgb() {
+pub fn rgb_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	for (((color, alpha), delimitors), fname) in permutate(
 		permutate(
 			permutate(
@@ -82,7 +77,7 @@ pub fn rgb() {
 		.iter(),
 		["rgb", "rgba"].iter(),
 	) {
-		let css = &std::format!(
+		let input = std::format!(
 			"{}({}{}{}{}{}{})",
 			fname,
 			color.0,
@@ -96,17 +91,17 @@ pub fn rgb() {
 				"".to_string()
 			},
 		);
-		let output = &std::format!(
+		let output = std::format!(
 			"rgb(25 178 1 / {})",
 			if alpha.len() > 0 { "63" } else { "255" }
 		);
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, output);
+		data.push((input, output));
 	}
+	data
 }
 
-#[test]
-pub fn hsl_or_hwb() {
+pub fn hsl_or_hwb_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	for (iter, name) in [(["hsl", "hsla"].iter(), "hsl"), (["hwb"].iter(), "hwb")].iter() {
 		let angles = permutate(["30", "5.25"].iter(), ["deg", "grad", "rad", "turn"].iter())
 			.iter()
@@ -119,7 +114,7 @@ pub fn hsl_or_hwb() {
 		)
 		.iter()
 		{
-			let css = &std::format!(
+			let input = std::format!(
 				"{}({} 12% 0.25%{})",
 				fname,
 				hue,
@@ -129,27 +124,27 @@ pub fn hsl_or_hwb() {
 					"".to_string()
 				},
 			);
-			let output = &std::format!(
+			let output = std::format!(
 				"{}({} 12% 0.25% / {})",
 				name,
 				hue,
 				if alpha.len() > 0 { "63" } else { "255" },
 			);
-			let value = parse_value(css, Color::parse).unwrap();
-			assert_css(&value, output);
+			data.push((input, output));
 		}
 	}
+	data
 }
 
-#[test]
-pub fn lab() {
+pub fn lab_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	for ((percentage, number), alpha) in permutate(
 		permutate(["10%", "0.25%"].iter(), ["5", "1.5"].iter()).iter(),
 		["25%", "63.75", ""].iter(),
 	)
 	.iter()
 	{
-		let css = &std::format!(
+		let input = std::format!(
 			"lab({} {} {}{})",
 			percentage,
 			number,
@@ -160,20 +155,20 @@ pub fn lab() {
 				"".to_string()
 			},
 		);
-		let output = &std::format!(
+		let output = std::format!(
 			"lab({} {} {} / {})",
 			percentage,
 			number,
 			number,
 			if alpha.len() > 0 { "63" } else { "255" },
 		);
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, output);
+		data.push((input, output));
 	}
+	data
 }
 
-#[test]
-pub fn lch() {
+pub fn lch_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	let angles = permutate(["30", "5.25"].iter(), ["deg", "grad", "rad", "turn"].iter())
 		.iter()
 		.map(|(value, unit)| std::format!("{}{}", value, unit))
@@ -189,7 +184,7 @@ pub fn lch() {
 	)
 	.iter()
 	{
-		let css = &std::format!(
+		let input = std::format!(
 			"lch({} {} {}{})",
 			percentage,
 			number,
@@ -200,20 +195,20 @@ pub fn lch() {
 				"".to_string()
 			},
 		);
-		let output = &std::format!(
+		let output = std::format!(
 			"lch({} {} {} / {})",
 			percentage,
 			number,
 			hue,
 			if alpha.len() > 0 { "63" } else { "255" },
 		);
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, output);
+		data.push((input, output));
 	}
+	data
 }
 
-#[test]
-pub fn color() {
+pub fn color_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	for ((ident, value), alpha) in permutate(
 		permutate(
 			["hello", "--small"].iter(),
@@ -224,7 +219,7 @@ pub fn color() {
 	)
 	.iter()
 	{
-		let css = &std::format!(
+		let input = std::format!(
 			"color({} {}{})",
 			ident,
 			value,
@@ -234,19 +229,19 @@ pub fn color() {
 				"".to_string()
 			},
 		);
-		let output = &std::format!(
+		let output = std::format!(
 			"color({} {} / {})",
 			ident,
 			value,
 			if alpha.len() > 0 { "63" } else { "255" },
 		);
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, output);
+		data.push((input, output));
 	}
+	data
 }
 
-#[test]
-pub fn device_cmyk() {
+pub fn device_cmyk_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
 	for (((v1, v2), alpha), color) in permutate(
 		permutate(
 			permutate(["1", "25%"].iter(), ["0.5", "12.5%"].iter()).iter(),
@@ -257,7 +252,7 @@ pub fn device_cmyk() {
 	)
 	.iter()
 	{
-		let css = &std::format!(
+		let input = std::format!(
 			"device-cmyk({} {} {} {}{}{})",
 			v1,
 			v2,
@@ -274,7 +269,7 @@ pub fn device_cmyk() {
 				"".to_string()
 			}
 		);
-		let output = &std::format!(
+		let output = std::format!(
 			"device-cmyk({} {} {} {} / {}{})",
 			v1,
 			v2,
@@ -310,7 +305,7 @@ pub fn device_cmyk() {
 				}
 			)
 		);
-		let value = parse_value(css, Color::parse).unwrap();
-		assert_css(&value, output);
+		data.push((input, output));
 	}
+	data
 }
