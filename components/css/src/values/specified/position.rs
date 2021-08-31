@@ -203,12 +203,12 @@ impl Position {
 					input,
 					&mut [
 						&mut |input| {
-							parse_item_if_missing(input, &mut horizontal, |_, input| {
+							parse_item_if_missing(input, &mut horizontal, &mut |_, input| {
 								HorizontalPosition::parse(context, input)
 							})
 						},
 						&mut |input| {
-							parse_item_if_missing(input, &mut vertical, |_, input| {
+							parse_item_if_missing(input, &mut vertical, &mut |_, input| {
 								VerticalPosition::parse(context, input)
 							})
 						},

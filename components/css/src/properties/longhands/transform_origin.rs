@@ -93,7 +93,7 @@ impl TransformOrigin {
                     input,
                     &mut [
                         &mut |input| {
-                            parse_item_if_missing(input, &mut x, |_, input| {
+                            parse_item_if_missing(input, &mut x, &mut |_, input| {
                                 OffsetKeyword::parse(
                                     context,
                                     input,
@@ -106,7 +106,7 @@ impl TransformOrigin {
                             })
                         },
                         &mut |input| {
-                            parse_item_if_missing(input, &mut y, |_, input| {
+                            parse_item_if_missing(input, &mut y, &mut |_, input| {
                                 OffsetKeyword::parse(
                                     context,
                                     input,

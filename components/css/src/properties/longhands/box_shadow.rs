@@ -28,14 +28,14 @@ impl Shadow {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut inset, |_, input| {
+					parse_item_if_missing(input, &mut inset, &mut |_, input| {
 						input.expect_ident_matching("inset").map_err(|_err| {
 							input.new_custom_error(StyleParseErrorKind::UnspecifiedError)
 						})
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut length, |_, input| {
+					parse_item_if_missing(input, &mut length, &mut |_, input| {
 						let horizontal = Length::parse(context, input)?;
 						let vertical = Length::parse(context, input)?;
 						let blur = input
@@ -48,7 +48,7 @@ impl Shadow {
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut color, |_, input| {
+					parse_item_if_missing(input, &mut color, &mut |_, input| {
 						Color::parse(context, input)
 					})
 				},

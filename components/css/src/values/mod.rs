@@ -48,6 +48,11 @@ pub type CSSFloat = f32;
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Ident(pub String);
 
+impl Ident {
+	pub fn new(value: String) -> Self {
+		Self(value)
+	}
+}
 impl PartialEq<&str> for Ident {
 	fn eq(&self, other: &&str) -> bool {
 		self.0 == *other

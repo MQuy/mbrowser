@@ -15,4 +15,5 @@ mod properties {
 	mod background_attachment;
 	mod background_clip;
 	mod background_color;
+	mod background_image;
 }

@@ -2,14 +2,17 @@ use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ig
 
 use super::color::Color;
 use super::layout::Resolution;
-use super::length::{LengthPercentage, NonNegativeLength};
+use super::length::{LengthPercentage, NonNegativeLength, NonNegativeLengthPercentage};
 use super::percentage::Percentage;
 use super::specified::angle::{Angle, AnglePercentage};
 use super::specified::position::{HorizontalPosition, Position, VerticalPosition};
 use super::url::CssUrl;
 use super::Ident;
-use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
+use crate::parser::{
+	parse_in_any_order, parse_item_if_missing, parse_repeated_with_delimitor, ParseError,
+};
 use crate::properties::declaration::property_keywords_impl;
+use crate::str::{convert_options_to_string, join_strings};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -45,8 +48,14 @@ impl Annotation {
 				input.try_parse(|input| CssUrl::parse_string(context, input))
 			})
 			.ok();
-		input.expect_comma()?;
-		let color = input.try_parse(|input| Color::parse(context, input)).ok();
+		let color = input
+			.try_parse(|input| {
+				if src.is_some() {
+					input.expect_comma()?;
+				}
+				Color::parse(context, input)
+			})
+			.ok();
 		Ok(Annotation { tag, src, color })
 	}
 }
@@ -56,15 +65,13 @@ impl ToCss for Annotation {
 	where
 		W: std::fmt::Write,
 	{
-		let value = vec![
-			self.src
-				.as_ref()
-				.map_or("".to_string(), |v| v.to_css_string()),
-			self.color
-				.as_ref()
-				.map_or("".to_string(), |v| v.to_css_string()),
-		]
-		.join(", ");
+		let value = convert_options_to_string(
+			vec![
+				self.src.as_ref().map(|v| v.to_css_string()),
+				self.color.as_ref().map(|v| v.to_css_string()),
+			],
+			", ",
+		);
 		dest.write_fmt(format_args!(
 			"{}{}",
 			self.tag
@@ -129,12 +136,12 @@ impl ImageSetOption {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut resolution, |_, input| {
+					parse_item_if_missing(input, &mut resolution, &mut |_, input| {
 						Resolution::parse(context, input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut mime, |_, input| {
+					parse_item_if_missing(input, &mut mime, &mut |_, input| {
 						input.expect_function_matching("type")?;
 						input.parse_nested_block(|input| {
 							let value = input.expect_string()?.to_string();
@@ -151,7 +158,7 @@ impl ImageSetOption {
 		Ok(ImageSetOption {
 			reference,
 			mime,
-			resolution: resolution.map_or("1x".into(), |v| v),
+			resolution: resolution.map_or("1dppx".into(), |v| v),
 		})
 	}
 }
@@ -167,7 +174,7 @@ impl ToCss for ImageSetOption {
 			self.resolution.to_css_string(),
 			self.mime
 				.as_ref()
-				.map_or("".to_string(), |v| std::format!(" {}", v))
+				.map_or("".to_string(), |v| std::format!(" type(\"{}\")", v))
 		))
 	}
 }
@@ -224,12 +231,12 @@ impl CFImage {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut percentage, |_, input| {
+					parse_item_if_missing(input, &mut percentage, &mut |_, input| {
 						Percentage::parse(context, input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut fade, |_, input| {
+					parse_item_if_missing(input, &mut fade, &mut |_, input| {
 						ImageOrColor::parse(context, input)
 					})
 				},
@@ -253,7 +260,7 @@ impl ToCss for CFImage {
 			"{}{}",
 			self.percentage
 				.as_ref()
-				.map_or("".to_string(), |v| std::format!(" {}", v.to_css_string())),
+				.map_or("".to_string(), |v| std::format!("{} ", v.to_css_string())),
 			self.fade.to_css_string()
 		))
 	}
@@ -284,8 +291,7 @@ property_keywords_impl! { Corner,
 #[derive(Clone)]
 pub enum LineDirection {
 	Angle(Angle),
-	Side(Side),
-	Corner(Corner),
+	Keyword(Option<Side>, Option<Corner>),
 }
 
 impl LineDirection {
@@ -299,16 +305,25 @@ impl LineDirection {
 				Ok(LineDirection::Angle(angle))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				input.try_parse(|input| {
-					let side = Side::parse(input)?;
-					Ok(LineDirection::Side(side))
-				})
-			})
-			.or_else(|_err: ParseError<'i>| {
-				input.try_parse(|input| {
-					let corner = Corner::parse(input)?;
-					Ok(LineDirection::Corner(corner))
-				})
+				let mut side = None;
+				let mut corner = None;
+				input.expect_ident_matching("to")?;
+				parse_in_any_order(
+					input,
+					&mut [
+						&mut |input| {
+							parse_item_if_missing(input, &mut side, &mut |_, input| {
+								Side::parse(input)
+							})
+						},
+						&mut |input| {
+							parse_item_if_missing(input, &mut corner, &mut |_, input| {
+								Corner::parse(input)
+							})
+						},
+					],
+				);
+				Ok(LineDirection::Keyword(side, corner))
 			})
 	}
 }
@@ -320,37 +335,47 @@ impl ToCss for LineDirection {
 	{
 		match self {
 			LineDirection::Angle(value) => value.to_css(dest),
-			LineDirection::Side(value) => value.to_css(dest),
-			LineDirection::Corner(value) => value.to_css(dest),
+			LineDirection::Keyword(side, corner) => dest.write_fmt(format_args!(
+				"to {}",
+				convert_options_to_string(
+					vec![
+						side.as_ref().map(|v| v.to_css_string()),
+						corner.as_ref().map(|v| v.to_css_string()),
+					],
+					" "
+				)
+			)),
 		}
 	}
 }
 
 #[derive(Clone)]
-pub struct LinearColorStop {
+pub struct LinearColorStop<T> {
 	color: Color,
-	length: Option<LengthPercentage>,
+	length: Option<T>,
 }
 
-impl LinearColorStop {
-	pub fn parse<'i, 't>(
+impl<T> LinearColorStop<T> {
+	pub fn parse<'i, 't, P>(
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+		item_parser: &mut P,
+	) -> Result<Self, ParseError<'i>>
+	where
+		P: FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
+	{
 		let mut color = None;
 		let mut length = None;
 		parse_in_any_order(
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut color, |_, input| {
+					parse_item_if_missing(input, &mut color, &mut |_, input| {
 						Color::parse(context, input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut length, |_, input| {
-						LengthPercentage::parse(context, input)
-					})
+					parse_item_if_missing(input, &mut length, &mut |_, input| item_parser(input))
 				},
 			],
 		);
@@ -363,7 +388,7 @@ impl LinearColorStop {
 	}
 }
 
-impl ToCss for LinearColorStop {
+impl<T: ToCss> ToCss for LinearColorStop<T> {
 	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
 	where
 		W: std::fmt::Write,
@@ -381,7 +406,7 @@ impl ToCss for LinearColorStop {
 #[derive(Clone)]
 pub struct LinearColorHint<T> {
 	hint: Option<T>,
-	color: LinearColorStop,
+	color: LinearColorStop<T>,
 }
 
 impl<T> LinearColorHint<T> {
@@ -394,7 +419,10 @@ impl<T> LinearColorHint<T> {
 		P: FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{
 		let hint = input.try_parse(|input| item_parser(input)).ok();
-		let color = LinearColorStop::parse(context, input)?;
+		if hint.is_some() {
+			input.expect_comma()?;
+		}
+		let color = LinearColorStop::parse(context, input, item_parser)?;
 		Ok(LinearColorHint { hint, color })
 	}
 }
@@ -408,7 +436,7 @@ impl<T: ToCss> ToCss for LinearColorHint<T> {
 			"{}{}",
 			self.hint
 				.as_ref()
-				.map_or("".to_string(), |v| std::format!(", {}", v.to_css_string())),
+				.map_or("".to_string(), |v| std::format!("{}, ", v.to_css_string())),
 			self.color.to_css_string()
 		))
 	}
@@ -417,7 +445,7 @@ impl<T: ToCss> ToCss for LinearColorHint<T> {
 /// https://drafts.csswg.org/css-images-3/#color-stop-syntax
 #[derive(Clone)]
 pub struct ColorStopList<T> {
-	starting: LinearColorStop,
+	starting: LinearColorStop<T>,
 	ending: Vec<LinearColorHint<T>>,
 }
 
@@ -430,9 +458,17 @@ impl<T> ColorStopList<T> {
 	where
 		P: for<'tt> Fn(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i>>,
 	{
-		let starting = LinearColorStop::parse(context, input)?;
-		let ending = input
-			.parse_comma_separated(|input| LinearColorHint::parse(context, input, item_parser))?;
+		let starting = LinearColorStop::parse(context, input, item_parser)?;
+		input.expect_comma()?;
+		let ending = parse_repeated_with_delimitor(
+			input,
+			&mut |input| LinearColorHint::parse(context, input, item_parser),
+			&mut |input| {
+				input.expect_comma()?;
+				Ok(())
+			},
+			1,
+		)?;
 		Ok(ColorStopList { starting, ending })
 	}
 }
@@ -466,9 +502,13 @@ impl LinearGradient {
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
-		let direction = input
-			.try_parse(|input| LineDirection::parse(context, input))
-			.map_or(LineDirection::Corner(Corner::Bottom), |v| v);
+		let direction = input.try_parse(|input| LineDirection::parse(context, input));
+		let direction = if direction.is_ok() {
+			input.expect_comma()?;
+			direction?
+		} else {
+			LineDirection::Keyword(None, Some(Corner::Bottom))
+		};
 		let color_stop = ColorStopList::parse(context, input, &mut |input| {
 			LengthPercentage::parse(context, input)
 		})?;
@@ -499,7 +539,7 @@ impl ToCss for LinearGradient {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum EndingShape {
 	Circle,
 	Ellipse,
@@ -516,7 +556,10 @@ pub enum RadialSize {
 	FarthestSide,
 	ClosestCorner,
 	FarthestCorner,
-	Length(NonNegativeLength),
+	Length(
+		NonNegativeLengthPercentage,
+		Option<NonNegativeLengthPercentage>,
+	),
 }
 
 impl RadialSize {
@@ -526,8 +569,11 @@ impl RadialSize {
 	) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let length = NonNegativeLength::parse(context, input)?;
-				Ok(RadialSize::Length(length))
+				let horizontal = NonNegativeLengthPercentage::parse(context, input)?;
+				let veritical = input
+					.try_parse(|input| NonNegativeLengthPercentage::parse(context, input))
+					.ok();
+				Ok(RadialSize::Length(horizontal, veritical))
 			})
 			.or_else(|_err: ParseError<'i>| {
 				let location = input.current_source_location();
@@ -553,7 +599,13 @@ impl ToCss for RadialSize {
 			RadialSize::FarthestSide => dest.write_str("farthest-side"),
 			RadialSize::ClosestCorner => dest.write_str("closest-corner"),
 			RadialSize::FarthestCorner => dest.write_str("farthest-corner"),
-			RadialSize::Length(value) => value.to_css(dest),
+			RadialSize::Length(horizontal, vertical) => dest.write_str(&convert_options_to_string(
+				vec![
+					Some(horizontal.to_css_string()),
+					vertical.as_ref().map(|v| v.to_css_string()),
+				],
+				" ",
+			)),
 		}
 	}
 }
@@ -578,12 +630,12 @@ impl RadialGradient {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut end_shape, |_, input| {
+					parse_item_if_missing(input, &mut end_shape, &mut |_, input| {
 						EndingShape::parse(input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut size, |_, input| {
+					parse_item_if_missing(input, &mut size, &mut |_, input| {
 						RadialSize::parse(context, input)
 					})
 				},
@@ -595,14 +647,20 @@ impl RadialGradient {
 				Position::parse(context, input)
 			})
 			.ok();
-		input.expect_comma()?;
+		if end_shape.is_some() || size.is_some() || position.is_some() {
+			input.expect_comma()?;
+		}
 		let color_stop = ColorStopList::parse(context, input, &mut |input| {
 			LengthPercentage::parse(context, input)
 		})?;
 		let size = size.map_or(RadialSize::FarthestCorner, |v| v);
-		let end_shape = match size {
-			RadialSize::Length(_) if end_shape.is_none() => EndingShape::Circle,
-			_ => EndingShape::Ellipse,
+		let end_shape = if let Some(end_shape) = end_shape {
+			end_shape
+		} else {
+			match &size {
+				RadialSize::Length(_, vertical) if vertical.is_none() => EndingShape::Circle,
+				_ => EndingShape::Ellipse,
+			}
 		};
 		Ok(RadialGradient {
 			end_shape,
@@ -628,9 +686,10 @@ impl ToCss for RadialGradient {
 			"radial-gradient"
 		};
 		dest.write_fmt(format_args!(
-			"{}({} at {}, {})",
+			"{}({} {} at {}, {})",
 			name,
 			self.end_shape.to_css_string(),
+			self.size.to_css_string(),
 			self.position.to_css_string(),
 			self.color_stop.to_css_string()
 		))
@@ -663,7 +722,9 @@ impl ConicRadient {
 			})
 			.ok();
 
-		input.expect_comma()?;
+		if angle.is_some() || position.is_some() {
+			input.expect_comma()?;
+		}
 		let color_stop = ColorStopList::parse(context, input, &mut |input| {
 			AnglePercentage::parse(context, input)
 		})?;
@@ -800,7 +861,7 @@ impl Image {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		let id = match token {
-			Token::Hash(value) => Ident(value.to_string()),
+			Token::IDHash(value) => Ident(value.to_string()),
 			_ => {
 				return Err(
 					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
@@ -866,7 +927,7 @@ impl ToCss for Image {
 					.join(", ")
 			)),
 			Image::Element(value) => {
-				dest.write_fmt(format_args!("element({})", value.to_css_string()))
+				dest.write_fmt(format_args!("element(#{})", value.to_css_string()))
 			},
 			Image::Gradient(value) => value.to_css(dest),
 		}

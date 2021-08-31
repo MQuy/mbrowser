@@ -46,12 +46,12 @@ impl DisplayBasic {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut outside, |_, input| {
+					parse_item_if_missing(input, &mut outside, &mut |_, input| {
 						DisplayOutside::parse(input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut inside, |_, input| {
+					parse_item_if_missing(input, &mut inside, &mut |_, input| {
 						DisplayInside::parse(input)
 					})
 				},
@@ -99,12 +99,12 @@ impl DisplayListItem {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut outside, |_, input| {
+					parse_item_if_missing(input, &mut outside, &mut |_, input| {
 						DisplayOutside::parse(input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut inside, |_, input| {
+					parse_item_if_missing(input, &mut inside, &mut |_, input| {
 						let location = input.current_source_location();
 						let ident = input.expect_ident()?;
 						match_ignore_ascii_case! { ident,
@@ -115,7 +115,7 @@ impl DisplayListItem {
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut item, |_, input| {
+					parse_item_if_missing(input, &mut item, &mut |_, input| {
 						input.expect_ident_matching("list-item")?;
 						Ok(())
 					})

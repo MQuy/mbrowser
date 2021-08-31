@@ -45,7 +45,7 @@ impl Angle {
 
 impl From<&str> for Angle {
 	fn from(text: &str) -> Self {
-		let regex = Regex::new(r"/deg|grad|rad|turn/i").unwrap();
+		let regex = Regex::new(r"deg|grad|rad|turn").unwrap();
 		let index = regex.find(text).unwrap().start();
 		let (value, unit) = (&text[..index], &text[index..]);
 		let value = value.parse::<f32>().unwrap();

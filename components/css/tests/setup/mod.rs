@@ -54,6 +54,7 @@ pub fn parse(css: &str) -> (Stylesheet, TestingErrorReporter) {
 	)
 }
 
+#[allow(dead_code)]
 pub fn parse_value<'i, F, T: ToCss>(text: &'i str, func: F) -> Result<String, ParseError<'i>>
 where
 	F: for<'t> Fn(&ParserContext, &mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
@@ -86,6 +87,7 @@ pub fn assert_css<T: ToString>(style: &T, text: &str) {
 	assert_eq!(trim(&style.to_string()), trim(text))
 }
 
+#[allow(dead_code)]
 pub fn assert_property(template: &str, input: &str, output: &str) {
 	let cin = template.format(&[input]);
 	let cout = template.format(&[output]);
@@ -93,6 +95,7 @@ pub fn assert_property(template: &str, input: &str, output: &str) {
 	assert_css(&stylesheet, &cout);
 }
 
+#[allow(unused_macros)]
 macro_rules! test_property {
 	($name: ident, $data: ident) => {
 		#[test]

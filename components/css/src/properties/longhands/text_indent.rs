@@ -27,18 +27,18 @@ impl TextIndent {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut indent, |_, input| {
+					parse_item_if_missing(input, &mut indent, &mut |_, input| {
 						LengthPercentage::parse(context, input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut hanging, |_, input| {
+					parse_item_if_missing(input, &mut hanging, &mut |_, input| {
 						input.expect_ident_matching("hanging")?;
 						Ok(true)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut each_line, |_, input| {
+					parse_item_if_missing(input, &mut each_line, &mut |_, input| {
 						input.expect_ident_matching("each-line")?;
 						Ok(true)
 					})

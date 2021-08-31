@@ -25,13 +25,13 @@ impl AspectRatio {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut auto, |_, input| {
+					parse_item_if_missing(input, &mut auto, &mut |_, input| {
 						input.expect_ident_matching("auto")?;
 						Ok(())
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut ratio, |_, input| {
+					parse_item_if_missing(input, &mut ratio, &mut |_, input| {
 						Ratio::parse(context, input)
 					})
 				},

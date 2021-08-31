@@ -25,12 +25,12 @@ impl SingleTextShadow {
 			input,
 			&mut [
 				&mut |input| {
-					parse_item_if_missing(input, &mut color, |_, input| {
+					parse_item_if_missing(input, &mut color, &mut |_, input| {
 						Color::parse(context, input)
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut shadow, |_, input| {
+					parse_item_if_missing(input, &mut shadow, &mut |_, input| {
 						let horizontal = Length::parse(context, input)?;
 						let vertical = Length::parse(context, input)?;
 						let blur = NonNegativeLength::parse(context, input)

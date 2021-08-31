@@ -90,12 +90,12 @@ impl Rotate {
 					input,
 					&mut [
 						&mut |input| {
-							parse_item_if_missing(input, &mut angle, |_, input| {
+							parse_item_if_missing(input, &mut angle, &mut |_, input| {
 								Angle::parse(context, input)
 							})
 						},
 						&mut |input| {
-							parse_item_if_missing(input, &mut coordinate, |_, input| {
+							parse_item_if_missing(input, &mut coordinate, &mut |_, input| {
 								let x = NumberOrKeyword::parse(context, input)?;
 								let y = NumberOrKeyword::parse(context, input)?;
 								let z = NumberOrKeyword::parse(context, input)?;

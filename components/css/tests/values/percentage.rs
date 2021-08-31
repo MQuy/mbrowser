@@ -1,5 +1,13 @@
 use common::vector::permutate;
 
+pub fn percentage_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for value in ["0%", "10.5%", "100%"].iter() {
+		data.push((value.to_string(), value.to_string()));
+	}
+	data
+}
+
 pub fn ratio_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for (first, second) in
