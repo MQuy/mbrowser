@@ -368,7 +368,7 @@ impl MediaExpressionValue {
 			},
 			Evaluator::Integer => {
 				let integer = Integer::parse_non_negative(context, input)?;
-				MediaExpressionValue::Integer(integer.value() as u32)
+				MediaExpressionValue::Integer(integer.get() as u32)
 			},
 			Evaluator::Float => {
 				let number = Number::parse(context, input)?;
@@ -376,7 +376,7 @@ impl MediaExpressionValue {
 			},
 			Evaluator::BoolInteger => {
 				let integer = Integer::parse_non_negative(context, input)?;
-				let value = integer.value();
+				let value = integer.get();
 				if value > 1 {
 					return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
 				}

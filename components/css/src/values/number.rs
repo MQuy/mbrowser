@@ -134,7 +134,33 @@ impl Integer {
 		Ok(Integer(value))
 	}
 
-	pub fn value(&self) -> i32 {
+	pub fn parse_in_range<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+		range: Range<i32>,
+	) -> Result<Self, ParseError<'i>> {
+		let value = Integer::parse(context, input)?;
+		if range.start <= value.get() && value.get() <= range.end {
+			Ok(value)
+		} else {
+			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+		}
+	}
+
+	pub fn parse_from<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+		from: i32,
+	) -> Result<Self, ParseError<'i>> {
+		let value = Integer::parse(context, input)?;
+		if value.get() >= from {
+			Ok(value)
+		} else {
+			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+		}
+	}
+
+	pub fn get(&self) -> i32 {
 		self.0
 	}
 }

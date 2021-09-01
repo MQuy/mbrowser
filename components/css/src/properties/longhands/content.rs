@@ -76,7 +76,7 @@ impl ToCss for ContentList {
 		W: std::fmt::Write,
 	{
 		match self {
-			ContentList::String(value) => dest.write_str(value),
+			ContentList::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 			ContentList::Contents => dest.write_str("contents"),
 			ContentList::Image(value) => value.to_css(dest),
 			ContentList::Counter(value) => value.to_css(dest),
@@ -90,7 +90,7 @@ impl ToCss for ContentList {
 #[derive(Clone)]
 pub enum ContentReplacementOrList {
 	Replacement(Image),
-	List(ContentList),
+	List(Vec<ContentList>),
 }
 
 impl ContentReplacementOrList {
@@ -104,8 +104,9 @@ impl ContentReplacementOrList {
 				Ok(ContentReplacementOrList::Replacement(image))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = ContentList::parse(context, input)?;
-				Ok(ContentReplacementOrList::List(value))
+				let values =
+					parse_repeated(input, &mut |input| ContentList::parse(context, input), 1)?;
+				Ok(ContentReplacementOrList::List(values))
 			})
 	}
 }
@@ -117,7 +118,13 @@ impl ToCss for ContentReplacementOrList {
 	{
 		match self {
 			ContentReplacementOrList::Replacement(value) => value.to_css(dest),
-			ContentReplacementOrList::List(value) => value.to_css(dest),
+			ContentReplacementOrList::List(value) => dest.write_str(
+				&value
+					.iter()
+					.map(|v| v.to_css_string())
+					.collect::<Vec<String>>()
+					.join(" "),
+			),
 		}
 	}
 }
@@ -152,7 +159,7 @@ impl ToCss for CounterOrString {
 	{
 		match self {
 			CounterOrString::Counter(value) => value.to_css(dest),
-			CounterOrString::String(value) => dest.write_str(value),
+			CounterOrString::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 		}
 	}
 }
@@ -192,9 +199,14 @@ impl ToCss for ContentData {
 		self.content.to_css(dest)?;
 		if self.alt.len() > 0 {
 			dest.write_str(" / ")?;
-			for value in self.alt.iter() {
-				value.to_css(dest)?;
-			}
+			dest.write_str(
+				&self
+					.alt
+					.iter()
+					.map(|v| v.to_css_string())
+					.collect::<Vec<String>>()
+					.join(" "),
+			)?;
 		}
 		Ok(())
 	}

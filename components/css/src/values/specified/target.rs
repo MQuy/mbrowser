@@ -95,7 +95,7 @@ impl ToCss for TargetCounters {
 			"target-counters({}, {}, {}{})",
 			self.url.to_css_string(),
 			self.ident.to_css_string(),
-			self.string,
+			std::format!("\"{}\"", self.string),
 			self.style
 				.as_ref()
 				.map_or("".to_string(), |v| std::format!(", {}", v.to_css_string()))

@@ -1,6 +1,6 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
-use crate::parser::ParseError;
+use crate::parser::{parse_repeated_with_delimitor, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -118,14 +118,14 @@ impl ToCss for CursorImage {
 	{
 		self.url.to_css(dest)?;
 		if let Some((x, y)) = &self.coordinate {
-			dest.write_fmt(format_args!("{} {}", x, y))?;
+			dest.write_fmt(format_args!(" {} {}", x, y))?;
 		}
 		Ok(())
 	}
 }
 
+/// https://drafts.csswg.org/css-ui/#cursor
 #[derive(Clone)]
-#[repr(C)]
 pub struct Cursor {
 	pub images: Vec<CursorImage>,
 	pub keyword: CursorKind,
@@ -136,7 +136,15 @@ impl Cursor {
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Cursor, ParseError<'i>> {
-		let images = input.parse_comma_separated(|input| CursorImage::parse(context, input))?;
+		let images = parse_repeated_with_delimitor(
+			input,
+			&mut |input| CursorImage::parse(context, input),
+			&mut |input| {
+				input.expect_comma()?;
+				Ok(())
+			},
+			0,
+		)?;
 		let keyword = CursorKind::parse(input)?;
 		Ok(Cursor { images, keyword })
 	}
@@ -148,10 +156,8 @@ impl ToCss for Cursor {
 		W: std::fmt::Write,
 	{
 		for (index, image) in self.images.iter().enumerate() {
-			if index > 0 {
-				dest.write_str(", ")?;
-			}
 			image.to_css(dest)?;
+			dest.write_str(", ")?;
 		}
 		self.keyword.to_css(dest)
 	}

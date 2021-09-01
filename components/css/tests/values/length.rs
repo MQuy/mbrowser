@@ -14,12 +14,24 @@ pub fn length_data() -> Vec<(String, String)> {
 	data
 }
 
+pub fn length_or_auto_data() -> Vec<(String, String)> {
+	let mut length = length_data();
+	length.push(("auto".to_string(), "auto".to_string()));
+	length
+}
+
 pub fn non_negative_length_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for value in ["1px"].iter() {
 		data.push((value.to_string(), value.to_string()));
 	}
 	data
+}
+
+pub fn non_negative_length_or_auto_data() -> Vec<(String, String)> {
+	let mut length = non_negative_length_data();
+	length.push(("auto".to_string(), "auto".to_string()));
+	length
 }
 
 pub fn length_percentage_data() -> Vec<(String, String)> {
@@ -105,4 +117,28 @@ pub fn non_negative_length_percentage_or_number_rect_data() -> Vec<(String, Stri
 	}
 
 	data
+}
+
+pub fn length_or_auto_rect_auto_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in length_or_auto_data().iter() {
+		data.push((
+			std::format!("{}, {}, {}, {}", input, input, input, input),
+			std::format!("{}, {}, {}, {}", output, output, output, output),
+		));
+	}
+
+	for value in ["10px, auto, 2.5px, auto"].iter() {
+		data.push((value.to_string(), value.to_string()));
+	}
+
+	data
+}
+
+pub fn non_negative_length_percentage_or_normal_data() -> Vec<(String, String)> {
+	let mut length = non_negative_length_data();
+	let mut percentage = percentage_data();
+	length.append(&mut percentage);
+	length.push(("normal".to_string(), "normal".to_string()));
+	length
 }

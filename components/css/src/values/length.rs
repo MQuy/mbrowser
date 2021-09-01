@@ -374,6 +374,17 @@ impl<L: ToCss> ToCss for GenericLengthOrAuto<L> {
 	}
 }
 
+pub type LengthOrAuto = GenericLengthOrAuto<Length>;
+
+impl LengthOrAuto {
+	pub fn parse<'i, 't>(
+		context: &ParserContext,
+		input: &mut Parser<'i, 't>,
+	) -> Result<Self, ParseError<'i>> {
+		Self::parse_with(input, |input| Length::parse(context, input))
+	}
+}
+
 /// Generic for Length/None
 #[derive(Clone)]
 pub enum GenericLengthOrNone<Length> {

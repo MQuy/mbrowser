@@ -10,5 +10,5 @@ pub fn parse_declared<'i, 't>(
 	context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	CounterWithInteger::parse(context, input).map(PropertyDeclaration::CounterIncrement)
+	CounterWithInteger::parse(context, input).map(PropertyDeclaration::CounterSet)
 }

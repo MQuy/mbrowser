@@ -68,7 +68,7 @@ impl ToCss for StringOrImage {
 		W: std::fmt::Write,
 	{
 		match self {
-			StringOrImage::String(value) => dest.write_str(value),
+			StringOrImage::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 			StringOrImage::Image(value) => value.to_css(dest),
 		}
 	}
@@ -76,7 +76,7 @@ impl ToCss for StringOrImage {
 
 #[derive(Clone)]
 pub struct Symbols {
-	symbols_type: SymbolsType,
+	symbols_type: Option<SymbolsType>,
 	idents: Vec<StringOrImage>,
 }
 
@@ -87,7 +87,7 @@ impl Symbols {
 	) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("symbols")?;
 		input.parse_nested_block(|input| {
-			let symbols_type = SymbolsType::parse(input)?;
+			let symbols_type = input.try_parse(|input| SymbolsType::parse(input)).ok();
 			let idents =
 				parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
 			Ok(Symbols {
@@ -104,8 +104,10 @@ impl ToCss for Symbols {
 		W: std::fmt::Write,
 	{
 		dest.write_fmt(format_args!(
-			"symbols({} {})",
-			self.symbols_type.to_css_string(),
+			"symbols({}{})",
+			self.symbols_type
+				.as_ref()
+				.map_or("".to_string(), |v| std::format!("{} ", v.to_css_string())),
 			self.idents
 				.iter()
 				.map(|v| v.to_css_string())
@@ -178,7 +180,7 @@ impl ToCss for InnerMostCounter {
 		W: std::fmt::Write,
 	{
 		dest.write_fmt(format_args!(
-			"counter({}, {})",
+			"counter({}{})",
 			self.name.to_css_string(),
 			self.style
 				.as_ref()
@@ -227,7 +229,7 @@ impl ToCss for AllCounters {
 		dest.write_fmt(format_args!(
 			"counters({}, {}{})",
 			self.name.to_css_string(),
-			self.string,
+			std::format!("\"{}\"", self.string),
 			self.style
 				.as_ref()
 				.map_or(String::from(""), |v| std::format!(
@@ -251,11 +253,13 @@ impl Counter {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
-		let name = input.expect_function()?;
-		Ok(match_ignore_ascii_case! { name,
-			"counter" => Counter::Counter(InnerMostCounter::parse(context, input)?),
-			"counters" => Counter::Counters(AllCounters::parse(context, input)?),
-			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
+		let name = input.expect_function()?.clone();
+		input.parse_nested_block(|input| {
+			Ok(match_ignore_ascii_case! { &name,
+				"counter" => Counter::Counter(InnerMostCounter::parse(context, input)?),
+				"counters" => Counter::Counters(AllCounters::parse(context, input)?),
+				_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
+			})
 		})
 	}
 }

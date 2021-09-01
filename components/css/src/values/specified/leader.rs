@@ -45,7 +45,7 @@ impl ToCss for LeaderType {
 			LeaderType::Dotted => dest.write_str("dotted"),
 			LeaderType::Solid => dest.write_str("solid"),
 			LeaderType::Space => dest.write_str("space"),
-			LeaderType::String(value) => dest.write_str(value),
+			LeaderType::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 		}
 	}
 }

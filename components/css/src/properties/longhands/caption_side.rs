@@ -18,7 +18,7 @@ property_keywords_impl! { CaptionSide,
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
 	CaptionSide::parse(input).map(PropertyDeclaration::CaptionSide)

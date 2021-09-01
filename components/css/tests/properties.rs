@@ -64,4 +64,16 @@ mod properties {
 	mod bottom;
 	mod box_shadow;
 	mod box_sizing;
+	mod caption_side;
+	mod clear;
+	mod clip;
+	mod color;
+	mod column_count;
+	mod column_gap;
+	mod column_width;
+	mod content;
+	mod counter_increment;
+	mod counter_reset;
+	mod counter_set;
+	mod cursor;
 }

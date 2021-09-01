@@ -3,6 +3,8 @@ mod values {
 	mod animation;
 	mod border;
 	mod color;
+	mod content;
+	mod counter;
 	mod easing;
 	mod image;
 	mod layout;
