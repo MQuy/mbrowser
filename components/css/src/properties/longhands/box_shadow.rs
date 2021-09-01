@@ -3,6 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
+use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
@@ -40,10 +41,10 @@ impl Shadow {
 						let vertical = Length::parse(context, input)?;
 						let blur = input
 							.try_parse(|input| NonNegativeLength::parse(context, input))
-							.map_or("0".into(), |length| length);
+							.map_or("0px".into(), |length| length);
 						let spread = input
 							.try_parse(|input| Length::parse(context, input))
-							.map_or("0".into(), |length| length);
+							.map_or("0px".into(), |length| length);
 						Ok((horizontal, vertical, blur, spread))
 					})
 				},
@@ -80,8 +81,12 @@ impl ToCss for Shadow {
 			self.length.2.to_css_string(),
 			self.length.3.to_css_string(),
 		));
-		let inset = if self.inset { Some("inset") } else { None };
-		write_elements(dest, &[color.as_deref(), length.as_deref(), inset], ' ')
+		let inset = if self.inset {
+			Some("inset".to_string())
+		} else {
+			None
+		};
+		dest.write_str(&convert_options_to_string(vec![color, length, inset], " "))
 	}
 }
 
@@ -119,7 +124,13 @@ impl ToCss for BoxShadow {
 	{
 		match self {
 			BoxShadow::None => dest.write_str("none"),
-			BoxShadow::Shadow(value) => value.iter().map(|v| v.to_css(dest)).collect(),
+			BoxShadow::Shadow(value) => dest.write_str(
+				&value
+					.iter()
+					.map(|v| v.to_css_string())
+					.collect::<Vec<String>>()
+					.join(", "),
+			),
 		}
 	}
 }

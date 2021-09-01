@@ -30,8 +30,11 @@ impl LineWidth {
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let length = NonNegativeLength::parse(context, input)?;
-				Ok(LineWidth::Length(length))
+				input.expect_function_matching("length")?;
+				input.parse_nested_block(|input| {
+					let length = NonNegativeLength::parse(context, input)?;
+					Ok(LineWidth::Length(length))
+				})
 			})
 	}
 }
@@ -45,7 +48,9 @@ impl ToCss for LineWidth {
 			LineWidth::Thin => dest.write_str("thin"),
 			LineWidth::Medium => dest.write_str("medium"),
 			LineWidth::Thick => dest.write_str("thick"),
-			LineWidth::Length(length) => length.to_css(dest),
+			LineWidth::Length(length) => {
+				dest.write_fmt(format_args!("length({})", length.to_css_string()))
+			},
 		}
 	}
 }

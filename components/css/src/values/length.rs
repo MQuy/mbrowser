@@ -63,7 +63,7 @@ impl Length {
 
 impl From<&str> for Length {
 	fn from(text: &str) -> Self {
-		let regex = Regex::new(r"/px|in|cm|mm|q|pt|pc|em|ex|ch|vw|vh|vmin|vmax/i").unwrap();
+		let regex = Regex::new(r"px|in|cm|mm|q|pt|pc|em|ex|ch|vw|vh|vmin|vmax").unwrap();
 		let index = regex.find(text).unwrap().start();
 		let (value, unit) = (&text[..index], &text[index..]);
 		let value = value.parse::<f32>().unwrap();
@@ -513,12 +513,12 @@ impl<LP, N> GenericLengthPercentageNumberOrAuto<LP, N> {
 			.or_else(|_err: ParseError<'i>| {
 				input
 					.try_parse(|input| {
-						let length_percentage = length_percentage_parser(input)?;
-						Ok(Self::LengthPercentage(length_percentage))
-					})
-					.or_else(|_err: ParseError<'i>| {
 						let number = number_parser(input)?;
 						Ok(Self::Number(number))
+					})
+					.or_else(|_err: ParseError<'i>| {
+						let length_percentage = length_percentage_parser(input)?;
+						Ok(Self::LengthPercentage(length_percentage))
 					})
 			})
 	}
@@ -539,7 +539,7 @@ impl<LP: ToCss, N: ToCss> ToCss for GenericLengthPercentageNumberOrAuto<LP, N> {
 
 /// value = <length [0, ∞]> | <percentage> | <number [0, ∞]> | auto
 pub type NonNegativeLengthPercentageNumberOrAuto =
-	GenericLengthPercentageNumberOrAuto<NonNegativeLength, NonNegativeNumber>;
+	GenericLengthPercentageNumberOrAuto<NonNegativeLengthPercentage, NonNegativeNumber>;
 
 impl NonNegativeLengthPercentageNumberOrAuto {
 	pub fn parse<'i, 't>(
@@ -548,7 +548,7 @@ impl NonNegativeLengthPercentageNumberOrAuto {
 	) -> Result<Self, ParseError<'i>> {
 		Self::parse_with(
 			input,
-			|input| NonNegativeLength::parse(context, input),
+			|input| NonNegativeLengthPercentage::parse(context, input),
 			|input| NonNegativeNumber::parse(context, input),
 		)
 	}
@@ -589,7 +589,7 @@ impl<LP> GenericSize<LP> {
 		item_parser: F,
 	) -> Result<Self, ParseError<'i>>
 	where
-		F: Fn(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
+		F: for<'ii, 'tt> Fn(&mut Parser<'ii, 'tt>) -> Result<LP, ParseError<'ii>>,
 	{
 		input
 			.try_parse(|input| {
@@ -604,16 +604,29 @@ impl<LP> GenericSize<LP> {
 					})
 					.or_else(|_err: ParseError<'i>| {
 						let location = input.current_source_location();
-						let ident = input.expect_ident()?;
-						Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
-							"max-content" => ExtremumLength::MaxContent,
-							"min-content" => ExtremumLength::MinContent,
-							"fit-content" => {
-								let length_percentage = item_parser(input)?;
-								ExtremumLength::FitContent(length_percentage)
+						let token = input.next()?.clone();
+						match &token {
+							Token::Ident(ident) => {
+								Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
+									"max-content" => ExtremumLength::MaxContent,
+									"min-content" => ExtremumLength::MinContent,
+									_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+								}))
 							},
-							_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
-						}))
+							Token::Function(name) if name.eq_ignore_ascii_case("fit-content") => {
+								input.parse_nested_block(|input| {
+									let length_percentage = item_parser(input)?;
+									Ok(Self::ExtremumLength(ExtremumLength::FitContent(
+										length_percentage,
+									)))
+								})
+							},
+							_ => {
+								return Err(location.new_custom_error(
+									StyleParseErrorKind::UnexpectedToken(token.clone()),
+								))
+							},
+						}
 					})
 			})
 	}
@@ -841,19 +854,25 @@ impl<T: Clone> Rect<T> {
 		F: Fn(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{
 		let first = item_parser(input)?;
+		let mut state = input.state();
 		let second = if let Ok(second) = item_parser(input) {
 			second
 		} else {
+			input.reset(&state);
 			return Ok(Self(first.clone(), first.clone(), first.clone(), first));
 		};
+		state = input.state();
 		let third = if let Ok(third) = item_parser(input) {
 			third
 		} else {
+			input.reset(&state);
 			return Ok(Self(first.clone(), second.clone(), first, second));
 		};
+		state = input.state();
 		let forth = if let Ok(forth) = item_parser(input) {
 			forth
 		} else {
+			input.reset(&state);
 			return Ok(Self(first, second.clone(), third, second));
 		};
 		Ok(Self(first, second, third, forth))

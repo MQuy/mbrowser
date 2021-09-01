@@ -11,3 +11,24 @@ pub fn resolution_data() -> Vec<(String, String)> {
 	}
 	data
 }
+
+pub fn box_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for value in ["border-box", "padding-box", "content-box"].iter() {
+		data.push((value.to_string(), value.to_string()));
+	}
+	data
+}
+
+pub fn line_style_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for value in [
+		"none", "hidden", "dotted", "dashed", "solid", "double", "groove", "ridge", "inset",
+		"outset",
+	]
+	.iter()
+	{
+		data.push((value.to_string(), value.to_string()));
+	}
+	data
+}

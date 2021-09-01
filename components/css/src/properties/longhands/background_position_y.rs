@@ -3,21 +3,22 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 use crate::css_writer::write_elements;
 use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
 #[derive(Clone)]
 pub enum VerticalPositionKeyword {
-	Left,
-	Right,
+	Top,
+	Bottom,
 	YStart,
 	YEnd,
 }
 
 property_keywords_impl! { VerticalPositionKeyword,
-	VerticalPositionKeyword::Left, "left",
-	VerticalPositionKeyword::Right, "right",
+	VerticalPositionKeyword::Top, "top",
+	VerticalPositionKeyword::Bottom, "bottom",
 	VerticalPositionKeyword::YStart, "y-start",
 	VerticalPositionKeyword::YEnd, "y-end",
 }
@@ -54,7 +55,7 @@ impl ToCss for VerticalPosition {
 	{
 		let keyword = self.keyword.as_ref().map(|v| v.to_css_string());
 		let length = self.length.as_ref().map(|v| v.to_css_string());
-		write_elements(dest, &[keyword.as_deref(), length.as_deref()], ',')
+		dest.write_str(&convert_options_to_string(vec![keyword, length], " "))
 	}
 }
 

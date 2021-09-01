@@ -26,7 +26,7 @@ fn padding(text: &str) -> String {
 
 pub fn keyword_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for value in ["none", "none, none"].iter() {
+	for value in ["none"].iter() {
 		data.push((value.to_string(), value.to_string()))
 	}
 	data
@@ -90,21 +90,33 @@ pub fn image_set_data() -> Vec<(String, String)> {
 		let resolution_input = padding(resolution_input);
 		let mime = padding(mime);
 		let resolution_output = padding(resolution_output);
+		let resolution_output = if resolution_output.len() == 0 {
+			" 1dppx".to_string()
+		} else {
+			resolution_output
+		};
 		let input = std::format!("image-set({}{}{})", reference, resolution_input, mime);
-		let output = std::format!(
-			"image-set({}{}{})",
-			reference,
-			if resolution_output.len() == 0 {
-				" 1dppx".to_string()
-			} else {
-				resolution_output
-			},
-			mime
-		);
+		let output = std::format!("image-set({}{}{})", reference, resolution_output, mime);
 		if index == 0 {
 			data.push((
-				std::format!("{}, {}", input, input),
-				std::format!("{}, {}", output, output),
+				std::format!(
+					"image-set({}{}{}, {}{}{})",
+					reference,
+					resolution_input,
+					mime,
+					reference,
+					resolution_output,
+					mime
+				),
+				std::format!(
+					"image-set({}{}{}, {}{}{})",
+					reference,
+					resolution_output,
+					mime,
+					reference,
+					resolution_output,
+					mime
+				),
 			))
 		}
 		data.push((input, output));
@@ -126,8 +138,13 @@ pub fn cross_fade_data() -> Vec<(String, String)> {
 		let output = std::format!("cross-fade({} {})", percentage, fade_output);
 		if index == 0 {
 			data.push((
-				std::format!("{}, {}", input, input),
-				std::format!("{}, {}", output, output),
+				std::format!("cross-fade({} {}, {})", percentage, fade_input, fade_input),
+				std::format!(
+					"cross-fade({} {}, {})",
+					percentage,
+					fade_output,
+					fade_output
+				),
 			))
 		}
 		data.push((input, output))

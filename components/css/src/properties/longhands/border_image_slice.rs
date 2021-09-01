@@ -3,12 +3,13 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::{NonNegativeLengthPercentage, Rect};
+use crate::values::length::Rect;
+use crate::values::number::NonNegativeNumberOrPercentage;
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-slice
 #[derive(Clone)]
 pub struct BorderImageSlice {
-	pub offsets: Rect<NonNegativeLengthPercentage>,
+	pub offsets: Rect<NonNegativeNumberOrPercentage>,
 	pub fill: bool,
 }
 
@@ -21,7 +22,7 @@ impl BorderImageSlice {
 			.try_parse(|input| input.expect_ident_matching("fill"))
 			.is_ok();
 		let offsets = Rect::parse_with(input, |input| {
-			NonNegativeLengthPercentage::parse(context, input)
+			NonNegativeNumberOrPercentage::parse(context, input)
 		})?;
 
 		if !fill {

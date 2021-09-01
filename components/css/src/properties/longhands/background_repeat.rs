@@ -37,6 +37,11 @@ impl BackgroundRepeat {
 		let repeat = input.parse_comma_separated(|input| {
 			input
 				.try_parse(|input| {
+					let horizontal = BackgroundRepeatKeyword::parse(input)?;
+					let veritcal = BackgroundRepeatKeyword::parse(input)?;
+					Ok(RepeatStyle::new(horizontal, veritcal))
+				})
+				.or_else(|_err: ParseError<'i>| {
 					let location = input.current_source_location();
 					let ident = input.expect_ident()?;
 					Ok(match_ignore_ascii_case! { ident,
@@ -66,11 +71,6 @@ impl BackgroundRepeat {
 						),
 						_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
 					})
-				})
-				.or_else(|_err: ParseError<'i>| {
-					let horizontal = BackgroundRepeatKeyword::parse(input)?;
-					let veritcal = BackgroundRepeatKeyword::parse(input)?;
-					Ok(RepeatStyle::new(horizontal, veritcal))
 				})
 		})?;
 		Ok(BackgroundRepeat { repeat })
