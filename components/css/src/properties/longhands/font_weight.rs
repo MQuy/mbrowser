@@ -21,25 +21,26 @@ impl FontWeight {
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
-		input.try_parse(|input| {
-			let location = input.current_source_location();
-			let ident = input.expect_ident()?;
-			Ok(match_ignore_ascii_case! { ident,
-				"bolder" => FontWeight::Bolder,
-				"lighter" => FontWeight::Lighter,
-				"normal" => FontWeight::Normal,
-				"bold" => FontWeight::Bold,
-				_ => {
-					return Err(
-						location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))
-					)
-				},
+		input
+			.try_parse(|input| {
+				let location = input.current_source_location();
+				let ident = input.expect_ident()?;
+				Ok(match_ignore_ascii_case! { ident,
+					"bolder" => FontWeight::Bolder,
+					"lighter" => FontWeight::Lighter,
+					"normal" => FontWeight::Normal,
+					"bold" => FontWeight::Bold,
+					_ => {
+						return Err(
+							location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone()))
+						)
+					},
+				})
 			})
 			.or_else(|_err: ParseError<'i>| {
 				let value = NonNegativeNumber::parse_in_range(context, input, 0.0, 1000.0)?;
 				Ok(FontWeight::Weight(value))
 			})
-		})
 	}
 }
 

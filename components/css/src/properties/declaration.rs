@@ -246,7 +246,7 @@ pub enum PropertyDeclaration {
 	/// `border-image-source`
 	BorderImageSource(properties::longhands::border_image_source::BorderImageSource),
 	/// `list-style-image`
-	ListStyleImage(values::image::Image),
+	ListStyleImage(properties::longhands::list_style_image::ListStyleImage),
 	/// `max-block-size`
 	MaxBlockSize(values::length::Size),
 	/// `max-height`

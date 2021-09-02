@@ -3,6 +3,7 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -57,6 +58,9 @@ impl DisplayBasic {
 				},
 			],
 		);
+		if outside.is_none() && inside.is_none() {
+			return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+		}
 		Ok(DisplayBasic { outside, inside })
 	}
 }
@@ -122,6 +126,9 @@ impl DisplayListItem {
 				},
 			],
 		);
+		if item.is_none() {
+			return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
+		}
 		Ok(DisplayListItem { outside, inside })
 	}
 }
@@ -133,8 +140,10 @@ impl ToCss for DisplayListItem {
 	{
 		let outside = self.outside.as_ref().map(|v| v.to_css_string());
 		let inside = self.inside.as_ref().map(|v| v.to_css_string());
-		write_elements(dest, &[outside.as_deref(), inside.as_deref()], ' ')?;
-		dest.write_str(" list-item")
+		dest.write_str(&convert_options_to_string(
+			vec![outside, inside, Some("list-item".to_string())],
+			" ",
+		))
 	}
 }
 
@@ -212,13 +221,13 @@ impl Display {
 	) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let basic = DisplayBasic::parse(context, input)?;
-				Ok(Display::Basic(basic))
+				let item = DisplayListItem::parse(context, input)?;
+				Ok(Display::ListItem(item))
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let item = DisplayListItem::parse(context, input)?;
-					Ok(Display::ListItem(item))
+					let basic = DisplayBasic::parse(context, input)?;
+					Ok(Display::Basic(basic))
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {

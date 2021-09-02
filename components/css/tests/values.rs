@@ -6,6 +6,7 @@ mod values {
 	mod content;
 	mod counter;
 	mod easing;
+	mod filter;
 	mod image;
 	mod layout;
 	mod length;

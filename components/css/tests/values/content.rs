@@ -1,8 +1,8 @@
 use common::vector::permutate;
 
-fn counter_style() -> Vec<String> {
+pub fn counter_style_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	data.push("echo".to_string());
+	data.push(("echo".to_string(), "echo".to_string()));
 	for (symbol_type, symbol_name) in permutate(
 		["cyclic", "numeric", "alphabetic", "symbolic", "fixed", ""].iter(),
 		[
@@ -14,7 +14,7 @@ fn counter_style() -> Vec<String> {
 	)
 	.iter()
 	{
-		data.push(std::format!(
+		let value = std::format!(
 			"symbols({}{})",
 			if symbol_type.len() == 0 {
 				"".to_string()
@@ -22,18 +22,19 @@ fn counter_style() -> Vec<String> {
 				std::format!("{} ", symbol_type)
 			},
 			symbol_name
-		));
+		);
+		data.push((value.to_string(), value.to_string()));
 	}
 	data
 }
 
 pub fn counter_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for value in counter_style().iter() {
+	for (value, _) in counter_style_data().iter() {
 		let input = std::format!("counter(bla, {})", value);
 		data.push((input.to_string(), input.to_string()));
 	}
-	for value in counter_style().iter() {
+	for (value, _) in counter_style_data().iter() {
 		let input = std::format!("counters(something, \"hello\", {})", value);
 		data.push((input.to_string(), input.to_string()));
 	}
@@ -42,8 +43,8 @@ pub fn counter_data() -> Vec<(String, String)> {
 
 pub fn target_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for (style, value) in permutate(
-		counter_style().iter(),
+	for ((style, _), value) in permutate(
+		counter_style_data().iter(),
 		["\"hello\"", "url(\"http://www.example.com\")"].iter(),
 	)
 	.iter()
@@ -51,8 +52,8 @@ pub fn target_data() -> Vec<(String, String)> {
 		let input = std::format!("target-counter({}, blabla, {})", value, style);
 		data.push((input.to_string(), input.to_string()));
 	}
-	for (style, value) in permutate(
-		counter_style().iter(),
+	for ((style, _), value) in permutate(
+		counter_style_data().iter(),
 		["\"hello\"", "url(\"http://www.example.com\")"].iter(),
 	)
 	.iter()

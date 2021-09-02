@@ -65,7 +65,7 @@ impl ToCss for FamilyName {
 		W: std::fmt::Write,
 	{
 		match self {
-			FamilyName::String(value) => dest.write_str(value),
+			FamilyName::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 			FamilyName::Ident(idents) => idents.iter().map(|v| v.to_css(dest)).collect(),
 		}
 	}
@@ -106,6 +106,7 @@ impl ToCss for SingleFontFamily {
 	}
 }
 
+/// https://drafts.csswg.org/css-fonts/#font-family-prop
 #[derive(Clone)]
 pub struct FontFamily(Vec<SingleFontFamily>);
 

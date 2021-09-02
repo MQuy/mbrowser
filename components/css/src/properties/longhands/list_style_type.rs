@@ -42,7 +42,7 @@ impl ToCss for ListStyleType {
 	{
 		match self {
 			ListStyleType::None => dest.write_str("none"),
-			ListStyleType::String(value) => dest.write_str(value),
+			ListStyleType::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
 			ListStyleType::Style(value) => value.to_css(dest),
 		}
 	}

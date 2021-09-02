@@ -6,6 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::image::Image;
 
 /// https://drafts.csswg.org/css-lists/#image-markers
+#[derive(Clone)]
 pub enum ListStyleImage {
 	None,
 	Image(Image),
@@ -22,7 +23,7 @@ impl ListStyleImage {
 				Ok(ListStyleImage::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let image = Image::parse(context, input)?;
+				let image = input.try_parse(|input| Image::parse(context, input))?;
 				Ok(ListStyleImage::Image(image))
 			})
 	}
@@ -44,5 +45,5 @@ pub fn parse_declared<'i, 't>(
 	context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Image::parse(context, input).map(PropertyDeclaration::ListStyleImage)
+	ListStyleImage::parse(context, input).map(PropertyDeclaration::ListStyleImage)
 }

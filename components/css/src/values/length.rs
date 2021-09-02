@@ -757,7 +757,7 @@ impl<N, LP> GenericLengthPercentageNumberOrNormal<N, LP> {
 				Ok(Self::Normal)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let number = number_parser(input)?;
+				let number = input.try_parse(|input| number_parser(input))?;
 				Ok(Self::Number(number))
 			})
 			.or_else(|_err: ParseError<'i>| {

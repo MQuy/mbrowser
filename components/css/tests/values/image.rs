@@ -3,7 +3,6 @@ use color::color_data;
 use common::vector::permutate;
 use css::str::join_strings;
 use layout::resolution_data;
-use length::length_percentage_data;
 
 use super::url::url_data;
 

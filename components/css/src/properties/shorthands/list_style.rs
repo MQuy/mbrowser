@@ -3,14 +3,14 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
+use crate::properties::longhands::list_style_image::ListStyleImage;
 use crate::properties::longhands::list_style_position::ListStylePosition;
 use crate::properties::longhands::list_style_type::ListStyleType;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::image::Image;
 
 pub struct Longhands {
 	pub list_style_position: ListStylePosition,
-	pub list_style_image: Image,
+	pub list_style_image: ListStyleImage,
 	pub list_style_type: ListStyleType,
 }
 

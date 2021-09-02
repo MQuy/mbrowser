@@ -59,7 +59,7 @@ impl FontSize {
 				Ok(FontSize::AbsoluteSize(size))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let size = RelativeSize::parse(input)?;
+				let size = input.try_parse(|input| RelativeSize::parse(input))?;
 				Ok(FontSize::RelativeSize(size))
 			})
 			.or_else(|_err: ParseError<'i>| {

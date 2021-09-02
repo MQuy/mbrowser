@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
-use crate::values::number::NonNegativeNumberOrPercentage;
+use crate::values::number::{NonNegativeNumberOrPercentage, Zero};
 use crate::values::specified::angle::Angle;
 use crate::values::url::CssUrl;
 
@@ -27,7 +27,7 @@ impl DropShadow {
 		let vertical = Length::parse(context, input)?;
 		let blur = input
 			.try_parse(|input| Length::parse(context, input))
-			.map_or("0".into(), |length| length);
+			.map_or("0px".into(), |length| length);
 		Ok(DropShadow {
 			color,
 			lengths: (horizontal, vertical, blur),
@@ -80,74 +80,105 @@ impl FilterFunction {
 				Ok(FilterFunction::Blur(length))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"brightness",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"brightness",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Brightness(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"contrast",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"contrast",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Contrast(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = DropShadow::parse(context, input)?;
+				let value = input.try_parse(|input| {
+					input.expect_function_matching("drop-shadow")?;
+					input.parse_nested_block(|input| DropShadow::parse(context, input))
+				})?;
 				Ok(FilterFunction::DropShadow(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"grayscale",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"grayscale",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Grayscale(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = Angle::parse(context, input)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| {
+							input
+								.try_parse(|input| Angle::parse(context, input))
+								.or_else(|_err| {
+									Zero::parse(context, input)?;
+									Ok(Angle::Deg(0.0))
+								})
+						},
+						"hue-rotate",
+						"0deg".into(),
+					)
+				})?;
 				Ok(FilterFunction::HueRotate(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"invert",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"invert",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Invert(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"opacity",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"opacity",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Opacity(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"saturate",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"saturate",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Saturate(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = FilterFunction::parse_argugment(
-					input,
-					|input| NonNegativeNumberOrPercentage::parse(context, input),
-					"sepia",
-					"1".into(),
-				)?;
+				let value = input.try_parse(|input| {
+					FilterFunction::parse_argugment(
+						input,
+						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						"sepia",
+						"1".into(),
+					)
+				})?;
 				Ok(FilterFunction::Sepia(value))
 			})
 	}
@@ -177,16 +208,36 @@ impl ToCss for FilterFunction {
 		W: std::fmt::Write,
 	{
 		match self {
-			FilterFunction::Blur(value) => value.to_css(dest),
-			FilterFunction::Brightness(value) => value.to_css(dest),
-			FilterFunction::Contrast(value) => value.to_css(dest),
-			FilterFunction::DropShadow(value) => value.to_css(dest),
-			FilterFunction::Grayscale(value) => value.to_css(dest),
-			FilterFunction::HueRotate(value) => value.to_css(dest),
-			FilterFunction::Invert(value) => value.to_css(dest),
-			FilterFunction::Opacity(value) => value.to_css(dest),
-			FilterFunction::Saturate(value) => value.to_css(dest),
-			FilterFunction::Sepia(value) => value.to_css(dest),
+			FilterFunction::Blur(value) => {
+				dest.write_fmt(format_args!("blur({})", value.to_css_string()))
+			},
+			FilterFunction::Brightness(value) => {
+				dest.write_fmt(format_args!("brightness({})", value.to_css_string()))
+			},
+			FilterFunction::Contrast(value) => {
+				dest.write_fmt(format_args!("contrast({})", value.to_css_string()))
+			},
+			FilterFunction::DropShadow(value) => {
+				dest.write_fmt(format_args!("drop-shadow({})", value.to_css_string()))
+			},
+			FilterFunction::Grayscale(value) => {
+				dest.write_fmt(format_args!("grayscale({})", value.to_css_string()))
+			},
+			FilterFunction::HueRotate(value) => {
+				dest.write_fmt(format_args!("hue-rotate({})", value.to_css_string()))
+			},
+			FilterFunction::Invert(value) => {
+				dest.write_fmt(format_args!("invert({})", value.to_css_string()))
+			},
+			FilterFunction::Opacity(value) => {
+				dest.write_fmt(format_args!("opacity({})", value.to_css_string()))
+			},
+			FilterFunction::Saturate(value) => {
+				dest.write_fmt(format_args!("saturate({})", value.to_css_string()))
+			},
+			FilterFunction::Sepia(value) => {
+				dest.write_fmt(format_args!("sepia({})", value.to_css_string()))
+			},
 		}
 	}
 }
