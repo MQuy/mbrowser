@@ -10,7 +10,7 @@ use crate::values::length::{Length, NonNegativeLength};
 
 #[derive(Clone)]
 pub struct SingleTextShadow {
-	color: Option<Color>,
+	color: Color,
 	shadow: (Length, Length, NonNegativeLength),
 }
 
@@ -34,7 +34,7 @@ impl SingleTextShadow {
 						let horizontal = Length::parse(context, input)?;
 						let vertical = Length::parse(context, input)?;
 						let blur = NonNegativeLength::parse(context, input)
-							.map_or("0".into(), |value| value);
+							.map_or("0px".into(), |value| value);
 						Ok((horizontal, vertical, blur))
 					})
 				},
@@ -42,7 +42,10 @@ impl SingleTextShadow {
 		);
 
 		if let Some(shadow) = shadow {
-			Ok(SingleTextShadow { color, shadow })
+			Ok(SingleTextShadow {
+				color: color.map_or(Color::CurrentColor, |v| v),
+				shadow,
+			})
 		} else {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 		}
@@ -54,14 +57,14 @@ impl ToCss for SingleTextShadow {
 	where
 		W: std::fmt::Write,
 	{
-		let color = self.color.as_ref().map(|v| v.to_css_string());
-		let length = Some(std::format!(
+		self.color.to_css(dest)?;
+		dest.write_char(' ')?;
+		dest.write_fmt(format_args!(
 			"{} {} {}",
 			self.shadow.0.to_css_string(),
 			self.shadow.1.to_css_string(),
 			self.shadow.2.to_css_string()
-		));
-		write_elements(dest, &[color.as_deref(), length.as_deref()], ' ')
+		))
 	}
 }
 
@@ -74,9 +77,16 @@ impl TextShadow {
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
-		let values =
-			input.parse_comma_separated(|input| SingleTextShadow::parse(context, input))?;
-		Ok(TextShadow(values))
+		input
+			.try_parse(|input| {
+				input.expect_ident_matching("none")?;
+				Ok(TextShadow(vec![]))
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let values =
+					input.parse_comma_separated(|input| SingleTextShadow::parse(context, input))?;
+				Ok(TextShadow(values))
+			})
 	}
 }
 

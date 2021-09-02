@@ -87,51 +87,6 @@ impl TransformOrigin {
 	) -> Result<Self, ParseError<'i>> {
 		input
             .try_parse(|input| -> Result<Self, ParseError<'i>> {
-                let mut x = None;
-                let mut y = None;
-                parse_in_any_order(
-                    input,
-                    &mut [
-                        &mut |input| {
-                            parse_item_if_missing(input, &mut x, &mut |_, input| {
-                                OffsetKeyword::parse(
-                                    context,
-                                    input,
-                                    &[
-                                        OffsetKeyword::Center,
-                                        OffsetKeyword::Left,
-                                        OffsetKeyword::Right,
-                                    ],
-                                )
-                            })
-                        },
-                        &mut |input| {
-                            parse_item_if_missing(input, &mut y, &mut |_, input| {
-                                OffsetKeyword::parse(
-                                    context,
-                                    input,
-                                    &[
-                                        OffsetKeyword::Center,
-                                        OffsetKeyword::Top,
-                                        OffsetKeyword::Bottom,
-                                    ],
-                                )
-                            })
-                        },
-                    ],
-                );
-                if let (Some(x), Some(y)) = (x, y) {
-                    let z = LengthPercentage::parse(context, input).map_or("0px".into(), |v| v);
-                    Ok(TransformOrigin {
-                        x: LengthPercentageOrKeyword::Keyword(x),
-                        y: LengthPercentageOrKeyword::Keyword(y),
-                        z: LengthPercentageOrKeyword::LengthPercentage(z),
-                    })
-                } else {
-                    Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
-                }
-            })
-            .or_else(|_err: ParseError<'i>| {
                 let x = input
                     .try_parse(
                         |input| {
@@ -172,6 +127,71 @@ impl TransformOrigin {
                     })?;
                 let z = input.try_parse(|input| LengthPercentage::parse(context, input)).map_or("0px".into(), |v| v);
                 Ok(TransformOrigin {x, y, z: LengthPercentageOrKeyword::LengthPercentage(z)})
+
+            })
+            .or_else(|_err: ParseError<'i>| {
+                input.try_parse(|input| {
+                    let (x, y) = input.try_parse(|input| {
+                        // "center left" matches x-center and fail since y cannot match with left
+                        // it is actually valid cases since x, y can appear in any order
+                        input.expect_ident_matching("center")?;
+                        let x = OffsetKeyword::parse(
+                            context,
+                            input,
+                            &[
+                                OffsetKeyword::Center,
+                                OffsetKeyword::Left,
+                                OffsetKeyword::Right,
+                            ],
+                        )?;
+                        Ok((x, OffsetKeyword::Center))
+                    }).or_else(|_err: ParseError<'i>| {
+                        let mut x = None;
+                        let mut y = None;
+                        parse_in_any_order(
+                            input,
+                            &mut [
+                                &mut |input| {
+                                    parse_item_if_missing(input, &mut x, &mut |_, input| {
+                                        OffsetKeyword::parse(
+                                            context,
+                                            input,
+                                            &[
+                                                OffsetKeyword::Center,
+                                                OffsetKeyword::Left,
+                                                OffsetKeyword::Right,
+                                            ],
+                                        )
+                                    })
+                                },
+                                &mut |input| {
+                                    parse_item_if_missing(input, &mut y, &mut |_, input| {
+                                        OffsetKeyword::parse(
+                                            context,
+                                            input,
+                                            &[
+                                                OffsetKeyword::Center,
+                                                OffsetKeyword::Top,
+                                                OffsetKeyword::Bottom,
+                                            ],
+                                        )
+                                    })
+                                },
+                            ],
+                        );
+                        if let (Some(x), Some(y)) = (x, y) {
+                            Ok((x, y))
+                        } else {
+                            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+                        }
+                    })?;
+                    let z = LengthPercentage::parse(context, input).map_or("0px".into(), |v| v);
+                    Ok(TransformOrigin {
+                        x: LengthPercentageOrKeyword::Keyword(x),
+                        y: LengthPercentageOrKeyword::Keyword(y),
+                        z: LengthPercentageOrKeyword::LengthPercentage(z),
+                    })
+                })
             })
             .or_else(|_err: ParseError<'i>| {
                 let x = input.try_parse(|input| {
@@ -195,8 +215,7 @@ impl ToCss for TransformOrigin {
 		dest.write_char(' ')?;
 		self.y.to_css(dest)?;
 		dest.write_char(' ')?;
-		self.z.to_css(dest)?;
-		dest.write_char(' ')
+		self.z.to_css(dest)
 	}
 }
 

@@ -66,8 +66,12 @@ impl ToCss for TransitionProperty {
 	where
 		W: std::fmt::Write,
 	{
-		let values: Vec<String> = self.properties.iter().map(|v| v.to_css_string()).collect();
-		dest.write_str(&values.join(", "))
+		if self.properties.len() == 0 {
+			dest.write_str("none")
+		} else {
+			let values: Vec<String> = self.properties.iter().map(|v| v.to_css_string()).collect();
+			dest.write_str(&values.join(", "))
+		}
 	}
 }
 

@@ -15,7 +15,7 @@ pub enum OutlineStyle {
 
 impl OutlineStyle {
 	pub fn parse<'i, 't>(
-		context: &ParserContext,
+		_context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<OutlineStyle, ParseError<'i>> {
 		input

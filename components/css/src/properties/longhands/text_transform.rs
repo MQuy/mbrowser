@@ -84,14 +84,14 @@ impl ToCss for TextTransform {
 				let capitalize =
 					convert_to(value.bits, TextTransformCase::CAPITALIZE.bits, "capitalize");
 				let uppercase =
-					convert_to(value.bits, TextTransformCase::CAPITALIZE.bits, "uppercase");
+					convert_to(value.bits, TextTransformCase::UPPERCASE.bits, "uppercase");
 				let lowercase =
-					convert_to(value.bits, TextTransformCase::CAPITALIZE.bits, "lowercase");
+					convert_to(value.bits, TextTransformCase::LOWERCASE.bits, "lowercase");
 				let full_width =
-					convert_to(value.bits, TextTransformCase::CAPITALIZE.bits, "full-width");
+					convert_to(value.bits, TextTransformCase::FULL_WIDTH.bits, "full-width");
 				let full_size_kana = convert_to(
 					value.bits,
-					TextTransformCase::CAPITALIZE.bits,
+					TextTransformCase::FULL_SIZE_KANA.bits,
 					"full-size-kana",
 				);
 				write_elements(

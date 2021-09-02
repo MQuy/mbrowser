@@ -28,6 +28,12 @@ pub fn non_negative_length_data() -> Vec<(String, String)> {
 	data
 }
 
+pub fn non_negative_length_or_none_data() -> Vec<(String, String)> {
+	let mut length = non_negative_length_data();
+	length.push(("none".to_string(), "none".to_string()));
+	length
+}
+
 pub fn non_negative_length_or_auto_data() -> Vec<(String, String)> {
 	let mut length = non_negative_length_data();
 	length.push(("auto".to_string(), "auto".to_string()));
@@ -55,11 +61,16 @@ pub fn length_percentage_or_normal_data() -> Vec<(String, String)> {
 	length
 }
 
-pub fn non_negative_length_percentage_number_or_normal_data() -> Vec<(String, String)> {
+pub fn non_negative_length_percentage_data() -> Vec<(String, String)> {
 	let mut length = non_negative_length_data();
 	let mut percentage = percentage_data();
-	let mut number = non_negative_number_data();
 	length.append(&mut percentage);
+	length
+}
+
+pub fn non_negative_length_percentage_number_or_normal_data() -> Vec<(String, String)> {
+	let mut length = non_negative_length_percentage_data();
+	let mut number = non_negative_number_data();
 	length.append(&mut number);
 	length.push(("normal".to_string(), "normal".to_string()));
 	length

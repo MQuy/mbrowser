@@ -1,5 +1,13 @@
 use common::vector::permutate;
 
+pub fn overflow_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for value in ["visible", "hidden", "scroll", "auto"].iter() {
+		data.push((value.to_string(), value.to_string()));
+	}
+	data
+}
+
 pub fn resolution_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for (value, unit) in

@@ -1,5 +1,3 @@
-use common::vector::permutate;
-use css::str::join_strings;
 use dyn_fmt::AsStrFormatExt;
 use length::length_data;
 use setup::{assert_css, parse};

@@ -3,6 +3,20 @@ use percentage::percentage_data;
 #[path = "./percentage.rs"]
 mod percentage;
 
+pub fn integer_data() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for (input, output) in [("0", "0"), ("12", "12"), ("100", "100")].iter() {
+		data.push((input.to_string(), output.to_string()))
+	}
+	data
+}
+
+pub fn integer_or_auto_data() -> Vec<(String, String)> {
+	let mut data = integer_data();
+	data.push(("auto".to_string(), "auto".to_string()));
+	data
+}
+
 pub fn number_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for (input, output) in [
@@ -15,6 +29,13 @@ pub fn number_data() -> Vec<(String, String)> {
 	{
 		data.push((input.to_string(), output.to_string()))
 	}
+	data
+}
+
+pub fn number_or_percentage_data() -> Vec<(String, String)> {
+	let mut data = number_data();
+	let mut percentage = percentage_data();
+	data.append(&mut percentage);
 	data
 }
 

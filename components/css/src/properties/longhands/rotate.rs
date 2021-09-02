@@ -9,7 +9,7 @@ use crate::values::specified::angle::Angle;
 
 #[derive(Clone)]
 pub enum NumberOrKeyword {
-	Number(Number),
+	Number(Number, Number, Number),
 	X,
 	Y,
 	Z,
@@ -20,28 +20,31 @@ impl NumberOrKeyword {
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
-		let location = input.current_source_location();
-		let token = input.next()?.clone();
-		let coordinate = match &token {
-			Token::Ident(ident) => match_ignore_ascii_case! { ident,
-				"x" => NumberOrKeyword::X,
-				"y" => NumberOrKeyword::Y,
-				"z" => NumberOrKeyword::Z,
-				_ => return Err(location.new_custom_error(
-					StyleParseErrorKind::UnexpectedToken(token.clone()),
-				))
-			},
-			Token::Number { value: x, .. } => {
-				let value = Number::parse(context, input)?;
-				NumberOrKeyword::Number(value)
-			},
-			_ => {
-				return Err(
-					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
-				)
-			},
-		};
-		Ok(coordinate)
+		input
+			.try_parse(|input| {
+				let location = input.current_source_location();
+				let token = input.next()?.clone();
+				match &token {
+					Token::Ident(ident) => Ok(match_ignore_ascii_case! { ident,
+						"x" => NumberOrKeyword::X,
+						"y" => NumberOrKeyword::Y,
+						"z" => NumberOrKeyword::Z,
+						_ => return Err(location.new_custom_error(
+							StyleParseErrorKind::UnexpectedToken(token.clone()),
+						))
+					}),
+					_ => {
+						return Err(location
+							.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone())))
+					},
+				}
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let x = Number::parse(context, input)?;
+				let y = Number::parse(context, input)?;
+				let z = Number::parse(context, input)?;
+				Ok(NumberOrKeyword::Number(x, y, z))
+			})
 	}
 }
 
@@ -51,7 +54,7 @@ impl ToCss for NumberOrKeyword {
 		W: std::fmt::Write,
 	{
 		match self {
-			NumberOrKeyword::Number(value) => dest.write_str(&value.to_string()),
+			NumberOrKeyword::Number(x, y, z) => dest.write_fmt(format_args!("{} {} {}", x, y, z)),
 			NumberOrKeyword::X => dest.write_char('x'),
 			NumberOrKeyword::Y => dest.write_char('y'),
 			NumberOrKeyword::Z => dest.write_char('z'),
@@ -64,7 +67,7 @@ impl ToCss for NumberOrKeyword {
 pub enum Rotate {
 	None,
 	Rotate(Angle),
-	Rotate3D(NumberOrKeyword, NumberOrKeyword, NumberOrKeyword, Angle),
+	Rotate3D(NumberOrKeyword, Angle),
 }
 
 impl Rotate {
@@ -96,16 +99,13 @@ impl Rotate {
 						},
 						&mut |input| {
 							parse_item_if_missing(input, &mut coordinate, &mut |_, input| {
-								let x = NumberOrKeyword::parse(context, input)?;
-								let y = NumberOrKeyword::parse(context, input)?;
-								let z = NumberOrKeyword::parse(context, input)?;
-								Ok((x, y, z))
+								NumberOrKeyword::parse(context, input)
 							})
 						},
 					],
 				);
-				if let (Some((x, y, z)), Some(angle)) = (coordinate, angle) {
-					Ok(Rotate::Rotate3D(x, y, z, angle))
+				if let (Some(value), Some(angle)) = (coordinate, angle) {
+					Ok(Rotate::Rotate3D(value, angle))
 				} else {
 					Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 				}
@@ -121,12 +121,8 @@ impl ToCss for Rotate {
 		match self {
 			Rotate::None => dest.write_str("none"),
 			Rotate::Rotate(value) => value.to_css(dest),
-			Rotate::Rotate3D(x, y, z, angle) => {
-				x.to_css(dest)?;
-				dest.write_char(' ')?;
-				y.to_css(dest)?;
-				dest.write_char(' ')?;
-				z.to_css(dest)?;
+			Rotate::Rotate3D(value, angle) => {
+				value.to_css(dest)?;
 				dest.write_char(' ')?;
 				angle.to_css(dest)
 			},

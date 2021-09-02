@@ -36,7 +36,7 @@ property_keywords_impl! { PointerEvents,
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
 	PointerEvents::parse(input).map(PropertyDeclaration::PointerEvents)

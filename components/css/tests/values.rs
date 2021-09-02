@@ -13,6 +13,7 @@ mod values {
 	mod line;
 	mod number;
 	mod percentage;
+	mod position;
 	mod time;
 	mod url;
 }

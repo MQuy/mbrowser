@@ -54,7 +54,7 @@ impl ToCss for Quotes {
 			Quotes::Content(quotes) => {
 				let values: Vec<String> = quotes
 					.iter()
-					.map(|v| std::format!("{} {}", v.0, v.1))
+					.map(|v| std::format!("\"{}\" \"{}\"", v.0, v.1))
 					.collect();
 				dest.write_str(&values.join(" "))
 			},

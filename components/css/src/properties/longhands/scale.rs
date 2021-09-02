@@ -47,8 +47,7 @@ impl ToCss for Scale {
 				dest.write_char(' ')?;
 				y.to_css(dest)?;
 				dest.write_char(' ')?;
-				z.to_css(dest)?;
-				dest.write_char(' ')
+				z.to_css(dest)
 			},
 		}
 	}

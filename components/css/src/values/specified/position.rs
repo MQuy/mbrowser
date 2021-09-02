@@ -197,6 +197,25 @@ impl Position {
 	) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
+				let horizontal = HorizontalPosition::parse_side(context, input)?;
+				let vertical = VerticalPosition::parse_side(context, input)?;
+				Ok(Position {
+					horizontal,
+					vertical,
+				})
+			})
+			.or_else(|_err: ParseError<'i>| {
+				input.try_parse(|input| {
+					let horizontal = HorizontalPosition::parse_with_length(context, input)?;
+					let vertical = VerticalPosition::parse_with_length(context, input)
+						.map_or(VerticalPosition::Center, |v| v);
+					Ok(Position {
+						horizontal,
+						vertical,
+					})
+				})
+			})
+			.or_else(|_err: ParseError<'i>| {
 				let mut horizontal = None;
 				let mut vertical = None;
 				parse_in_any_order(
@@ -222,24 +241,6 @@ impl Position {
 						vertical: vertical.map_or(VerticalPosition::Center, |v| v),
 					})
 				}
-			})
-			.or_else(|_err: ParseError<'i>| {
-				input.try_parse(|input| {
-					let horizontal = HorizontalPosition::parse_with_length(context, input)?;
-					let vertical = VerticalPosition::parse_with_length(context, input)?;
-					Ok(Position {
-						horizontal,
-						vertical,
-					})
-				})
-			})
-			.or_else(|_err: ParseError<'i>| {
-				let horizontal = HorizontalPosition::parse_side(context, input)?;
-				let vertical = VerticalPosition::parse_side(context, input)?;
-				Ok(Position {
-					horizontal,
-					vertical,
-				})
 			})
 	}
 }

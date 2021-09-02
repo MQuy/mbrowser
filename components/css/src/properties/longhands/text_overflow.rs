@@ -31,7 +31,10 @@ impl TextOverflowSide {
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = input.expect_string()?.to_string();
+				let value = input.try_parse(|input| -> Result<String, ParseError<'i>> {
+					let value = input.expect_string()?.to_string();
+					Ok(value)
+				})?;
 				Ok(TextOverflowSide::String(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -51,8 +54,14 @@ impl ToCss for TextOverflowSide {
 		match self {
 			TextOverflowSide::Clip => dest.write_str("clip"),
 			TextOverflowSide::Ellipsis => dest.write_str("ellipsis"),
-			TextOverflowSide::String(value) => dest.write_str(value),
-			TextOverflowSide::Fade(value) => value.as_ref().map_or(Ok(()), |v| v.to_css(dest)),
+			TextOverflowSide::String(value) => dest.write_fmt(std::format_args!("\"{}\"", value)),
+			TextOverflowSide::Fade(value) => {
+				if let Some(value) = value {
+					dest.write_fmt(format_args!("fade({})", value.to_css_string()))
+				} else {
+					dest.write_str("fade")
+				}
+			},
 		}
 	}
 }

@@ -11,15 +11,15 @@ bitflags! {
 	/// https://drafts.csswg.org/css-text-decor/#text-decoration-line-property
 	pub struct TextDecorationLine: u8 {
 		/// No text decoration line is specified.
-		const NONE = 0;
+		const NONE = 1 << 0;
 		/// underline
-		const UNDERLINE = 1 << 0;
+		const UNDERLINE = 1 << 1;
 		/// overline
-		const OVERLINE = 1 << 1;
+		const OVERLINE = 1 << 2;
 		/// line-through
-		const LINE_THROUGH = 1 << 2;
+		const LINE_THROUGH = 1 << 3;
 		/// blink
-		const BLINK = 1 << 3;
+		const BLINK = 1 << 4;
 	}
 }
 
@@ -78,10 +78,14 @@ impl ToCss for TextDecorationLine {
 		}
 
 		let none = convert_to(self.bits, TextDecorationLine::NONE.bits, "none");
-		let underline = convert_to(self.bits, TextDecorationLine::NONE.bits, "underline");
-		let overline = convert_to(self.bits, TextDecorationLine::NONE.bits, "overline");
-		let line_through = convert_to(self.bits, TextDecorationLine::NONE.bits, "line-through");
-		let blink = convert_to(self.bits, TextDecorationLine::NONE.bits, "blink");
+		let underline = convert_to(self.bits, TextDecorationLine::UNDERLINE.bits, "underline");
+		let overline = convert_to(self.bits, TextDecorationLine::OVERLINE.bits, "overline");
+		let line_through = convert_to(
+			self.bits,
+			TextDecorationLine::LINE_THROUGH.bits,
+			"line-through",
+		);
+		let blink = convert_to(self.bits, TextDecorationLine::BLINK.bits, "blink");
 		write_elements(dest, &[none, underline, overline, line_through, blink], ' ')
 	}
 }
