@@ -15,5 +15,6 @@ mod values {
 	mod percentage;
 	mod position;
 	mod time;
+	mod transform;
 	mod url;
 }

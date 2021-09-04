@@ -100,8 +100,12 @@ impl TransformFunction {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		let tx = LengthPercentage::parse(context, input)?;
-		let ty = LengthPercentage::parse(context, input)
-			.map_or(LengthPercentage::Length("0".into()), |v| v);
+		let ty = input
+			.try_parse(|input| {
+				input.expect_comma()?;
+				LengthPercentage::parse(context, input)
+			})
+			.map_or(LengthPercentage::Length("0px".into()), |v| v);
 		Ok(TransformFunction::Translate(tx, ty))
 	}
 
@@ -126,7 +130,12 @@ impl TransformFunction {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		let sx = Number::parse(context, input)?;
-		let sy = Number::parse(context, input).map_or(sx.clone(), |v| v);
+		let sy = input
+			.try_parse(|input| {
+				input.expect_comma()?;
+				Number::parse(context, input)
+			})
+			.map_or(sx.clone(), |v| v);
 		Ok(TransformFunction::Scale(sx, sy))
 	}
 
@@ -159,7 +168,12 @@ impl TransformFunction {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		let ax = AngleOrZero::parse(context, input)?;
-		let ay = AngleOrZero::parse(context, input).map_or(AngleOrZero::Zero, |v| v);
+		let ay = input
+			.try_parse(|input| {
+				input.expect_comma()?;
+				AngleOrZero::parse(context, input)
+			})
+			.map_or(AngleOrZero::Zero, |v| v);
 		Ok(TransformFunction::Skew(ax, ay))
 	}
 
@@ -187,7 +201,7 @@ impl ToCss for TransformFunction {
 	{
 		match self {
 			TransformFunction::Matrix(a, b, c, d, e, f) => {
-				dest.write_fmt(format_args!("matrix({} {} {} {} {} {}", a, b, c, d, e, f))
+				dest.write_fmt(format_args!("matrix({} {} {} {} {} {})", a, b, c, d, e, f))
 			},
 			TransformFunction::Translate(tx, ty) => dest.write_fmt(format_args!(
 				"translate({}, {})",

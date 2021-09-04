@@ -159,6 +159,7 @@ mod properties {
 	mod text_shadow;
 	mod text_transform;
 	mod top;
+	mod transform;
 	mod transform_origin;
 	mod transform_style;
 	mod transition_delay;
