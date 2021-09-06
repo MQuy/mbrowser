@@ -6,8 +6,12 @@ mBrowser is a toy browser developed from scratch for learning purpose.
 
 ### Features
 
-- [ ] DOM
-- [ ] CSSOM
+- [-] DOM
+  - [x] - Parse HTML
+  - [x] - Construct DOM Tree
+- [-] CSSOM
+  - [x] - Parse CSS
+  - [x] - Construct CSSOM Tree
 - [ ] Rendering
 - [ ] Networking
 - [ ] Javascript Engine
