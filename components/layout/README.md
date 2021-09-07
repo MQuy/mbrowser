@@ -1,3 +1,7 @@
+### Property value
+
+![value](https://i.imgur.com/qkTmOFJ.png)
+
 ### Visual model
 
 [![box model](https://i.imgur.com/js1BDYa.png)](https://www.w3.org/TR/CSS22/box.html#content-width)
@@ -5,7 +9,8 @@
 - `box-sizing` changes which area `width`, `max/min-width`, `height`, `max/min-height` points to
   - `content-box` -> content area
   - `border-box` -> border area
-- HTML elements establish outer display (block/inline box) which defines how element's participation in [Normal Flow](https://www.w3.org/TR/CSS22/visuren.html#normal-flow) and inner display which defines formating context for its content.
+- `display` establishes outer display (block/inline box) which defines how element's participation in [Normal Flow](https://www.w3.org/TR/CSS22/visuren.html#normal-flow) and inner display which defines formating context for its content.
+- HTML elements generate zero or more boxes according to box model. How a box laid out according to box's type and position scheme (normal flow, float, and absolute positioning)
 
 #### Block
 
@@ -21,7 +26,7 @@ Everything when rendering has to be in a box, in the example above there is no H
 </div>
 ```
 
-![anonymous box](https://i.imgur.com/uoU6CzO.png)
+![anonymous box](https://i.imgur.com/qOrZtgL.png)
 
 Anonymous box is also ignored when resolving percentage values, for example child of anonymous block box, which inside div, need to know its containing block height to resolve a percentage height, then it will use the height of div instead.
 
@@ -33,4 +38,23 @@ In example below, p generates a block box, two anonymous boxes (for "Hello" and 
 
 ```html
 <p>Hello <em>darkness</em>, my old friend</p>
+```
+
+### Stacking context
+
+Each box belongs to one stacking context (it is formed in [following conditions](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context#the_stacking_context)) and describes [the order](https://www.w3.org/TR/CSS22/zindex.html#painting-order) in which rendering tree is painted.
+
+[![hirerachy](https://i.imgur.com/TkAOJZi.png)](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context#the_example)
+
+In the example above, every positioned elements create its own stacking context and we have a hierarchy of stacking context below.
+Each stacking context is self-contained for example when rendering root we only care div #1, #2, #3 (belong to the same stacking context root) and then later when processing div #3, it is between div #4, #5, #6 (belongs to the same context div #3)
+
+```
+root
+├── div #1
+├── div #2
+├── div #3
+|   ├── div #4
+|   ├── div #5
+|   └── div #6
 ```
