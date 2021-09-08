@@ -58,3 +58,23 @@ root
 |   ├── div #5
 |   └── div #6
 ```
+
+### Collapsing margins
+
+[Collapsed margin](https://www.w3.org/TR/CSS22/box.html#collapsing-margins) is adjoining margins (apply event for zero margin) of two or more boxes (might or might not be siblings) are combined to form a single margin. Horizontal margins never collapse.
+
+```html
+<div id="1" style="margin: 10px 0">
+  <p id="2" style="margin: 5px 0">ping</p>
+</div>
+<div id="3" style="margin: 15px 0 5px 0"></div>
+<div id="4">
+  <div id="5" style="margin: 20px 0">pong</div>
+</div>
+```
+
+In the example above, margin bottoms of div#1 and p#2 are collapsed into 10px (A). Collapse through(top and bottom of a box are adjoining) happens for div#3, we have only one margin of 15px, then is collapsed with A to have 15px (B), later B is collapsed with margin top div#4 into 20px (div#1 and div#5 are not siblings).
+
+### Debugging
+
+- We can view [layers information](https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#layers) and how elements are painted in a canvas via [paint profiler](https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#paint-profiler)
