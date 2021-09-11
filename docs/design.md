@@ -21,3 +21,4 @@
 ### References
 
 - https://www.html5rocks.com/en/tutorials/internals/howbrowserswork
+- https://www.chromium.org/developers/design-documents

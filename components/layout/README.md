@@ -4,8 +4,50 @@
 
 ### Visual model
 
-[![box model](https://i.imgur.com/js1BDYa.png)](https://www.w3.org/TR/CSS22/box.html#content-width)
+```
+|-------------------------------------------------|
+|                                                 |
+|                  margin-top                     |
+|                                                 |
+|    |---------------------------------------|    |
+|    |                                       |    |
+|    |             border-top                |    |
+|    |                                       |    |
+|    |    |--------------------------|--|    |    |
+|    |    |                          |  |    |    |
+|    |    |       padding-top        |##|    |    |
+|    |    |                          |##|    |    |
+|    |    |    |----------------|    |##|    |    |
+|    |    |    |                |    |  |    |    |
+| ML | BL | PL |  content box   | PR |SW| BR | MR |
+|    |    |    |                |    |  |    |    |
+|    |    |    |----------------|    |  |    |    |
+|    |    |                          |  |    |    |
+|    |    |      padding-bottom      |  |    |    |
+|    |    |                          |  |    |    |
+|    |    |--------------------------|--|    |    |
+|    |    |     scrollbar height ####|SC|    |    |
+|    |    |-----------------------------|    |    |
+|    |                                       |    |
+|    |           border-bottom               |    |
+|    |                                       |    |
+|    |---------------------------------------|    |
+|                                                 |
+|                margin-bottom                    |
+|                                                 |
+|-------------------------------------------------|
 
+BL = border-left
+BR = border-right
+ML = margin-left
+MR = margin-right
+PL = padding-left
+PR = padding-right
+SC = scroll corner
+SW = scrollbar width
+```
+
+- Vertical scrollbar (if existing) will be on left in right-to-left direction horizontal writting mode, while horizontal scrollbar (if existing) is always at the bottom <- [illustration above and reference](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/blink/renderer/core/layout/README.md#box-model).
 - `box-sizing` changes which area `width`, `max/min-width`, `height`, `max/min-height` points to
   - `content-box` -> content area
   - `border-box` -> border area
@@ -74,6 +116,34 @@ root
 ```
 
 In the example above, margin bottoms of div#1 and p#2 are collapsed into 10px (A). Collapse through(top and bottom of a box are adjoining) happens for div#3, we have only one margin of 15px, then is collapsed with A to have 15px (B), later B is collapsed with margin top div#4 into 20px (div#1 and div#5 are not siblings).
+
+### CSS Selector
+
+#### Performance Tweak
+
+There are [4 ways](https://calendar.perfplanet.com/2011/css-selector-performance-has-changed-for-the-better/) which are used by Webkit to improve performance ([77740](http://trac.webkit.org/changeset/77740/webkit), [77777](http://trac.webkit.org/changeset/77777/webkit))
+
+- Style sharing: if browser has already calculated the p1's style, it can be reused for p2.
+  ```html
+  <div>
+    <p>foo</p>
+    <p>bar</p>
+  </div>
+  ```
+- Rule hashes: since browser matches styles from right to left, we can group stylesheet by right most selector.
+  ```scs1
+  a {}
+  div p {}
+  div p.legal {}
+  #sidebar a {}
+  #sidebar p {}
+  ```
+  | a               |        p        |          p.legal |
+  | --------------- | :-------------: | ---------------: |
+  | `a {}`          |   `div p {}`    | `div p.legal {}` |
+  | `#sidebar a {}` | `#sidebar p {}` |                  |
+- Ancestor filters: use Bloom filter to test selector is probably in the set or not ([how Bloom filter works](https://www.jasondavies.com/bloomfilter/)).
+- Fast path: re-implements matching logic for general matching logic using a non-recursive, fully inlined loop.
 
 ### Debugging
 
