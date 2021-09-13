@@ -18,7 +18,7 @@ use crate::error_reporting::ContextualParseError;
 use crate::media_queries::media_list::MediaList;
 use crate::parser::ParseError;
 use crate::properties::declaration_block::parse_property_declaration_list;
-use crate::selectors::select_impl::SelectorImpl;
+use crate::selectors::select::Selectors;
 use crate::selectors::selector_parser::SelectorParser;
 use crate::str::starts_with_ignore_ascii_case;
 use crate::stylesheets::keyframe_rule::parse_keyframe_list;
@@ -205,7 +205,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
 
 impl<'a, 'i> QualifiedRuleParser<'i> for TopLevelRuleParser<'a> {
 	type Error = StyleParseErrorKind<'i>;
-	type Prelude = SelectorList<SelectorImpl>;
+	type Prelude = SelectorList<Selectors>;
 	type QualifiedRule = (SourcePosition, CssRule);
 
 	#[inline]
@@ -348,7 +348,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
 
 impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
 	type Error = StyleParseErrorKind<'i>;
-	type Prelude = SelectorList<SelectorImpl>;
+	type Prelude = SelectorList<Selectors>;
 	type QualifiedRule = CssRule;
 
 	fn parse_prelude<'t>(

@@ -10,4 +10,5 @@ members = [
 	"components/common",
 	"components/dom",
 	"components/css",
+	"components/layout",
 ]

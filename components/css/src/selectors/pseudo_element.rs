@@ -1,8 +1,8 @@
 use std::fmt;
 
-use cssparser::ToCss;
+use cssparser::{match_ignore_ascii_case, ToCss, _cssparser_internal_to_lowercase};
 
-use super::select_impl::SelectorImpl;
+use super::select::Selectors;
 
 /// A pseudo-element, both public and private.
 ///
@@ -17,6 +17,18 @@ pub enum PseudoElement {
 
 /// The count of all pseudo-elements.
 pub const PSEUDO_COUNT: usize = PseudoElement::Selection as usize + 1;
+
+impl PseudoElement {
+	#[inline]
+	pub fn from_slice(name: &str) -> Option<Self> {
+		Some(match_ignore_ascii_case! { name,
+			"after" => PseudoElement::After,
+			"before" => PseudoElement::Before,
+			"selection" => PseudoElement::Selection,
+			_ => return None,
+		})
+	}
+}
 
 impl ToCss for PseudoElement {
 	fn to_css<W>(&self, dest: &mut W) -> fmt::Result
@@ -33,5 +45,5 @@ impl ToCss for PseudoElement {
 }
 
 impl ::selectors::parser::PseudoElement for PseudoElement {
-	type Impl = SelectorImpl;
+	type Impl = Selectors;
 }

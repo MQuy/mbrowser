@@ -5,13 +5,13 @@ use selectors::SelectorList;
 
 use crate::css_writer::ToCss;
 use crate::properties::declaration_block::PropertyDeclarationBlock;
-use crate::selectors::select_impl::SelectorImpl;
+use crate::selectors::select::Selectors;
 
 /// A style rule, with selectors and declarations.
 #[derive(Clone)]
 pub struct StyleRule {
 	/// The list of selectors in this rule.
-	pub selectors: SelectorList<SelectorImpl>,
+	pub selectors: SelectorList<Selectors>,
 	/// The declaration block with the properties it contains.
 	pub block: PropertyDeclarationBlock,
 	/// The location in the sheet where it was found.

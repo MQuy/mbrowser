@@ -1,4 +1,4 @@
-use cssparser::{Delimiter, Parser, ToCss};
+use cssparser::{Parser, ToCss};
 
 use crate::css_writer::write_elements;
 use crate::parser::{parse_repeated, ParseError};

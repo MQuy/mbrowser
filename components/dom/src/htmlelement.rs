@@ -10,7 +10,7 @@ use crate::node::Node;
 use crate::nodetype::{ElementTypeId, NodeTypeId};
 use crate::virtualmethods::VirtualMethods;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct HTMLElement {
 	element: Element,

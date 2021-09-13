@@ -15,7 +15,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::{Importance, PropertyDeclaration};
 use crate::properties::longhand_id::LonghandIdSet;
 use crate::properties::property_id::PropertyId;
-use crate::selectors::select_impl::SelectorImpl;
+use crate::selectors::select::Selectors;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
@@ -201,7 +201,7 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for PropertyDeclarationParser<'a, 'b> {
 fn report_one_css_error<'i>(
 	context: &ParserContext,
 	block: Option<&PropertyDeclarationBlock>,
-	selectors: Option<&SelectorList<SelectorImpl>>,
+	selectors: Option<&SelectorList<Selectors>>,
 	mut error: ParseError<'i>,
 	slice: &str,
 	property: Option<PropertyId>,
@@ -242,7 +242,7 @@ fn report_one_css_error<'i>(
 fn report_css_errors(
 	context: &ParserContext,
 	block: &PropertyDeclarationBlock,
-	selectors: Option<&SelectorList<SelectorImpl>>,
+	selectors: Option<&SelectorList<Selectors>>,
 	errors: &mut Vec<(
 		cssparser::ParseError<StyleParseErrorKind>,
 		&str,
@@ -259,7 +259,7 @@ fn report_css_errors(
 pub fn parse_property_declaration_list(
 	context: &ParserContext,
 	input: &mut Parser,
-	selectors: Option<&SelectorList<SelectorImpl>>,
+	selectors: Option<&SelectorList<Selectors>>,
 ) -> PropertyDeclarationBlock {
 	let mut declarations = SourcePropertyDeclaration::new();
 	let mut block = PropertyDeclarationBlock::new();

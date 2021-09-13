@@ -9,7 +9,7 @@ pub fn parse_keyframes_string_from_to() {
 	assert_css(
 		&stylesheet,
 		r#"
-@keyframes foo {
+@keyframes "foo" {
 0% {
 }
 100% {

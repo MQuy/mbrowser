@@ -2,7 +2,7 @@ use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ig
 
 use super::color::Color;
 use super::layout::Resolution;
-use super::length::{LengthPercentage, NonNegativeLength, NonNegativeLengthPercentage};
+use super::length::{LengthPercentage, NonNegativeLengthPercentage};
 use super::percentage::Percentage;
 use super::specified::angle::{Angle, AnglePercentage};
 use super::specified::position::{HorizontalPosition, Position, VerticalPosition};
@@ -12,7 +12,7 @@ use crate::parser::{
 	parse_in_any_order, parse_item_if_missing, parse_repeated_with_delimitor, ParseError,
 };
 use crate::properties::declaration::property_keywords_impl;
-use crate::str::{convert_options_to_string, join_strings};
+use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 

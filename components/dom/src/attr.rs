@@ -1,17 +1,20 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::{Rc, Weak};
 
 use common::url::BrowserUrl;
 use css::values::length::Length;
+use css::values::CSSString;
 use cssparser::{Color, RGBA};
 use html5ever::{LocalName, Namespace, Prefix};
 use num_traits::ToPrimitive;
+use selectors::attr::AttrSelectorOperation;
 
 use crate::element::Element;
 use crate::str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS};
 
 const UNSIGNED_LONG_MAX: u32 = 2147483647;
 // https://dom.spec.whatwg.org/#interface-attr
+#[derive(Debug)]
 pub struct Attr {
 	local_name: LocalName,
 	name: LocalName,
@@ -58,6 +61,11 @@ impl Attr {
 	}
 
 	#[inline]
+	pub fn value(&self) -> Ref<AttrValue> {
+		self.value.borrow()
+	}
+
+	#[inline]
 	pub fn get_local_name(&self) -> &LocalName {
 		&self.local_name
 	}
@@ -74,6 +82,14 @@ impl Attr {
 	pub fn get_namespace(&self) -> &Namespace {
 		&self.namespace
 	}
+
+	#[inline]
+	pub fn as_tokens(&self) -> Option<Vec<String>> {
+		match *self.value() {
+			AttrValue::TokenList(_, ref tokens) => Some(tokens.clone()),
+			_ => None,
+		}
+	}
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -83,6 +99,7 @@ pub enum LengthOrPercentageOrAuto {
 	Length(f32),
 }
 
+#[derive(Clone, Debug)]
 pub enum AttrValue {
 	String(String),
 	TokenList(String, Vec<String>),
@@ -133,6 +150,13 @@ impl AttrValue {
 			result
 		};
 		AttrValue::UInt(string, result)
+	}
+
+	pub fn eval_selector(&self, selector: &AttrSelectorOperation<&CSSString>) -> bool {
+		// FIXME(SimonSapin) this can be more efficient by matching on `(self, selector)` variants
+		// and doing Atom comparisons instead of string comparisons where possible,
+		// with SelectorImpl::AttrValue changed to Atom.
+		selector.eval_str(self)
 	}
 }
 

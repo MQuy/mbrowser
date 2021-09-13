@@ -1,6 +1,5 @@
 use cssparser::{Parser, ToCss};
 
-use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::str::convert_options_to_string;

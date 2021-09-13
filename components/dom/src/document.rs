@@ -10,7 +10,7 @@ use crate::htmlbaseelement::HTMLBaseElement;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Document {
 	node: Node,

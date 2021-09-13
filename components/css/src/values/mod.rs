@@ -5,6 +5,7 @@ use cssparser::{
 	CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase,
 	match_ignore_ascii_case,
 };
+use html5ever::LocalName;
 use selectors::parser::SelectorParseErrorKind;
 
 use crate::parser::ParseError;
@@ -59,6 +60,12 @@ impl PartialEq<&str> for Ident {
 	}
 }
 
+impl PartialEq<LocalName> for Ident {
+	fn eq(&self, other: &LocalName) -> bool {
+		self.0 == other.to_string()
+	}
+}
+
 impl From<&str> for Ident {
 	fn from(value: &str) -> Self {
 		Self(value.to_string())
@@ -71,6 +78,30 @@ impl ToCss for Ident {
 		W: std::fmt::Write,
 	{
 		dest.write_str(&self.0)
+	}
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CSSString(pub String);
+
+impl ToCss for CSSString {
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		cssparser::CssStringWriter::new(dest).write_str(&self.0)
+	}
+}
+
+impl From<&str> for CSSString {
+	fn from(value: &str) -> Self {
+		Self(value.to_string())
+	}
+}
+
+impl AsRef<str> for CSSString {
+	fn as_ref(&self) -> &str {
+		&*self.0
 	}
 }
 
@@ -142,5 +173,82 @@ impl From<&str> for CustomIdent {
 impl ToString for CustomIdent {
 	fn to_string(&self) -> String {
 		self.0.to_string()
+	}
+}
+
+pub struct GenericAtomIdent<Set>(pub string_cache::Atom<Set>)
+where
+	Set: string_cache::StaticAtomSet;
+
+impl<Set: string_cache::StaticAtomSet> Default for GenericAtomIdent<Set> {
+	fn default() -> Self {
+		Self(string_cache::Atom::default())
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> std::fmt::Debug for GenericAtomIdent<Set> {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		self.0.fmt(f)
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> std::hash::Hash for GenericAtomIdent<Set> {
+	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+		self.0.hash(state)
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> Eq for GenericAtomIdent<Set> {}
+
+impl<Set: string_cache::StaticAtomSet> PartialEq for GenericAtomIdent<Set> {
+	fn eq(&self, other: &Self) -> bool {
+		self.0 == other.0
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> Clone for GenericAtomIdent<Set> {
+	fn clone(&self) -> Self {
+		Self(self.0.clone())
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> cssparser::ToCss for GenericAtomIdent<Set> {
+	fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+	where
+		W: Write,
+	{
+		dest.write_str(&self.0)
+	}
+}
+
+impl<'a, Set: string_cache::StaticAtomSet> From<&'a str> for GenericAtomIdent<Set> {
+	#[inline]
+	fn from(string: &str) -> Self {
+		Self(string_cache::Atom::from(string))
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> std::borrow::Borrow<string_cache::Atom<Set>>
+	for GenericAtomIdent<Set>
+{
+	#[inline]
+	fn borrow(&self) -> &string_cache::Atom<Set> {
+		&self.0
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> GenericAtomIdent<Set> {
+	/// Constructs a new GenericAtomIdent.
+	#[inline]
+	pub fn new(atom: string_cache::Atom<Set>) -> Self {
+		Self(atom)
+	}
+
+	/// Cast an atom ref to an AtomIdent ref.
+	#[inline]
+	pub fn cast<'a>(atom: &'a string_cache::Atom<Set>) -> &'a Self {
+		let ptr = atom as *const _ as *const Self;
+		// safety: repr(transparent)
+		unsafe { &*ptr }
 	}
 }

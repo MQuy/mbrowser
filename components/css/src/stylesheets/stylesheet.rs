@@ -4,7 +4,6 @@ use std::ops::Add;
 use std::rc::Rc;
 
 use cssparser::{Parser, ParserInput, RuleListParser, SourceLocation};
-use html5ever::{Namespace, Prefix};
 
 use super::css_rule::{CssRule, CssRuleType};
 use super::origin::Origin;
@@ -12,6 +11,7 @@ use super::rule_parser::{State, TopLevelRuleParser};
 use crate::css_writer::ToCss;
 use crate::error_reporting::{ContextualParseError, ParseErrorReporter};
 use crate::media_queries::media_list::MediaList;
+use crate::{Namespace, Prefix};
 
 /// Which quirks mode is this document in.
 ///

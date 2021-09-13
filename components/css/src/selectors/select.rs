@@ -1,20 +1,19 @@
-use html5ever::Namespace;
-
 use super::nonts_pseudo_class::NonTSPseudoClass;
 use super::pseudo_element::PseudoElement;
-use crate::values::CustomIdent;
+use crate::values::{CSSString, Ident};
+use crate::{LocalName, Namespace, Prefix};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct SelectorImpl;
+pub struct Selectors;
 
-impl ::selectors::SelectorImpl for SelectorImpl {
-	type AttrValue = CustomIdent;
-	type BorrowedLocalName = CustomIdent;
-	type BorrowedNamespaceUrl = Namespace;
+impl ::selectors::SelectorImpl for Selectors {
+	type AttrValue = CSSString;
+	type BorrowedLocalName = html5ever::LocalName;
+	type BorrowedNamespaceUrl = html5ever::Namespace;
 	type ExtraMatchingData = InvalidationMatchingData;
-	type Identifier = CustomIdent;
-	type LocalName = CustomIdent;
-	type NamespacePrefix = CustomIdent;
+	type Identifier = Ident;
+	type LocalName = LocalName;
+	type NamespacePrefix = Prefix;
 	type NamespaceUrl = Namespace;
 	type NonTSPseudoClass = NonTSPseudoClass;
 	type PseudoElement = PseudoElement;

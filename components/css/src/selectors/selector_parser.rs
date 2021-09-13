@@ -1,17 +1,13 @@
-use cssparser::{
-	CowRcStr, ParseError, Parser, SourceLocation, _cssparser_internal_to_lowercase,
-	match_ignore_ascii_case,
-};
-use html5ever::Namespace;
+use cssparser::{CowRcStr, ParseError, SourceLocation};
 use selectors::parser::SelectorParseErrorKind;
 
 use super::nonts_pseudo_class::{NonTSPseudoClass, NonTSPseudoClassFlag};
 use super::pseudo_element::PseudoElement;
-use super::select_impl::SelectorImpl;
+use super::select::Selectors;
 use crate::stylesheets::origin::Origin;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::Namespaces;
-use crate::values::CustomIdent;
+use crate::Namespace;
 
 pub struct SelectorParser<'a> {
 	/// The origin of the stylesheet we're parsing.
@@ -39,11 +35,19 @@ impl<'a> SelectorParser<'a> {
 
 		return false;
 	}
+
+	fn is_pseudo_element_enabled(&self, _pseudo_element: &PseudoElement) -> bool {
+		if self.in_user_agent_stylesheet() {
+			return true;
+		}
+
+		return false;
+	}
 }
 
 impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
 	type Error = StyleParseErrorKind<'i>;
-	type Impl = SelectorImpl;
+	type Impl = Selectors;
 
 	#[inline]
 	fn parse_slotted(&self) -> bool {
@@ -82,45 +86,22 @@ impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
 		)
 	}
 
-	fn parse_non_ts_functional_pseudo_class<'t>(
-		&self,
-		name: CowRcStr<'i>,
-		parser: &mut Parser<'i, 't>,
-	) -> Result<NonTSPseudoClass, ParseError<'i, Self::Error>> {
-		let pseudo_class = match_ignore_ascii_case! { &name,
-			"lang" => {
-				let name = parser.expect_ident_or_string()?;
-				NonTSPseudoClass::Lang(CustomIdent::from(name.as_ref()))
-			},
-			_ => return Err(parser.new_custom_error(
-				SelectorParseErrorKind::UnsupportedPseudoClassOrElement(name.clone())
-			))
-		};
-		if self.is_pseudo_class_enabled(&pseudo_class) {
-			Ok(pseudo_class)
-		} else {
-			Err(
-				parser.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(
-					name,
-				)),
-			)
-		}
-	}
-
 	fn parse_pseudo_element(
 		&self,
 		location: SourceLocation,
 		name: CowRcStr<'i>,
 	) -> Result<PseudoElement, ParseError<'i, Self::Error>> {
-		let pseudo_element = match_ignore_ascii_case! { &name,
-			"before" => PseudoElement::Before,
-			"after" => PseudoElement::After,
-			"selection" => PseudoElement::Selection,
-			_ => return Err(location.new_custom_error(SelectorParseErrorKind::UnexpectedIdent(name.clone())))
+		if let Some(pseudo) = PseudoElement::from_slice(&name) {
+			if self.is_pseudo_element_enabled(&pseudo) {
+				return Ok(pseudo);
+			}
+		}
 
-		};
-
-		Ok(pseudo_element)
+		Err(
+			location.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(
+				name,
+			)),
+		)
 	}
 
 	fn default_namespace(&self) -> Option<Namespace> {

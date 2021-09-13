@@ -8,7 +8,7 @@ use crate::inheritance::{Castable, DerivedFrom};
 use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
 use crate::virtualmethods::{vtable_for, VirtualMethods};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Node {
 	node_type_id: NodeTypeId,
 	parent_node: RefCell<Option<Weak<Node>>>,

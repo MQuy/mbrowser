@@ -12,7 +12,7 @@ use crate::node::{document_from_node, Node};
 use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 use crate::virtualmethods::VirtualMethods;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct HTMLBaseElement {
 	htmlelement: HTMLElement,

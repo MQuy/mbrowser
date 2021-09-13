@@ -1,9 +1,19 @@
-use std::cell::{Ref, RefCell};
+use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
 
+use css::element_state::ElementState;
+use css::selectors::nonts_pseudo_class::NonTSPseudoClass;
+use css::selectors::pseudo_element::PseudoElement;
+use css::selectors::select::Selectors;
+use css::values::{CSSString, Ident};
 use html5ever::{local_name, namespace_url, ns, LocalName, Namespace, Prefix, QualName};
+use selectors::attr::{AttrSelectorOperation, CaseSensitivity, NamespaceConstraint};
+use selectors::context::MatchingContext;
+use selectors::matching::ElementSelectorFlags;
+use selectors::OpaqueElement;
 
 use crate::attr::{Attr, AttrValue};
+use crate::characterdata::CharacterData;
 use crate::document::Document;
 use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmldivelement::HTMLDivElement;
@@ -15,13 +25,12 @@ use crate::htmlspanelement::HTMLSpanElement;
 use crate::htmlunknownelement::HTMLUnknownElement;
 use crate::inheritance::Castable;
 use crate::node::Node;
-use crate::nodetype::{ElementTypeId, NodeTypeId};
+use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 use crate::svgelement::SVGElement;
 use crate::svgsvgelement::SVGSVGElement;
 use crate::virtualmethods::{vtable_for, VirtualMethods};
 
-#[derive(Clone)]
-#[repr(C)]
+#[derive(Clone, Debug)]
 pub struct Element {
 	node: Node,
 	prefix: Option<Prefix>,
@@ -29,6 +38,7 @@ pub struct Element {
 	namespace: Namespace,
 	is: RefCell<Option<LocalName>>,
 	attrs: RefCell<Vec<Rc<Attr>>>,
+	state: Cell<ElementState>,
 }
 
 impl crate::inheritance::Castable for Element {}
@@ -64,6 +74,7 @@ impl Element {
 			prefix,
 			is: RefCell::new(None),
 			attrs: RefCell::new(Vec::new()),
+			state: Cell::new(ElementState::empty()),
 		}
 	}
 
@@ -145,6 +156,13 @@ impl Element {
 		}
 	}
 
+	pub fn has_attribute(&self, local_name: &LocalName) -> bool {
+		self.attrs
+			.borrow()
+			.iter()
+			.any(|attr| attr.get_local_name() == local_name && attr.get_namespace() == &ns!())
+	}
+
 	pub fn set_is(&self, is: LocalName) {
 		*self.is.borrow_mut() = Some(is);
 	}
@@ -156,6 +174,10 @@ impl Element {
 			ns!(svg) => create_svg_element(name, prefix, document),
 			_ => Rc::new(Element::new(name.local, name.ns, prefix, document)),
 		}
+	}
+
+	pub fn state(&self) -> ElementState {
+		self.state.get()
 	}
 }
 
@@ -323,4 +345,191 @@ fn is_potential_custom_element_char(c: char) -> bool {
 		|| (c >= '\u{F900}' && c <= '\u{FDCF}')
 		|| (c >= '\u{FDF0}' && c <= '\u{FFFD}')
 		|| (c >= '\u{10000}' && c <= '\u{EFFFF}')
+}
+
+impl selectors::Element for Element {
+	type Impl = Selectors;
+
+	fn opaque(&self) -> OpaqueElement {
+		OpaqueElement::new(&self)
+	}
+
+	fn parent_element(&self) -> Option<Self> {
+		let parent_node = self.upcast::<Node>().get_parent_node();
+		parent_node.map(|n| n.downcast::<Element>().clone())
+	}
+
+	fn parent_node_is_shadow_root(&self) -> bool {
+		false
+	}
+
+	fn containing_shadow_host(&self) -> Option<Self> {
+		None
+	}
+
+	fn is_pseudo_element(&self) -> bool {
+		false
+	}
+
+	fn prev_sibling_element(&self) -> Option<Self> {
+		self.upcast::<Node>()
+			.get_prev_sibling()
+			.map(|s| s.downcast::<Element>().clone())
+	}
+
+	fn next_sibling_element(&self) -> Option<Self> {
+		self.upcast::<Node>()
+			.get_next_sibling()
+			.map(|s| s.downcast::<Element>().clone())
+	}
+
+	fn is_html_element_in_html_document(&self) -> bool {
+		*self.namespace() == ns!(html)
+	}
+
+	fn has_local_name(&self, local_name: &LocalName) -> bool {
+		local_name == self.local_name()
+	}
+
+	fn has_namespace(&self, ns: &Namespace) -> bool {
+		self.namespace() == ns
+	}
+
+	fn is_same_type(&self, other: &Self) -> bool {
+		self.local_name() == other.local_name() && self.namespace() == other.namespace()
+	}
+
+	fn attr_matches(
+		&self,
+		ns: &NamespaceConstraint<&css::Namespace>,
+		local_name: &css::LocalName,
+		operation: &AttrSelectorOperation<&CSSString>,
+	) -> bool {
+		match *ns {
+			NamespaceConstraint::Specific(ref ns) => self
+				.get_attribute(&ns.0, &local_name.0)
+				.map_or(false, |attr| attr.value().eval_selector(operation)),
+			NamespaceConstraint::Any => self.attrs.borrow().iter().any(|attr| {
+				*attr.get_local_name() == *local_name.0 && attr.value().eval_selector(operation)
+			}),
+		}
+	}
+
+	fn match_non_ts_pseudo_class<F>(
+		&self,
+		pseudo_class: &NonTSPseudoClass,
+		context: &mut MatchingContext<Self::Impl>,
+		_flags_setter: &mut F,
+	) -> bool
+	where
+		F: FnMut(&Self, ElementSelectorFlags),
+	{
+		match *pseudo_class {
+			NonTSPseudoClass::Autofill
+			| NonTSPseudoClass::Defined
+			| NonTSPseudoClass::Focus
+			| NonTSPseudoClass::Enabled
+			| NonTSPseudoClass::Disabled
+			| NonTSPseudoClass::Checked
+			| NonTSPseudoClass::Fullscreen
+			| NonTSPseudoClass::Indeterminate
+			| NonTSPseudoClass::PlaceholderShown
+			| NonTSPseudoClass::Target
+			| NonTSPseudoClass::Valid
+			| NonTSPseudoClass::Invalid
+			| NonTSPseudoClass::Required
+			| NonTSPseudoClass::Optional
+			| NonTSPseudoClass::ReadWrite
+			| NonTSPseudoClass::FocusWithin
+			| NonTSPseudoClass::FocusVisible
+			| NonTSPseudoClass::InRange
+			| NonTSPseudoClass::OutOfRange
+			| NonTSPseudoClass::Default
+			| NonTSPseudoClass::Active
+			| NonTSPseudoClass::Hover => Element::state(self).contains(pseudo_class.state_flag()),
+
+			NonTSPseudoClass::ReadOnly => !Element::state(self).contains(pseudo_class.state_flag()),
+
+			NonTSPseudoClass::AnyLink => self.is_link(),
+			NonTSPseudoClass::Link => {
+				self.is_link() && context.visited_handling().matches_unvisited()
+			},
+			NonTSPseudoClass::Visited => {
+				self.is_link() && context.visited_handling().matches_visited()
+			},
+		}
+	}
+
+	fn match_pseudo_element(
+		&self,
+		_pseudo_element: &PseudoElement,
+		_context: &mut MatchingContext<Self::Impl>,
+	) -> bool {
+		false
+	}
+
+	fn is_link(&self) -> bool {
+		let node = self.upcast::<Node>();
+		match node.get_node_type_id() {
+			// https://html.spec.whatwg.org/multipage/#selector-link
+			NodeTypeId::Element(ElementTypeId::HTMLElement(
+				HTMLElementTypeId::HTMLAnchorElement,
+			))
+			| NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLAreaElement))
+			| NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLLinkElement)) => {
+				self.has_attribute(&local_name!("href"))
+			},
+			_ => false,
+		}
+	}
+
+	fn is_html_slot_element(&self) -> bool {
+		false
+	}
+
+	fn has_id(&self, id: &Ident, case_sensitivity: CaseSensitivity) -> bool {
+		self.get_attribute(&ns!(html), &local_name!("id"))
+			.as_ref()
+			.map_or(false, |attr| {
+				case_sensitivity.eq(id.0.as_bytes(), attr.get_value().as_bytes())
+			})
+	}
+
+	fn has_class(&self, name: &Ident, case_sensitivity: CaseSensitivity) -> bool {
+		self.get_attribute(&ns!(), &local_name!("class"))
+			.map_or(false, |attr| {
+				attr.as_tokens().map_or(false, |values| {
+					values.iter().any(|class_name| {
+						case_sensitivity.eq(name.0.as_bytes(), class_name.as_bytes())
+					})
+				})
+			})
+	}
+
+	fn imported_part(&self, _name: &Ident) -> Option<Ident> {
+		None
+	}
+
+	fn is_part(&self, _name: &Ident) -> bool {
+		false
+	}
+
+	fn is_empty(&self) -> bool {
+		self.node.children().all(|node| {
+			if node.get_node_type_id().is_element() {
+				return false;
+			}
+			if node.get_node_type_id().is_character_data_text() {
+				return node.downcast::<CharacterData>().data().is_empty();
+			}
+			return true;
+		})
+	}
+
+	fn is_root(&self) -> bool {
+		match self.node.get_parent_node() {
+			None => false,
+			Some(node) => node.get_node_type_id().is_document(),
+		}
+	}
 }

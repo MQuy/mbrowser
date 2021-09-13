@@ -3,8 +3,8 @@ use core::fmt;
 use cssparser::{match_ignore_ascii_case, ToCss, _cssparser_internal_to_lowercase};
 use selectors::visitor::SelectorVisitor;
 
-use super::select_impl::SelectorImpl;
-use crate::values::CustomIdent;
+use super::select::Selectors;
+use crate::element_state::ElementState;
 
 macro_rules! apply_non_ts_list {
 	($apply_macro:ident) => {
@@ -37,8 +37,6 @@ macro_rules! apply_non_ts_list {
 				("placeholder-shown", PlaceholderShown, IN_PLACEHOLDER_SHOWN_STATE, _),
 				("read-only", ReadOnly, IN_READONLY_STATE, _),
 				("read-write", ReadWrite, IN_READWRITE_STATE, _),
-				("user-valid", UserValid, IN_MOZ_UI_VALID_STATE, _),
-				("user-invalid", UserInvalid, IN_MOZ_UI_INVALID_STATE, _),
 			]
 		}
 	};
@@ -53,8 +51,6 @@ macro_rules! pseudo_class_name {
                 #[doc = $css]
                 $name,
             )*
-            /// The `:lang` pseudo-class.
-            Lang(CustomIdent),
         }
     }
 }
@@ -72,7 +68,7 @@ bitflags! {
 }
 
 impl ::selectors::parser::NonTSPseudoClass for NonTSPseudoClass {
-	type Impl = SelectorImpl;
+	type Impl = Selectors;
 
 	#[inline]
 	fn is_active_or_hover(&self) -> bool {
@@ -104,11 +100,6 @@ impl ToCss for NonTSPseudoClass {
             ([$(($css:expr, $name:ident, $state:tt, $flags:tt),)*]) => {
                 match *self {
                     $(NonTSPseudoClass::$name => concat!(":", $css),)*
-                    NonTSPseudoClass::Lang(ref s) => {
-                        dest.write_str(":lang(")?;
-                        s.to_css(dest)?;
-                        return dest.write_char(')');
-                    },
                 }
             }
         }
@@ -118,6 +109,40 @@ impl ToCss for NonTSPseudoClass {
 }
 
 impl NonTSPseudoClass {
+	/// Gets a given state flag for this pseudo-class. This is used to do
+	/// selector matching, and it's set from the DOM.
+	pub fn state_flag(&self) -> ElementState {
+		use self::NonTSPseudoClass::*;
+		match *self {
+			Link => ElementState::IN_UNVISITED_STATE,
+			AnyLink => ElementState::IN_VISITED_OR_UNVISITED_STATE,
+			Visited => ElementState::IN_VISITED_STATE,
+			Active => ElementState::IN_ACTIVE_STATE,
+			Autofill => ElementState::IN_AUTOFILL_STATE,
+			Checked => ElementState::IN_CHECKED_STATE,
+			Defined => ElementState::IN_DEFINED_STATE,
+			Disabled => ElementState::IN_DISABLED_STATE,
+			Enabled => ElementState::IN_ENABLED_STATE,
+			Focus => ElementState::IN_FOCUS_STATE,
+			FocusWithin => ElementState::IN_FOCUS_WITHIN_STATE,
+			FocusVisible => ElementState::IN_FOCUSRING_STATE,
+			Hover => ElementState::IN_HOVER_STATE,
+			Target => ElementState::IN_TARGET_STATE,
+			Indeterminate => ElementState::IN_INDETERMINATE_STATE,
+			Fullscreen => ElementState::IN_FULLSCREEN_STATE,
+			Required => ElementState::IN_REQUIRED_STATE,
+			Optional => ElementState::IN_OPTIONAL_STATE,
+			Valid => ElementState::IN_VALID_STATE,
+			Invalid => ElementState::IN_INVALID_STATE,
+			InRange => ElementState::IN_INRANGE_STATE,
+			OutOfRange => ElementState::IN_OUTOFRANGE_STATE,
+			Default => ElementState::IN_DEFAULT_STATE,
+			PlaceholderShown => ElementState::IN_PLACEHOLDER_SHOWN_STATE,
+			ReadOnly => ElementState::IN_READONLY_STATE,
+			ReadWrite => ElementState::IN_READ_WRITE_STATE,
+		}
+	}
+
 	/// Parses the name and returns a non-ts-pseudo-class if succeeds.
 	/// None otherwise. It doesn't check whether the pseudo-class is enabled
 	/// in a particular state.
@@ -147,7 +172,6 @@ impl NonTSPseudoClass {
             ([$(($css:expr, $name:ident, $state:tt, $flags:tt),)*]) => {
                 match *self {
                     $(NonTSPseudoClass::$name => check_flag!($flags),)*
-                    NonTSPseudoClass::Lang(_) => false,
                 }
             }
         }
