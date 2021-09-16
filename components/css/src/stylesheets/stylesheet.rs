@@ -4,6 +4,7 @@ use std::ops::Add;
 use std::rc::Rc;
 
 use cssparser::{Parser, ParserInput, RuleListParser, SourceLocation};
+use selectors::context::QuirksMode;
 
 use super::css_rule::{CssRule, CssRuleType};
 use super::origin::Origin;
@@ -12,19 +13,6 @@ use crate::css_writer::ToCss;
 use crate::error_reporting::{ContextualParseError, ParseErrorReporter};
 use crate::media_queries::media_list::MediaList;
 use crate::{Namespace, Prefix};
-
-/// Which quirks mode is this document in.
-///
-/// See: https://quirks.spec.whatwg.org/
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum QuirksMode {
-	/// Quirks mode.
-	Quirks,
-	/// Limited quirks mode.
-	LimitedQuirks,
-	/// No quirks mode.
-	NoQuirks,
-}
 
 /// A set of namespaces applying to a given stylesheet.
 ///

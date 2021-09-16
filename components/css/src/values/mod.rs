@@ -1,11 +1,14 @@
 use core::fmt;
 use std::fmt::Write;
+use std::io::Cursor;
 
 use cssparser::{
 	CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase,
 	match_ignore_ascii_case,
 };
 use html5ever::LocalName;
+use murmur3::murmur3_32;
+use precomputed_hash::PrecomputedHash;
 use selectors::parser::SelectorParseErrorKind;
 
 use crate::parser::ParseError;
@@ -78,6 +81,12 @@ impl ToCss for Ident {
 		W: std::fmt::Write,
 	{
 		dest.write_str(&self.0)
+	}
+}
+
+impl PrecomputedHash for Ident {
+	fn precomputed_hash(&self) -> u32 {
+		murmur3_32(&mut Cursor::new(&self.0), 0).unwrap()
 	}
 }
 
@@ -234,6 +243,13 @@ impl<Set: string_cache::StaticAtomSet> std::borrow::Borrow<string_cache::Atom<Se
 	#[inline]
 	fn borrow(&self) -> &string_cache::Atom<Set> {
 		&self.0
+	}
+}
+
+impl<Set: string_cache::StaticAtomSet> PrecomputedHash for GenericAtomIdent<Set> {
+	#[inline]
+	fn precomputed_hash(&self) -> u32 {
+		self.0.precomputed_hash()
 	}
 }
 

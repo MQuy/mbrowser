@@ -5,9 +5,10 @@ use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use css::media_queries::media_list::MediaList;
 use css::parser::ParseError;
 use css::stylesheets::origin::Origin;
-use css::stylesheets::stylesheet::{ParserContext, QuirksMode, Stylesheet};
+use css::stylesheets::stylesheet::{ParserContext, Stylesheet};
 use cssparser::{Parser, ParserInput, SourceLocation, ToCss};
 use dyn_fmt::AsStrFormatExt;
+use selectors::context::QuirksMode;
 
 #[derive(Debug)]
 pub struct CSSError {

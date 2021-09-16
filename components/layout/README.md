@@ -148,3 +148,58 @@ There are [4 ways](https://calendar.perfplanet.com/2011/css-selector-performance
 ### Debugging
 
 - We can view [layers information](https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#layers) and how elements are painted in a canvas via [paint profiler](https://developer.chrome.com/docs/devtools/evaluate-performance/reference/#paint-profiler)
+
+### Design
+
+- Loop through stylesheet's css rules and build stylist's rules
+
+```rs
+// holds all selectors for a given document
+struct Stylist {
+  stylesheets: Vec<Stylesheet>,
+  rules: Vec<Rule>,
+  rules_source_order: u32,
+}
+
+struct Rule {
+  selector: Selector<Selectors>,
+  hashes: AncestorHashes,
+  source_order: u32,
+  style_rule: StyleRule,
+}
+```
+
+- Traverse dom tree, each element find matched selectors and combine them with inline style -> transform them into list of `ApplicableDeclarationBlock` -> calculate its computed values.
+
+```rs
+struct ApplicableDeclarationBlock {
+  source: StyleSource,
+  specificity: u32,
+}
+
+enum StyleSource {
+  StyleRule(StyleRule),
+  DeclarationBlock(PropertyDeclarationBlock),
+}
+```
+
+- Each dom element has a styles structure (is shared with layout tree) which contains all its computed values.
+
+```rs
+struct ComputedValues {
+  background: Background,
+  border: Border,
+  box_: Box,
+  font: Font,
+  margin: Margin,
+  outline: Outline,
+  padding: Padding,
+  position: Position,
+  text: Text,
+}
+
+struct ElementStyles {
+  primary: ComputedValues,
+  pseudos: HashMap<PseudoElement, ComputedValues>,
+}
+```

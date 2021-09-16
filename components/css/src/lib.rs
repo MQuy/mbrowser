@@ -10,8 +10,9 @@ pub mod properties;
 pub mod selectors;
 pub mod str;
 pub mod stylesheets;
+pub mod stylist;
 pub mod values;
 
-pub type LocalName = crate::values::GenericAtomIdent<html5ever::LocalNameStaticSet>;
-pub type Namespace = crate::values::GenericAtomIdent<html5ever::NamespaceStaticSet>;
-pub type Prefix = crate::values::GenericAtomIdent<html5ever::PrefixStaticSet>;
+pub type LocalName = values::GenericAtomIdent<html5ever::LocalNameStaticSet>;
+pub type Namespace = values::GenericAtomIdent<html5ever::NamespaceStaticSet>;
+pub type Prefix = values::GenericAtomIdent<html5ever::PrefixStaticSet>;

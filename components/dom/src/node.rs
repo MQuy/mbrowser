@@ -165,6 +165,14 @@ impl Node {
 		}
 	}
 
+	/// https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
+	pub fn inclusive_ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
+		SimpleNodeIterator {
+			current: Some(Rc::new(self.clone())),
+			next_node: |n: &Rc<Node>| n.get_parent_node(),
+		}
+	}
+
 	pub fn is_ancestor_of(&self, node: &Node) -> bool {
 		self.ancestors().any(|ancestor| ancestor.as_ref() == node)
 	}
@@ -519,14 +527,8 @@ impl TreeIterator {
 		}
 	}
 
-	pub fn next_skipping_children(&mut self) -> Option<Rc<Node>> {
-		let current = self.current.take()?;
-
-		self.next_skipping_children_impl(current)
-	}
-
 	fn next_skipping_children_impl(&mut self, current: Rc<Node>) -> Option<Rc<Node>> {
-		let iter = current.ancestors();
+		let iter = current.inclusive_ancestors();
 
 		for ancestor in iter {
 			if self.depth == 0 {

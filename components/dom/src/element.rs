@@ -39,6 +39,7 @@ pub struct Element {
 	is: RefCell<Option<LocalName>>,
 	attrs: RefCell<Vec<Rc<Attr>>>,
 	state: Cell<ElementState>,
+	selector_flags: RefCell<ElementSelectorFlags>,
 }
 
 impl crate::inheritance::Castable for Element {}
@@ -75,6 +76,7 @@ impl Element {
 			is: RefCell::new(None),
 			attrs: RefCell::new(Vec::new()),
 			state: Cell::new(ElementState::empty()),
+			selector_flags: RefCell::new(ElementSelectorFlags::empty()),
 		}
 	}
 
@@ -178,6 +180,22 @@ impl Element {
 
 	pub fn state(&self) -> ElementState {
 		self.state.get()
+	}
+
+	#[inline]
+	pub fn insert_selector_flags(&self, flags: ElementSelectorFlags) {
+		let f = self.selector_flags.borrow();
+		self.selector_flags.borrow_mut().set(*f | flags, true);
+	}
+
+	#[inline]
+	pub fn has_selector_flags(&self, flags: ElementSelectorFlags) -> bool {
+		self.selector_flags.borrow().contains(flags)
+	}
+
+	pub fn parent_element(&self) -> Option<Self> {
+		let parent_node = self.upcast::<Node>().get_parent_node();
+		parent_node.map(|n| n.downcast::<Element>().clone())
 	}
 }
 
@@ -355,8 +373,7 @@ impl selectors::Element for Element {
 	}
 
 	fn parent_element(&self) -> Option<Self> {
-		let parent_node = self.upcast::<Node>().get_parent_node();
-		parent_node.map(|n| n.downcast::<Element>().clone())
+		self.parent_element()
 	}
 
 	fn parent_node_is_shadow_root(&self) -> bool {
