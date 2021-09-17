@@ -4,12 +4,14 @@ use std::rc::{Rc, Weak};
 
 use crate::document::Document;
 use crate::error::{Error, ErrorResult, Fallible};
+use crate::global_scope::{get_from_global_scope, get_next_id};
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
 use crate::virtualmethods::{vtable_for, VirtualMethods};
 
 #[derive(Clone, Debug)]
 pub struct Node {
+	id: u64,
 	node_type_id: NodeTypeId,
 	parent_node: RefCell<Option<Weak<Node>>>,
 	first_child: RefCell<Option<Rc<Node>>>,
@@ -30,6 +32,7 @@ impl PartialEq for Node {
 impl Node {
 	pub fn new(node_type_id: NodeTypeId, doc: Option<Rc<Document>>) -> Node {
 		Node {
+			id: get_next_id(),
 			node_type_id,
 			parent_node: Default::default(),
 			first_child: Default::default(),
@@ -42,6 +45,10 @@ impl Node {
 				None => None,
 			}),
 		}
+	}
+
+	pub fn get_id(&self) -> u64 {
+		self.id
 	}
 
 	pub fn get_owner_doc(&self) -> Option<Rc<Document>> {
@@ -83,18 +90,18 @@ impl Node {
 
 	// https://dom.spec.whatwg.org/#dom-node-firstchild
 	pub fn get_first_child(&self) -> Option<Rc<Node>> {
-		self.first_child.borrow().deref().clone()
+		self.first_child.borrow().clone()
 	}
 
 	// https://dom.spec.whatwg.org/#dom-node-lastchild
 	pub fn get_last_child(&self) -> Option<Rc<Node>> {
-		self.last_child.borrow().deref().clone()
+		self.last_child.borrow().clone()
 	}
 
 	fn add_child(&self, new_child: Rc<Node>, before: Option<Rc<Node>>) {
 		new_child
 			.parent_node
-			.replace(Some(Rc::downgrade(&Rc::new(self.clone()))));
+			.replace(Some(Rc::downgrade(&get_from_global_scope(self.id))));
 
 		match before {
 			Some(ref before) => {
@@ -152,9 +159,9 @@ impl Node {
 	pub fn get_root(&self) -> Rc<Node> {
 		let parent_node = self.get_parent_node();
 		if parent_node.is_none() {
-			Rc::new(self.clone())
+			get_from_global_scope(self.id)
 		} else {
-			parent_node.clone().unwrap().get_root()
+			parent_node.unwrap().get_root()
 		}
 	}
 
@@ -168,7 +175,7 @@ impl Node {
 	/// https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
 	pub fn inclusive_ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
-			current: Some(Rc::new(self.clone())),
+			current: Some(get_from_global_scope(self.id)),
 			next_node: |n: &Rc<Node>| n.get_parent_node(),
 		}
 	}
@@ -179,7 +186,7 @@ impl Node {
 
 	/// Iterates over this node and all its descendants, in preorder.
 	pub fn traverse_preorder(&self) -> TreeIterator {
-		TreeIterator::new(Rc::new(self.clone()))
+		TreeIterator::new(get_from_global_scope(self.id))
 	}
 
 	// https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor

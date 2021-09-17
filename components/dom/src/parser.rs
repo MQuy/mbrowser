@@ -11,6 +11,7 @@ use crate::comment::Comment;
 use crate::document::Document;
 use crate::documenttype::DocumentType;
 use crate::element::Element;
+use crate::global_scope::add_to_global_scope;
 use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
 use crate::text::Text;
@@ -23,8 +24,10 @@ pub struct DomParser {
 
 impl Default for DomParser {
 	fn default() -> Self {
+		let document = Rc::new(Document::new(None));
+		add_to_global_scope(upcast(document.clone()));
 		Self {
-			document: Rc::new(Document::new(None)),
+			document,
 			current_line: 0,
 		}
 	}
@@ -55,8 +58,8 @@ impl TreeSink for DomParser {
 	fn elem_name<'a>(&'a self, target: &'a Self::Handle) -> html5ever::ExpandedName<'a> {
 		let elem = target.downcast::<Element>();
 		html5ever::ExpandedName {
-			ns: elem.namespace(),
-			local: elem.local_name(),
+			ns: &elem.namespace(),
+			local: &elem.local_name(),
 		}
 	}
 
@@ -71,8 +74,8 @@ impl TreeSink for DomParser {
 	}
 
 	fn create_comment(&mut self, text: html5ever::tendril::StrTendril) -> Self::Handle {
-		let comment = Comment::new(String::from(text), self.document.clone());
-		upcast(Rc::new(comment))
+		let comment = Comment::create(String::from(text), self.document.clone());
+		upcast(comment)
 	}
 
 	fn create_pi(
@@ -206,10 +209,8 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 			if let Some(ref text) = text {
 				text.upcast::<CharacterData>().append_data(&t);
 			} else {
-				let text = Text::new(String::from(t), parent.get_owner_doc().unwrap());
-				parent
-					.insert_before(upcast(Rc::new(text)), reference_child)
-					.unwrap();
+				let text = Text::create(String::from(t), parent.get_owner_doc().unwrap());
+				parent.insert_before(upcast(text), reference_child).unwrap();
 			}
 		},
 	}

@@ -15,6 +15,7 @@ use selectors::OpaqueElement;
 use crate::attr::{Attr, AttrValue};
 use crate::characterdata::CharacterData;
 use crate::document::Document;
+use crate::global_scope::{add_to_global_scope, get_from_global_scope, NodeRef};
 use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmldivelement::HTMLDivElement;
 use crate::htmlelement::HTMLElement;
@@ -23,7 +24,7 @@ use crate::htmlheadingelement::{HTMLHeadingElement, HeadingLevel};
 use crate::htmlhtmlelement::HTMLHtmlElement;
 use crate::htmlspanelement::HTMLSpanElement;
 use crate::htmlunknownelement::HTMLUnknownElement;
-use crate::inheritance::Castable;
+use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
 use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId};
 use crate::svgelement::SVGElement;
@@ -122,7 +123,7 @@ impl Element {
 			name,
 			namespace,
 			prefix,
-			Rc::new(self.clone()),
+			downcast(get_from_global_scope(self.node.get_id())),
 		);
 		self.push_attribute(attr);
 	}
@@ -132,6 +133,7 @@ impl Element {
 	}
 
 	pub fn get_attribute(&self, namespace: &Namespace, local_name: &LocalName) -> Option<Rc<Attr>> {
+		println!("{}", self.attrs.borrow().len());
 		self.attrs
 			.borrow()
 			.iter()
@@ -141,8 +143,8 @@ impl Element {
 			.map(|attr| attr.clone())
 	}
 
-	pub fn get_attrs(&self) -> Ref<'_, Vec<Rc<Attr>>> {
-		self.attrs.borrow()
+	pub fn get_attrs(&self) -> RefCell<Vec<Rc<Attr>>> {
+		self.attrs.clone()
 	}
 
 	pub fn parse_attribute(
@@ -171,14 +173,16 @@ impl Element {
 
 	pub fn create(name: QualName, is: Option<LocalName>, document: Rc<Document>) -> Rc<Element> {
 		let prefix = name.prefix.clone();
-		match name.ns {
+		let element = match name.ns {
 			ns!(html) => create_html_element(name, prefix, is, document),
 			ns!(svg) => create_svg_element(name, prefix, document),
 			_ => Rc::new(Element::new(name.local, name.ns, prefix, document)),
-		}
+		};
+		add_to_global_scope(upcast(element.clone()));
+		element
 	}
 
-	pub fn state(&self) -> ElementState {
+	pub fn get_state(&self) -> ElementState {
 		self.state.get()
 	}
 
@@ -217,6 +221,17 @@ impl VirtualMethods for Element {
 	}
 }
 
+macro_rules! make_element(
+        ($ctor: ident, $local: expr, $prefix: ident, $document: ident) => ({
+            let obj = $ctor::new($local, $prefix, $document);
+            Rc::new(obj.upcast::<Element>().clone())
+        });
+        ($ctor: ident, $local: expr, $prefix: ident, $document: ident, $($arg: expr),+) => ({
+            let obj = $ctor::new($local, $prefix, $document, $($arg),+);
+            Rc::new(obj.upcast::<Element>().clone())
+        })
+    );
+
 fn create_svg_element(
 	name: QualName,
 	prefix: Option<Prefix>,
@@ -224,20 +239,9 @@ fn create_svg_element(
 ) -> Rc<Element> {
 	assert_eq!(name.ns, ns!(svg));
 
-	macro_rules! make(
-        ($ctor:ident) => ({
-            let obj = $ctor::new(name.local, prefix, document);
-            Rc::new(obj.upcast::<Element>().clone())
-        });
-        ($ctor:ident, $($arg:expr),+) => ({
-            let obj = $ctor::new(name.local, prefix, document, $($arg),+);
-            Rc::new(obj.upcast::<Element>().clone())
-        })
-    );
-
 	match name.local {
-		local_name!("svg") => make!(SVGSVGElement),
-		_ => make!(SVGElement),
+		local_name!("svg") => make_element!(SVGSVGElement, name.local, prefix, document),
+		_ => make_element!(SVGElement, name.local, prefix, document),
 	}
 }
 
@@ -266,38 +270,65 @@ fn create_native_html_element(
 ) -> Rc<Element> {
 	assert_eq!(name.ns, ns!(html));
 
-	macro_rules! make(
-        ($ctor:ident) => ({
-            let obj = $ctor::new(name.local, prefix, document);
-            Rc::new(obj.upcast::<Element>().clone())
-        });
-        ($ctor:ident, $($arg:expr),+) => ({
-            let obj = $ctor::new(name.local, prefix, document, $($arg),+);
-            Rc::new(obj.upcast::<Element>().clone())
-        })
-    );
-
 	// This is a big match, and the IDs for inline-interned atoms are not very structured.
 	// Perhaps we should build a perfect hash from those IDs instead.
 	// https://html.spec.whatwg.org/multipage/#elements-in-the-dom
 	match name.local {
-		local_name!("b") => make!(HTMLElement),
-		local_name!("body") => make!(HTMLBodyElement),
-		local_name!("div") => make!(HTMLDivElement),
-		local_name!("footer") => make!(HTMLElement),
-		local_name!("h1") => make!(HTMLHeadingElement, HeadingLevel::Heading1),
-		local_name!("h2") => make!(HTMLHeadingElement, HeadingLevel::Heading2),
-		local_name!("h3") => make!(HTMLHeadingElement, HeadingLevel::Heading3),
-		local_name!("h4") => make!(HTMLHeadingElement, HeadingLevel::Heading4),
-		local_name!("h5") => make!(HTMLHeadingElement, HeadingLevel::Heading5),
-		local_name!("h6") => make!(HTMLHeadingElement, HeadingLevel::Heading6),
-		local_name!("head") => make!(HTMLHeadElement),
-		local_name!("header") => make!(HTMLElement),
-		local_name!("html") => make!(HTMLHtmlElement),
-		local_name!("span") => make!(HTMLSpanElement),
-		local_name!("strong") => make!(HTMLElement),
-		_ if is_valid_custom_element_name(&*name.local) => make!(HTMLElement),
-		_ => make!(HTMLUnknownElement),
+		local_name!("b") => make_element!(HTMLElement, name.local, prefix, document),
+		local_name!("body") => make_element!(HTMLBodyElement, name.local, prefix, document),
+		local_name!("div") => make_element!(HTMLDivElement, name.local, prefix, document),
+		local_name!("footer") => make_element!(HTMLElement, name.local, prefix, document),
+		local_name!("h1") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading1
+		),
+		local_name!("h2") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading2
+		),
+		local_name!("h3") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading3
+		),
+		local_name!("h4") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading4
+		),
+		local_name!("h5") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading5
+		),
+		local_name!("h6") => make_element!(
+			HTMLHeadingElement,
+			name.local,
+			prefix,
+			document,
+			HeadingLevel::Heading6
+		),
+		local_name!("head") => make_element!(HTMLHeadElement, name.local, prefix, document),
+		local_name!("header") => make_element!(HTMLElement, name.local, prefix, document),
+		local_name!("html") => make_element!(HTMLHtmlElement, name.local, prefix, document),
+		local_name!("span") => make_element!(HTMLSpanElement, name.local, prefix, document),
+		local_name!("strong") => make_element!(HTMLElement, name.local, prefix, document),
+		_ if is_valid_custom_element_name(&*name.local) => {
+			make_element!(HTMLElement, name.local, prefix, document)
+		},
+		_ => make_element!(HTMLUnknownElement, name.local, prefix, document),
 	}
 }
 
@@ -365,7 +396,7 @@ fn is_potential_custom_element_char(c: char) -> bool {
 		|| (c >= '\u{10000}' && c <= '\u{EFFFF}')
 }
 
-impl selectors::Element for Element {
+impl selectors::Element for NodeRef {
 	type Impl = Selectors;
 
 	fn opaque(&self) -> OpaqueElement {
@@ -389,31 +420,28 @@ impl selectors::Element for Element {
 	}
 
 	fn prev_sibling_element(&self) -> Option<Self> {
-		self.upcast::<Node>()
-			.get_prev_sibling()
-			.map(|s| s.downcast::<Element>().clone())
+		self.prev_sibling_element()
 	}
 
 	fn next_sibling_element(&self) -> Option<Self> {
-		self.upcast::<Node>()
-			.get_next_sibling()
-			.map(|s| s.downcast::<Element>().clone())
+		self.next_sibling_element()
 	}
 
 	fn is_html_element_in_html_document(&self) -> bool {
-		*self.namespace() == ns!(html)
+		self.get_namespace() == ns!(html)
 	}
 
 	fn has_local_name(&self, local_name: &LocalName) -> bool {
-		local_name == self.local_name()
+		self.get_local_name() == *local_name
 	}
 
 	fn has_namespace(&self, ns: &Namespace) -> bool {
-		self.namespace() == ns
+		self.get_namespace() == *ns
 	}
 
 	fn is_same_type(&self, other: &Self) -> bool {
-		self.local_name() == other.local_name() && self.namespace() == other.namespace()
+		self.get_local_name() == other.get_local_name()
+			&& self.get_namespace() == other.get_namespace()
 	}
 
 	fn attr_matches(
@@ -426,7 +454,7 @@ impl selectors::Element for Element {
 			NamespaceConstraint::Specific(ref ns) => self
 				.get_attribute(&ns.0, &local_name.0)
 				.map_or(false, |attr| attr.value().eval_selector(operation)),
-			NamespaceConstraint::Any => self.attrs.borrow().iter().any(|attr| {
+			NamespaceConstraint::Any => self.get_attrs().borrow().iter().any(|attr| {
 				*attr.get_local_name() == *local_name.0 && attr.value().eval_selector(operation)
 			}),
 		}
@@ -463,9 +491,9 @@ impl selectors::Element for Element {
 			| NonTSPseudoClass::OutOfRange
 			| NonTSPseudoClass::Default
 			| NonTSPseudoClass::Active
-			| NonTSPseudoClass::Hover => Element::state(self).contains(pseudo_class.state_flag()),
+			| NonTSPseudoClass::Hover => self.state().contains(pseudo_class.state_flag()),
 
-			NonTSPseudoClass::ReadOnly => !Element::state(self).contains(pseudo_class.state_flag()),
+			NonTSPseudoClass::ReadOnly => self.state().contains(pseudo_class.state_flag()),
 
 			NonTSPseudoClass::AnyLink => self.is_link(),
 			NonTSPseudoClass::Link => {
@@ -486,8 +514,7 @@ impl selectors::Element for Element {
 	}
 
 	fn is_link(&self) -> bool {
-		let node = self.upcast::<Node>();
-		match node.get_node_type_id() {
+		match self.get_node_type_id() {
 			// https://html.spec.whatwg.org/multipage/#selector-link
 			NodeTypeId::Element(ElementTypeId::HTMLElement(
 				HTMLElementTypeId::HTMLAnchorElement,
@@ -513,7 +540,7 @@ impl selectors::Element for Element {
 	}
 
 	fn has_class(&self, name: &Ident, case_sensitivity: CaseSensitivity) -> bool {
-		self.get_attribute(&ns!(), &local_name!("class"))
+		self.get_attribute(&ns!(html), &local_name!("class"))
 			.map_or(false, |attr| {
 				attr.as_tokens().map_or(false, |values| {
 					values.iter().any(|class_name| {
@@ -532,7 +559,7 @@ impl selectors::Element for Element {
 	}
 
 	fn is_empty(&self) -> bool {
-		self.node.children().all(|node| {
+		self.children().all(|node| {
 			if node.get_node_type_id().is_element() {
 				return false;
 			}
@@ -544,7 +571,7 @@ impl selectors::Element for Element {
 	}
 
 	fn is_root(&self) -> bool {
-		match self.node.get_parent_node() {
+		match self.get_parent_node() {
 			None => false,
 			Some(node) => node.get_node_type_id().is_document(),
 		}

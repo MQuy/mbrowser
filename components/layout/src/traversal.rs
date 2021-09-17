@@ -1,17 +1,17 @@
 use css::stylist::Stylist;
-use dom::element::Element;
+use dom::global_scope::NodeRef;
 use selectors::context::{MatchingContext, MatchingMode};
 use selectors::matching::{matches_selector, ElementSelectorFlags};
 
 use crate::applicable_declaration_block::ApplicableDeclarationBlock;
 
-pub fn compute_values(element: &Element, stylist: &Stylist) {
+pub fn compute_values(element: NodeRef, stylist: &Stylist) {
 	let mut matching_context =
 		MatchingContext::new(MatchingMode::Normal, None, None, stylist.get_quirks_mode());
 
 	// Apply the selector flags. We should be in sequential mode
 	// already, so we can directly apply the parent flags.
-	let mut set_selector_flags = |element: &Element, flags: ElementSelectorFlags| {
+	let mut set_selector_flags = |element: &NodeRef, flags: ElementSelectorFlags| {
 		let self_flags = flags.for_self();
 		if !self_flags.is_empty() {
 			element.insert_selector_flags(self_flags);
@@ -30,11 +30,12 @@ pub fn compute_values(element: &Element, stylist: &Stylist) {
 			&rule.selector,
 			0,
 			Some(&rule.hashes),
-			element,
+			&element,
 			&mut matching_context,
 			&mut set_selector_flags,
 		) {
 			matching_rules.push(ApplicableDeclarationBlock::from_rule(rule));
+			println!("{}", rule.selector.specificity());
 		}
 	}
 }

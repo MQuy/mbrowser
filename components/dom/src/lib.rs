@@ -8,6 +8,7 @@ pub mod documentfragment;
 pub mod documenttype;
 pub mod element;
 pub mod error;
+pub mod global_scope;
 pub mod htmlbaseelement;
 pub mod htmlbodyelement;
 pub mod htmldivelement;

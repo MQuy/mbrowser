@@ -2,7 +2,8 @@ use std::rc::Rc;
 
 use crate::characterdata::CharacterData;
 use crate::document::Document;
-use crate::inheritance::{Castable, DerivedFrom};
+use crate::global_scope::add_to_global_scope;
+use crate::inheritance::{upcast, Castable, DerivedFrom};
 use crate::node::Node;
 use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
 
@@ -21,6 +22,12 @@ impl Comment {
 				document,
 			),
 		}
+	}
+
+	pub fn create(text: String, document: Rc<Document>) -> Rc<Self> {
+		let comment = Rc::new(Self::new(text, document));
+		add_to_global_scope(upcast(comment.clone()));
+		comment
 	}
 }
 
