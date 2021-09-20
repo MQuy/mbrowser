@@ -2,9 +2,10 @@ use std::fmt::Display;
 use std::rc::Rc;
 
 use common::not_supported;
-use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode, TreeSink};
+use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode as MarkupQuirksMode, TreeSink};
 use html5ever::{Attribute, LocalName, QualName};
 use log::debug;
+use selectors::context::QuirksMode;
 
 use crate::characterdata::CharacterData;
 use crate::comment::Comment;
@@ -16,6 +17,7 @@ use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
 use crate::text::Text;
 use crate::virtualmethods::vtable_for;
+use crate::window::{CSSErrorReporter, Window};
 
 pub struct DomParser {
 	pub document: Rc<Document>,
@@ -24,7 +26,8 @@ pub struct DomParser {
 
 impl Default for DomParser {
 	fn default() -> Self {
-		let document = Rc::new(Document::new(None));
+		let window = Window::new(CSSErrorReporter::new());
+		let document = Rc::new(Document::new(Rc::new(window), None));
 		add_to_global_scope(upcast(document.clone()));
 		Self {
 			document,
@@ -136,7 +139,12 @@ impl TreeSink for DomParser {
 		x == y
 	}
 
-	fn set_quirks_mode(&mut self, mode: QuirksMode) {
+	fn set_quirks_mode(&mut self, mode: MarkupQuirksMode) {
+		let mode = match mode {
+			MarkupQuirksMode::Quirks => QuirksMode::Quirks,
+			MarkupQuirksMode::LimitedQuirks => QuirksMode::LimitedQuirks,
+			MarkupQuirksMode::NoQuirks => QuirksMode::NoQuirks,
+		};
 		self.document.set_quirks_mode(mode);
 	}
 

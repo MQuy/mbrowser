@@ -25,6 +25,9 @@ pub fn compute_values(element: NodeRef, stylist: &Stylist) {
 	};
 
 	let mut matching_rules = Vec::with_capacity(1);
+	if let Some(style) = &*element.get_style_attribute().borrow() {
+		matching_rules.push(ApplicableDeclarationBlock::from_style(style));
+	}
 	for rule in stylist.get_rules() {
 		if matches_selector(
 			&rule.selector,
@@ -35,7 +38,7 @@ pub fn compute_values(element: NodeRef, stylist: &Stylist) {
 			&mut set_selector_flags,
 		) {
 			matching_rules.push(ApplicableDeclarationBlock::from_rule(rule));
-			println!("{}", rule.selector.specificity());
 		}
 	}
+	println!("{:?}", matching_rules);
 }

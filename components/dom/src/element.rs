@@ -1,10 +1,13 @@
 use std::cell::{Cell, Ref, RefCell};
 use std::rc::Rc;
 
+use common::not_supported;
 use css::element_state::ElementState;
+use css::properties::declaration_block::{parse_style_attribute, PropertyDeclarationBlock};
 use css::selectors::nonts_pseudo_class::NonTSPseudoClass;
 use css::selectors::pseudo_element::PseudoElement;
 use css::selectors::select::Selectors;
+use css::stylesheets::css_rule::CssRuleType;
 use css::values::{CSSString, Ident};
 use html5ever::{local_name, namespace_url, ns, LocalName, Namespace, Prefix, QualName};
 use selectors::attr::{AttrSelectorOperation, CaseSensitivity, NamespaceConstraint};
@@ -40,6 +43,7 @@ pub struct Element {
 	is: RefCell<Option<LocalName>>,
 	attrs: RefCell<Vec<Rc<Attr>>>,
 	state: Cell<ElementState>,
+	style_attribute: RefCell<Option<PropertyDeclarationBlock>>,
 	selector_flags: RefCell<ElementSelectorFlags>,
 }
 
@@ -75,6 +79,7 @@ impl Element {
 			namespace,
 			prefix,
 			is: RefCell::new(None),
+			style_attribute: RefCell::new(None),
 			attrs: RefCell::new(Vec::new()),
 			state: Cell::new(ElementState::empty()),
 			selector_flags: RefCell::new(ElementSelectorFlags::empty()),
@@ -129,11 +134,13 @@ impl Element {
 	}
 
 	pub fn push_attribute(&self, attr: Attr) {
+		if attr.get_namespace() == &ns!() {
+			vtable_for(self.upcast()).attribute_mutated(&attr, AttributeMutation::Set(None));
+		}
 		self.attrs.borrow_mut().push(Rc::from(attr));
 	}
 
 	pub fn get_attribute(&self, namespace: &Namespace, local_name: &LocalName) -> Option<Rc<Attr>> {
-		println!("{}", self.attrs.borrow().len());
 		self.attrs
 			.borrow()
 			.iter()
@@ -197,9 +204,8 @@ impl Element {
 		self.selector_flags.borrow().contains(flags)
 	}
 
-	pub fn parent_element(&self) -> Option<Self> {
-		let parent_node = self.upcast::<Node>().get_parent_node();
-		parent_node.map(|n| n.downcast::<Element>().clone())
+	pub fn get_style_attribute(&self) -> &RefCell<Option<PropertyDeclarationBlock>> {
+		&self.style_attribute
 	}
 }
 
@@ -217,6 +223,30 @@ impl VirtualMethods for Element {
 				.super_type()
 				.unwrap()
 				.parse_plain_attribute(name, value),
+		}
+	}
+
+	fn attribute_mutated(&self, attr: &Attr, mutation: AttributeMutation) {
+		match attr.get_local_name() {
+			&local_name!("style") => {
+				let changed_style = match mutation {
+					AttributeMutation::Set(..) => match self.node.get_owner_doc() {
+						Some(document) => {
+							let window = document.get_window();
+							Some(parse_style_attribute(
+								&attr.value(),
+								Some(window.get_error_reporter()),
+								document.get_quirks_mode(),
+								CssRuleType::Style,
+							))
+						},
+						None => not_supported!(),
+					},
+					AttributeMutation::Removed => None,
+				};
+				*self.style_attribute.borrow_mut() = changed_style;
+			},
+			_ => {},
 		}
 	}
 }
@@ -396,6 +426,33 @@ fn is_potential_custom_element_char(c: char) -> bool {
 		|| (c >= '\u{10000}' && c <= '\u{EFFFF}')
 }
 
+#[derive(Clone, Copy)]
+pub enum AttributeMutation<'a> {
+	/// The attribute is set, keep track of old value.
+	/// <https://dom.spec.whatwg.org/#attribute-is-set>
+	Set(Option<&'a AttrValue>),
+
+	/// The attribute is removed.
+	/// <https://dom.spec.whatwg.org/#attribute-is-removed>
+	Removed,
+}
+
+impl<'a> AttributeMutation<'a> {
+	pub fn is_removal(&self) -> bool {
+		match *self {
+			AttributeMutation::Removed => true,
+			AttributeMutation::Set(..) => false,
+		}
+	}
+
+	pub fn new_value<'b>(&self, attr: &'b Attr) -> Option<Ref<'b, AttrValue>> {
+		match *self {
+			AttributeMutation::Set(_) => Some(attr.value()),
+			AttributeMutation::Removed => None,
+		}
+	}
+}
+
 impl selectors::Element for NodeRef {
 	type Impl = Selectors;
 
@@ -532,7 +589,7 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn has_id(&self, id: &Ident, case_sensitivity: CaseSensitivity) -> bool {
-		self.get_attribute(&ns!(html), &local_name!("id"))
+		self.get_attribute(&ns!(), &local_name!("id"))
 			.as_ref()
 			.map_or(false, |attr| {
 				case_sensitivity.eq(id.0.as_bytes(), attr.get_value().as_bytes())
@@ -540,7 +597,7 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn has_class(&self, name: &Ident, case_sensitivity: CaseSensitivity) -> bool {
-		self.get_attribute(&ns!(html), &local_name!("class"))
+		self.get_attribute(&ns!(), &local_name!("class"))
 			.map_or(false, |attr| {
 				attr.as_tokens().map_or(false, |values| {
 					values.iter().any(|class_name| {

@@ -23,6 +23,7 @@ fn walk(node: &Node, depth: usize) {
 		NodeTypeId::Element(_) => node
 			.downcast::<Element>()
 			.get_attrs()
+			.borrow()
 			.iter()
 			.map(|attr| format!("{}={}", attr.get_name(), attr.get_value()))
 			.collect(),

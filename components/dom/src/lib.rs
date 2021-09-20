@@ -28,3 +28,4 @@ pub mod svggraphicselement;
 pub mod svgsvgelement;
 pub mod text;
 pub mod virtualmethods;
+pub mod window;

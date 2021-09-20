@@ -1,9 +1,10 @@
 use core::panic;
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use css::element_state::ElementState;
+use css::properties::declaration_block::PropertyDeclarationBlock;
 use html5ever::{LocalName, Namespace};
 use selectors::matching::ElementSelectorFlags;
 
@@ -78,6 +79,13 @@ impl NodeRef {
 	pub fn insert_selector_flags(&self, flags: ElementSelectorFlags) {
 		assert!(self.0.get_node_type_id().is_element());
 		downcast::<Node, Element>(self.0.clone()).insert_selector_flags(flags)
+	}
+
+	pub fn get_style_attribute(&self) -> RefCell<Option<PropertyDeclarationBlock>> {
+		assert!(self.0.get_node_type_id().is_element());
+		downcast::<Node, Element>(self.0.clone())
+			.get_style_attribute()
+			.clone()
 	}
 }
 

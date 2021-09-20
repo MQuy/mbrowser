@@ -377,6 +377,12 @@ pub enum PropertyDeclaration {
 	CSSWideKeyword(WideKeywordDeclaration),
 }
 
+impl std::fmt::Debug for PropertyDeclaration {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		todo!()
+	}
+}
+
 impl PropertyDeclaration {
 	/// Returns a CSS-wide keyword declaration for a given property.
 	#[inline]

@@ -7,9 +7,8 @@ use css::stylesheets::origin::Origin;
 use css::stylesheets::stylesheet::Stylesheet;
 use css::stylist::Stylist;
 use cssparser::SourceLocation;
-use dom::element::Element;
 use dom::global_scope::NodeRef;
-use dom::inheritance::{downcast, Castable};
+use dom::inheritance::Castable;
 use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
@@ -50,7 +49,9 @@ fn demo() {
 	let sink = DomParser::default();
 
 	let mut parser = driver::parse_document(sink, Default::default());
-	parser.process(StrTendril::from(r#"<div class="hello">Hello world!</div>"#));
+	parser.process(StrTendril::from(
+		r#"<div style="color: red;">Hello world!</div>"#,
+	));
 
 	let output = parser.finish();
 
@@ -58,7 +59,7 @@ fn demo() {
 	let media = Rc::new(MediaList::empty());
 	let stylesheet = Stylesheet::from_str(
 		r#"
-.hello {
+#hello {
 	align-content: normal;
 }
     "#,

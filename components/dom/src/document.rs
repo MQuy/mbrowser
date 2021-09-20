@@ -1,14 +1,16 @@
+use std::borrow::Borrow;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use common::url::BrowserUrl;
 use encoding_rs::{Encoding, UTF_8};
-use html5ever::tree_builder::QuirksMode;
 use mime::Mime;
+use selectors::context::QuirksMode;
 
 use crate::htmlbaseelement::HTMLBaseElement;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
+use crate::window::Window;
 
 #[derive(Clone, Debug)]
 #[repr(C)]
@@ -19,10 +21,11 @@ pub struct Document {
 	encoding: &'static Encoding,
 	quirks_mode: Cell<QuirksMode>,
 	base_element: RefCell<Option<Rc<HTMLBaseElement>>>,
+	window: Rc<Window>,
 }
 
 impl Document {
-	pub fn new(url: Option<BrowserUrl>) -> Self {
+	pub fn new(window: Rc<Window>, url: Option<BrowserUrl>) -> Self {
 		let url = url.unwrap_or_else(|| BrowserUrl::parse("about:blank").unwrap());
 		Self {
 			node: Node::new(crate::nodetype::NodeTypeId::Document, None),
@@ -31,7 +34,12 @@ impl Document {
 			quirks_mode: Cell::new(QuirksMode::NoQuirks),
 			base_element: RefCell::new(None),
 			url: RefCell::new(url),
+			window: window.clone(),
 		}
+	}
+
+	pub fn get_quirks_mode(&self) -> QuirksMode {
+		self.quirks_mode.borrow().get()
 	}
 
 	pub fn set_quirks_mode(&self, mode: QuirksMode) {
@@ -61,6 +69,10 @@ impl Document {
 	// https://html.spec.whatwg.org/multipage/#fallback-base-url
 	pub fn fallback_base_url(&self) -> BrowserUrl {
 		self.url()
+	}
+
+	pub fn get_window(&self) -> Rc<Window> {
+		self.window.clone()
 	}
 }
 

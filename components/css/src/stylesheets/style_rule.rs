@@ -8,7 +8,7 @@ use crate::properties::declaration_block::PropertyDeclarationBlock;
 use crate::selectors::select::Selectors;
 
 /// A style rule, with selectors and declarations.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct StyleRule {
 	/// The list of selectors in this rule.
 	pub selectors: SelectorList<Selectors>,

@@ -2,9 +2,9 @@ use std::rc::Rc;
 
 use html5ever::LocalName;
 
-use crate::attr::AttrValue;
+use crate::attr::{Attr, AttrValue};
 use crate::document::Document;
-use crate::element::Element;
+use crate::element::{AttributeMutation, Element};
 use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmlelement::HTMLElement;
 use crate::inheritance::Castable;
@@ -53,6 +53,15 @@ pub trait VirtualMethods {
 	fn pop(&self) {
 		if let Some(ref s) = self.super_type() {
 			s.pop();
+		}
+	}
+
+	/// Called when attributes of a node are mutated.
+	/// <https://dom.spec.whatwg.org/#attribute-is-set>
+	/// <https://dom.spec.whatwg.org/#attribute-is-removed>
+	fn attribute_mutated(&self, attr: &Attr, mutation: AttributeMutation) {
+		if let Some(s) = self.super_type() {
+			s.attribute_mutated(attr, mutation);
 		}
 	}
 }

@@ -3,23 +3,26 @@ use std::vec::Drain;
 
 use cssparser::{
 	parse_important, AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Delimiter,
-	Parser,
+	Parser, ParserInput,
 };
+use selectors::context::QuirksMode;
 use selectors::SelectorList;
 use smallbitvec::SmallBitVec;
 
 use super::longhand_id::LonghandId;
 use crate::css_writer::{CssWriter, ToCss};
-use crate::error_reporting::ContextualParseError;
+use crate::error_reporting::{ContextualParseError, ParseErrorReporter};
 use crate::parser::ParseError;
 use crate::properties::declaration::{Importance, PropertyDeclaration};
 use crate::properties::longhand_id::LonghandIdSet;
 use crate::properties::property_id::PropertyId;
 use crate::selectors::select::Selectors;
+use crate::stylesheets::css_rule::CssRuleType;
+use crate::stylesheets::origin::Origin;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PropertyDeclarationBlock {
 	declarations: Vec<PropertyDeclaration>,
 	declarations_importance: SmallBitVec,
@@ -252,6 +255,18 @@ fn report_css_errors(
 	for (error, slice, property) in errors.drain(..) {
 		report_one_css_error(context, Some(block), selectors, error, slice, property)
 	}
+}
+
+pub fn parse_style_attribute(
+	input: &str,
+	error_reporter: Option<&dyn ParseErrorReporter>,
+	quirks_mode: QuirksMode,
+	rule_type: CssRuleType,
+) -> PropertyDeclarationBlock {
+	let context = ParserContext::new(Origin::Author, Some(rule_type), quirks_mode, error_reporter);
+
+	let mut input = ParserInput::new(input);
+	parse_property_declaration_list(&context, &mut Parser::new(&mut input), None)
 }
 
 /// Parse a list of property declarations and return a property declaration
