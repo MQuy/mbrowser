@@ -48,7 +48,7 @@ impl HTMLBaseElement {
 			);
 		let document = document_from_node(self);
 		let base = document.fallback_base_url();
-		let parsed = base.join(&href.get_value());
+		let parsed = base.join(&href.value().to_string());
 		parsed.unwrap_or(base)
 	}
 }

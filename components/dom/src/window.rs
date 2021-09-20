@@ -13,7 +13,7 @@ impl Window {
 		Window { error_reporter }
 	}
 
-	pub fn get_error_reporter(&self) -> &CSSErrorReporter {
+	pub fn error_reporter(&self) -> &CSSErrorReporter {
 		&self.error_reporter
 	}
 }

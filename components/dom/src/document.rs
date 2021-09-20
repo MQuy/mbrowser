@@ -38,7 +38,7 @@ impl Document {
 		}
 	}
 
-	pub fn get_quirks_mode(&self) -> QuirksMode {
+	pub fn quirks_mode(&self) -> QuirksMode {
 		self.quirks_mode.borrow().get()
 	}
 
@@ -71,7 +71,7 @@ impl Document {
 		self.url()
 	}
 
-	pub fn get_window(&self) -> Rc<Window> {
+	pub fn window(&self) -> Rc<Window> {
 		self.window.clone()
 	}
 }

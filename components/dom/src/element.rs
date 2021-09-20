@@ -25,6 +25,7 @@ use crate::htmlelement::HTMLElement;
 use crate::htmlheadelement::HTMLHeadElement;
 use crate::htmlheadingelement::{HTMLHeadingElement, HeadingLevel};
 use crate::htmlhtmlelement::HTMLHtmlElement;
+use crate::htmlparagraphelement::HTMLParagraphElement;
 use crate::htmlspanelement::HTMLSpanElement;
 use crate::htmlunknownelement::HTMLUnknownElement;
 use crate::inheritance::{downcast, upcast, Castable};
@@ -95,10 +96,12 @@ impl Element {
 	}
 
 	pub fn set_attribute(&self, qname: QualName, value: String, prefix: Option<Prefix>) {
-		if let Some(attr) =
-			self.attrs.borrow().iter().find(|attr| {
-				*attr.get_local_name() == qname.local && *attr.get_namespace() == qname.ns
-			}) {
+		if let Some(attr) = self
+			.attrs
+			.borrow()
+			.iter()
+			.find(|attr| *attr.local_name() == qname.local && *attr.namespace() == qname.ns)
+		{
 			attr.set_value(AttrValue::String(value));
 			return;
 		}
@@ -106,7 +109,7 @@ impl Element {
 		let name = match prefix {
 			None => qname.local.clone(),
 			Some(ref prefix) => {
-				let name = format!("{}:{}", &**prefix, &*qname.local);
+				let name = format!("{}:{}", prefix, qname.local);
 				LocalName::from(name)
 			},
 		};
@@ -128,13 +131,13 @@ impl Element {
 			name,
 			namespace,
 			prefix,
-			downcast(get_from_global_scope(self.node.get_id())),
+			downcast(get_from_global_scope(self.node.id())),
 		);
 		self.push_attribute(attr);
 	}
 
 	pub fn push_attribute(&self, attr: Attr) {
-		if attr.get_namespace() == &ns!() {
+		if attr.namespace() == &ns!() {
 			vtable_for(self.upcast()).attribute_mutated(&attr, AttributeMutation::Set(None));
 		}
 		self.attrs.borrow_mut().push(Rc::from(attr));
@@ -144,13 +147,11 @@ impl Element {
 		self.attrs
 			.borrow()
 			.iter()
-			.find(|attr| {
-				*attr.get_local_name() == *local_name && *attr.get_namespace() == *namespace
-			})
+			.find(|attr| *attr.local_name() == *local_name && *attr.namespace() == *namespace)
 			.map(|attr| attr.clone())
 	}
 
-	pub fn get_attrs(&self) -> RefCell<Vec<Rc<Attr>>> {
+	pub fn attrs(&self) -> RefCell<Vec<Rc<Attr>>> {
 		self.attrs.clone()
 	}
 
@@ -171,7 +172,7 @@ impl Element {
 		self.attrs
 			.borrow()
 			.iter()
-			.any(|attr| attr.get_local_name() == local_name && attr.get_namespace() == &ns!())
+			.any(|attr| attr.local_name() == local_name && attr.namespace() == &ns!())
 	}
 
 	pub fn set_is(&self, is: LocalName) {
@@ -189,7 +190,7 @@ impl Element {
 		element
 	}
 
-	pub fn get_state(&self) -> ElementState {
+	pub fn state(&self) -> ElementState {
 		self.state.get()
 	}
 
@@ -204,7 +205,7 @@ impl Element {
 		self.selector_flags.borrow().contains(flags)
 	}
 
-	pub fn get_style_attribute(&self) -> &RefCell<Option<PropertyDeclarationBlock>> {
+	pub fn style_attribute(&self) -> &RefCell<Option<PropertyDeclarationBlock>> {
 		&self.style_attribute
 	}
 }
@@ -227,16 +228,16 @@ impl VirtualMethods for Element {
 	}
 
 	fn attribute_mutated(&self, attr: &Attr, mutation: AttributeMutation) {
-		match attr.get_local_name() {
+		match attr.local_name() {
 			&local_name!("style") => {
 				let changed_style = match mutation {
-					AttributeMutation::Set(..) => match self.node.get_owner_doc() {
+					AttributeMutation::Set(..) => match self.node.owner_doc() {
 						Some(document) => {
-							let window = document.get_window();
+							let window = document.window();
 							Some(parse_style_attribute(
 								&attr.value(),
-								Some(window.get_error_reporter()),
-								document.get_quirks_mode(),
+								Some(window.error_reporter()),
+								document.quirks_mode(),
 								CssRuleType::Style,
 							))
 						},
@@ -355,6 +356,7 @@ fn create_native_html_element(
 		local_name!("html") => make_element!(HTMLHtmlElement, name.local, prefix, document),
 		local_name!("span") => make_element!(HTMLSpanElement, name.local, prefix, document),
 		local_name!("strong") => make_element!(HTMLElement, name.local, prefix, document),
+		local_name!("p") => make_element!(HTMLParagraphElement, name.local, prefix, document),
 		_ if is_valid_custom_element_name(&*name.local) => {
 			make_element!(HTMLElement, name.local, prefix, document)
 		},
@@ -485,20 +487,19 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn is_html_element_in_html_document(&self) -> bool {
-		self.get_namespace() == ns!(html)
+		self.namespace() == ns!(html)
 	}
 
 	fn has_local_name(&self, local_name: &LocalName) -> bool {
-		self.get_local_name() == *local_name
+		self.local_name() == *local_name
 	}
 
 	fn has_namespace(&self, ns: &Namespace) -> bool {
-		self.get_namespace() == *ns
+		self.namespace() == *ns
 	}
 
 	fn is_same_type(&self, other: &Self) -> bool {
-		self.get_local_name() == other.get_local_name()
-			&& self.get_namespace() == other.get_namespace()
+		self.local_name() == other.local_name() && self.namespace() == other.namespace()
 	}
 
 	fn attr_matches(
@@ -511,8 +512,8 @@ impl selectors::Element for NodeRef {
 			NamespaceConstraint::Specific(ref ns) => self
 				.get_attribute(&ns.0, &local_name.0)
 				.map_or(false, |attr| attr.value().eval_selector(operation)),
-			NamespaceConstraint::Any => self.get_attrs().borrow().iter().any(|attr| {
-				*attr.get_local_name() == *local_name.0 && attr.value().eval_selector(operation)
+			NamespaceConstraint::Any => self.attrs().borrow().iter().any(|attr| {
+				*attr.local_name() == *local_name.0 && attr.value().eval_selector(operation)
 			}),
 		}
 	}
@@ -571,7 +572,7 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn is_link(&self) -> bool {
-		match self.get_node_type_id() {
+		match self.node_type_id() {
 			// https://html.spec.whatwg.org/multipage/#selector-link
 			NodeTypeId::Element(ElementTypeId::HTMLElement(
 				HTMLElementTypeId::HTMLAnchorElement,
@@ -592,7 +593,7 @@ impl selectors::Element for NodeRef {
 		self.get_attribute(&ns!(), &local_name!("id"))
 			.as_ref()
 			.map_or(false, |attr| {
-				case_sensitivity.eq(id.0.as_bytes(), attr.get_value().as_bytes())
+				case_sensitivity.eq(id.0.as_bytes(), attr.value().to_string().as_bytes())
 			})
 	}
 
@@ -617,10 +618,10 @@ impl selectors::Element for NodeRef {
 
 	fn is_empty(&self) -> bool {
 		self.children().all(|node| {
-			if node.get_node_type_id().is_element() {
+			if node.node_type_id().is_element() {
 				return false;
 			}
-			if node.get_node_type_id().is_character_data_text() {
+			if node.node_type_id().is_character_data_text() {
 				return node.downcast::<CharacterData>().data().is_empty();
 			}
 			return true;
@@ -628,9 +629,9 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn is_root(&self) -> bool {
-		match self.get_parent_node() {
+		match self.parent_node() {
 			None => false,
-			Some(node) => node.get_node_type_id().is_document(),
+			Some(node) => node.node_type_id().is_document(),
 		}
 	}
 }

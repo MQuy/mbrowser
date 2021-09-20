@@ -1,2 +1,2 @@
 pub mod applicable_declaration_block;
-pub mod traversal;
+pub mod rule_colectors;

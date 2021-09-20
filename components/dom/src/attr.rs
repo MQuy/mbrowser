@@ -13,6 +13,7 @@ use crate::element::Element;
 use crate::str::{read_numbers, split_html_space_chars, HTML_SPACE_CHARACTERS};
 
 const UNSIGNED_LONG_MAX: u32 = 2147483647;
+
 // https://dom.spec.whatwg.org/#interface-attr
 #[derive(Debug)]
 pub struct Attr {
@@ -42,48 +43,37 @@ impl Attr {
 		}
 	}
 
-	pub fn get_owner(&self) -> Option<Rc<Element>> {
+	pub fn owner(&self) -> Option<Rc<Element>> {
 		self.owner.upgrade()
 	}
 
-	#[inline]
-	pub fn get_name(&self) -> String {
+	pub fn name(&self) -> String {
 		self.name.to_string()
-	}
-
-	#[inline]
-	pub fn get_value(&self) -> String {
-		String::from(&**self.value.borrow())
 	}
 
 	pub fn set_value(&self, value: AttrValue) {
 		self.value.replace(value);
 	}
 
-	#[inline]
 	pub fn value(&self) -> Ref<AttrValue> {
 		self.value.borrow()
 	}
 
-	#[inline]
-	pub fn get_local_name(&self) -> &LocalName {
+	pub fn local_name(&self) -> &LocalName {
 		&self.local_name
 	}
 
-	#[inline]
-	pub fn get_prefix(&self) -> Option<&Prefix> {
+	pub fn prefix(&self) -> Option<&Prefix> {
 		match self.prefix {
 			Some(ref prefix) => Some(prefix),
 			None => None,
 		}
 	}
 
-	#[inline]
-	pub fn get_namespace(&self) -> &Namespace {
+	pub fn namespace(&self) -> &Namespace {
 		&self.namespace
 	}
 
-	#[inline]
 	pub fn as_tokens(&self) -> Option<Vec<String>> {
 		match *self.value() {
 			AttrValue::TokenList(_, ref tokens) => Some(tokens.clone()),
@@ -157,6 +147,12 @@ impl AttrValue {
 		// and doing Atom comparisons instead of string comparisons where possible,
 		// with SelectorImpl::AttrValue changed to Atom.
 		selector.eval_str(self)
+	}
+}
+
+impl ToString for AttrValue {
+	fn to_string(&self) -> String {
+		String::from(&**self)
 	}
 }
 

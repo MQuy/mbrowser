@@ -47,11 +47,11 @@ impl Node {
 		}
 	}
 
-	pub fn get_id(&self) -> u64 {
+	pub fn id(&self) -> u64 {
 		self.id
 	}
 
-	pub fn get_owner_doc(&self) -> Option<Rc<Document>> {
+	pub fn owner_doc(&self) -> Option<Rc<Document>> {
 		match self.owner_doc.borrow().deref() {
 			Some(node) => node.upgrade(),
 			_ => None,
@@ -63,38 +63,38 @@ impl Node {
 	}
 
 	// https://dom.spec.whatwg.org/#dom-node-parentnode
-	pub fn get_parent_node(&self) -> Option<Rc<Node>> {
+	pub fn parent_node(&self) -> Option<Rc<Node>> {
 		match self.parent_node.borrow().deref() {
 			Some(node) => node.upgrade(),
 			_ => None,
 		}
 	}
 
-	pub fn get_next_sibling(&self) -> Option<Rc<Node>> {
+	pub fn next_sibling(&self) -> Option<Rc<Node>> {
 		match self.next_sibling.borrow().deref() {
 			Some(node) => node.upgrade(),
 			_ => None,
 		}
 	}
 
-	pub fn get_prev_sibling(&self) -> Option<Rc<Node>> {
+	pub fn prev_sibling(&self) -> Option<Rc<Node>> {
 		match self.prev_sibling.borrow().deref() {
 			Some(node) => node.upgrade(),
 			_ => None,
 		}
 	}
 
-	pub fn get_node_type_id(&self) -> NodeTypeId {
+	pub fn node_type_id(&self) -> NodeTypeId {
 		self.node_type_id
 	}
 
 	// https://dom.spec.whatwg.org/#dom-node-firstchild
-	pub fn get_first_child(&self) -> Option<Rc<Node>> {
+	pub fn first_child(&self) -> Option<Rc<Node>> {
 		self.first_child.borrow().clone()
 	}
 
 	// https://dom.spec.whatwg.org/#dom-node-lastchild
-	pub fn get_last_child(&self) -> Option<Rc<Node>> {
+	pub fn last_child(&self) -> Option<Rc<Node>> {
 		self.last_child.borrow().clone()
 	}
 
@@ -105,7 +105,7 @@ impl Node {
 
 		match before {
 			Some(ref before) => {
-				match before.get_prev_sibling() {
+				match before.prev_sibling() {
 					Some(ref prev_sibling) => {
 						prev_sibling
 							.next_sibling
@@ -122,7 +122,7 @@ impl Node {
 				new_child.next_sibling.replace(Some(Rc::downgrade(before)));
 			},
 			None => {
-				match self.get_last_child() {
+				match self.last_child() {
 					Some(ref last_child) => {
 						last_child
 							.next_sibling
@@ -157,7 +157,7 @@ impl Node {
 
 	// https://dom.spec.whatwg.org/#concept-tree-root
 	pub fn get_root(&self) -> Rc<Node> {
-		let parent_node = self.get_parent_node();
+		let parent_node = self.parent_node();
 		if parent_node.is_none() {
 			get_from_global_scope(self.id)
 		} else {
@@ -167,8 +167,8 @@ impl Node {
 
 	pub fn ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
-			current: self.get_parent_node(),
-			next_node: |n: &Rc<Node>| n.get_parent_node(),
+			current: self.parent_node(),
+			next_node: |n: &Rc<Node>| n.parent_node(),
 		}
 	}
 
@@ -176,7 +176,7 @@ impl Node {
 	pub fn inclusive_ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
 			current: Some(get_from_global_scope(self.id)),
-			next_node: |n: &Rc<Node>| n.get_parent_node(),
+			next_node: |n: &Rc<Node>| n.parent_node(),
 		}
 	}
 
@@ -206,7 +206,7 @@ impl Node {
 
 		// Step 2-3
 		let reference_child = match child {
-			Some(child) if child == node => node.get_next_sibling(),
+			Some(child) if child == node => node.next_sibling(),
 			_ => child,
 		};
 
@@ -242,12 +242,12 @@ impl Node {
 
 			// Step 7
 			for node in node.children() {
-				Node::adopt(node.as_ref(), parent.get_owner_doc().unwrap());
+				Node::adopt(node.as_ref(), parent.owner_doc().unwrap());
 				parent.add_child(node, child.clone());
 			}
 		} else {
 			// Step 7
-			if let Some(document) = parent.get_owner_doc() {
+			if let Some(document) = parent.owner_doc() {
 				Node::adopt(node.as_ref(), document);
 			}
 			parent.add_child(node, child.clone());
@@ -382,10 +382,10 @@ impl Node {
 		// TODO Step 3.1.2, 3.2
 
 		// Step 1
-		let old_document = node.get_owner_doc();
+		let old_document = node.owner_doc();
 
 		// Step 2
-		if let Some(parent) = node.get_parent_node() {
+		if let Some(parent) = node.parent_node() {
 			parent.remove(Rc::new(node.clone()), SuppressObserver::Unsuppressed);
 		}
 
@@ -407,14 +407,14 @@ impl Node {
 
 	pub fn is_parent_of(&self, child: Rc<Node>) -> bool {
 		child
-			.get_parent_node()
+			.parent_node()
 			.map_or(false, |parent| parent.as_ref() == self)
 	}
 
 	// https://dom.spec.whatwg.org/#concept-node-pre-remove
 	fn pre_remove(child: Rc<Node>, parent: &Node) -> Fallible<Rc<Node>> {
 		// Step 1
-		if child.get_parent_node().unwrap().as_ref() != parent {
+		if child.parent_node().unwrap().as_ref() != parent {
 			return Err(Error::NotFound);
 		}
 
@@ -427,28 +427,28 @@ impl Node {
 
 	// https://dom.spec.whatwg.org/#concept-node-remove
 	fn remove(&self, child: Rc<Node>, _suppress_observers: SuppressObserver) {
-		assert!(child.get_parent_node().is_some());
+		assert!(child.parent_node().is_some());
 
 		// Step 9-11
-		match child.get_prev_sibling() {
+		match child.prev_sibling() {
 			Some(prev_sibling) => {
 				prev_sibling
 					.next_sibling
-					.replace(Some(Rc::downgrade(&child.get_next_sibling().unwrap())));
+					.replace(Some(Rc::downgrade(&child.next_sibling().unwrap())));
 			},
 			None => {
-				self.first_child.replace(child.get_next_sibling());
+				self.first_child.replace(child.next_sibling());
 			},
 		}
 
-		match child.get_next_sibling() {
+		match child.next_sibling() {
 			Some(next_sibling) => {
 				next_sibling
 					.prev_sibling
-					.replace(Some(Rc::downgrade(&child.get_prev_sibling().unwrap())));
+					.replace(Some(Rc::downgrade(&child.prev_sibling().unwrap())));
 			},
 			None => {
-				self.last_child.replace(child.get_prev_sibling());
+				self.last_child.replace(child.prev_sibling());
 			},
 		}
 		child.prev_sibling.replace(None);
@@ -461,22 +461,22 @@ impl Node {
 
 	pub fn following_siblings(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
-			current: self.get_next_sibling(),
-			next_node: |n: &Rc<Node>| n.get_next_sibling(),
+			current: self.next_sibling(),
+			next_node: |n: &Rc<Node>| n.next_sibling(),
 		}
 	}
 
 	pub fn preceding_siblings(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
-			current: self.get_prev_sibling(),
-			next_node: |n: &Rc<Node>| n.get_prev_sibling(),
+			current: self.prev_sibling(),
+			next_node: |n: &Rc<Node>| n.prev_sibling(),
 		}
 	}
 
 	pub fn children(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
 			current: self.first_child.borrow().deref().clone(),
-			next_node: |n: &Rc<Node>| n.get_next_sibling(),
+			next_node: |n: &Rc<Node>| n.next_sibling(),
 		}
 	}
 }
@@ -518,7 +518,7 @@ where
 }
 
 pub fn document_from_node<T: DerivedFrom<Node>>(derived: &T) -> Rc<Document> {
-	derived.upcast().get_owner_doc().unwrap()
+	derived.upcast().owner_doc().unwrap()
 }
 
 pub struct TreeIterator {
@@ -541,7 +541,7 @@ impl TreeIterator {
 			if self.depth == 0 {
 				break;
 			}
-			if let Some(next_sibling) = ancestor.get_next_sibling() {
+			if let Some(next_sibling) = ancestor.next_sibling() {
 				self.current = Some(next_sibling);
 				return Some(current);
 			}
@@ -560,7 +560,7 @@ impl Iterator for TreeIterator {
 	fn next(&mut self) -> Option<Rc<Node>> {
 		let current = self.current.take()?;
 
-		if let Some(first_child) = current.get_first_child() {
+		if let Some(first_child) = current.first_child() {
 			self.current = Some(first_child);
 			self.depth += 1;
 			return Some(current);

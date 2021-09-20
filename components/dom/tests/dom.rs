@@ -19,17 +19,17 @@ fn check_parser() {
 
 fn walk(node: &Node, depth: usize) {
 	let indent: String = std::iter::repeat("  ").take(depth).collect();
-	let attrs: Vec<String> = match node.get_node_type_id() {
+	let attrs: Vec<String> = match node.node_type_id() {
 		NodeTypeId::Element(_) => node
 			.downcast::<Element>()
-			.get_attrs()
+			.attrs()
 			.borrow()
 			.iter()
-			.map(|attr| format!("{}={}", attr.get_name(), attr.get_value()))
+			.map(|attr| format!("{}={}", attr.name(), attr.value().to_string()))
 			.collect(),
 		_ => vec![],
 	};
-	println!("{} {:?} {:?}", indent, node.get_node_type_id(), attrs);
+	println!("{} {:?} {:?}", indent, node.node_type_id(), attrs);
 
 	for ele in node.children() {
 		walk(ele.as_ref(), depth + 1);

@@ -1,39 +1,52 @@
-use std::rc::Rc;
-
+use common::not_supported;
 use selectors::context::QuirksMode;
 use selectors::parser::{AncestorHashes, Selector};
 
 use crate::selectors::select::Selectors;
 use crate::stylesheets::css_rule::CssRule;
+use crate::stylesheets::origin::Origin;
 use crate::stylesheets::style_rule::StyleRule;
 use crate::stylesheets::stylesheet::Stylesheet;
 
 pub struct Stylist {
-	stylesheets: Vec<Rc<Stylesheet>>,
-	rules: Vec<Rule>,
-	rules_source_order: u32,
+	user_agent: CascadeData,
+	author: CascadeData,
 	quirks_mode: QuirksMode,
 }
 
 impl Stylist {
 	pub fn new(quirks_mode: QuirksMode) -> Self {
 		Stylist {
-			stylesheets: Vec::with_capacity(1),
-			rules: vec![],
-			rules_source_order: 0,
+			user_agent: Default::default(),
+			author: Default::default(),
 			quirks_mode,
 		}
 	}
 
-	pub fn get_rules(&self) -> &Vec<Rule> {
-		&self.rules
-	}
-
-	pub fn get_quirks_mode(&self) -> QuirksMode {
+	pub fn quirks_mode(&self) -> QuirksMode {
 		self.quirks_mode
 	}
 
-	pub fn add_stylesheet(&mut self, stylesheet: Rc<Stylesheet>) {
+	pub fn author_cascade_data(&self) -> &CascadeData {
+		&self.author
+	}
+
+	pub fn add_stylesheet(&mut self, stylesheet: &Stylesheet, origin: Origin) {
+		match origin {
+			Origin::UserAgent => self.user_agent.add_stylesheet(stylesheet),
+			Origin::Author => self.author.add_stylesheet(stylesheet),
+			Origin::User => not_supported!(),
+		}
+	}
+}
+
+pub struct CascadeData {
+	rules: Vec<Rule>,
+	rules_source_order: u32,
+}
+
+impl CascadeData {
+	pub fn add_stylesheet(&mut self, stylesheet: &Stylesheet) {
 		for css_rule in &stylesheet.rules {
 			match css_rule {
 				CssRule::Style(style) => {
@@ -52,10 +65,23 @@ impl Stylist {
 				_ => todo!(),
 			}
 		}
-		self.stylesheets.push(stylesheet)
+	}
+
+	pub fn rules(&self) -> &Vec<Rule> {
+		&self.rules
 	}
 }
 
+impl Default for CascadeData {
+	fn default() -> Self {
+		Self {
+			rules: Default::default(),
+			rules_source_order: Default::default(),
+		}
+	}
+}
+
+#[derive(Debug)]
 pub struct Rule {
 	pub selector: Selector<Selectors>,
 	pub hashes: AncestorHashes,

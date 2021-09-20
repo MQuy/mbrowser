@@ -71,7 +71,7 @@ pub trait VirtualMethods {
 /// concrete type, propagating up the parent hierarchy unless otherwise
 /// interrupted.
 pub fn vtable_for(node: &Node) -> &dyn VirtualMethods {
-	match node.get_node_type_id() {
+	match node.node_type_id() {
 		NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLBodyElement)) => {
 			node.downcast::<HTMLBodyElement>() as &dyn VirtualMethods
 		},

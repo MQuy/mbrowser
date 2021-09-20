@@ -99,7 +99,7 @@ impl TreeSink for DomParser {
 		prev_element: &Self::Handle,
 		child: NodeOrText<Self::Handle>,
 	) {
-		if element.get_parent_node().is_some() {
+		if element.parent_node().is_some() {
 			self.append_before_sibling(element, child);
 		} else {
 			self.append(prev_element, child);
@@ -153,7 +153,7 @@ impl TreeSink for DomParser {
 		sibling: &Self::Handle,
 		new_node: NodeOrText<Self::Handle>,
 	) {
-		let parent = sibling.get_parent_node().unwrap();
+		let parent = sibling.parent_node().unwrap();
 		insert(&parent, Some(sibling.clone()), new_node)
 	}
 
@@ -174,13 +174,13 @@ impl TreeSink for DomParser {
 	}
 
 	fn remove_from_parent(&mut self, target: &Self::Handle) {
-		if let Some(parent) = target.get_parent_node() {
+		if let Some(parent) = target.parent_node() {
 			parent.remove_child(target.clone()).unwrap();
 		}
 	}
 
 	fn reparent_children(&mut self, node: &Self::Handle, new_parent: &Self::Handle) {
-		while let Some(child) = node.get_first_child() {
+		while let Some(child) = node.first_child() {
 			new_parent.append_child(child).unwrap();
 		}
 	}
@@ -210,14 +210,14 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 			// https://html.spec.whatwg.org/multipage/#insert-a-character
 			let text = reference_child
 				.clone()
-				.and_then(|node| node.get_prev_sibling())
-				.or_else(|| parent.get_last_child())
+				.and_then(|node| node.prev_sibling())
+				.or_else(|| parent.last_child())
 				.and_then(|node| Some(downcast::<Node, Text>(node)));
 
 			if let Some(ref text) = text {
 				text.upcast::<CharacterData>().append_data(&t);
 			} else {
-				let text = Text::create(String::from(t), parent.get_owner_doc().unwrap());
+				let text = Text::create(String::from(t), parent.owner_doc().unwrap());
 				parent.insert_before(upcast(text), reference_child).unwrap();
 			}
 		},

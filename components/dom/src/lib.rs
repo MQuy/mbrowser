@@ -16,6 +16,7 @@ pub mod htmlelement;
 pub mod htmlheadelement;
 pub mod htmlheadingelement;
 pub mod htmlhtmlelement;
+pub mod htmlparagraphelement;
 pub mod htmlspanelement;
 pub mod htmlunknownelement;
 pub mod inheritance;

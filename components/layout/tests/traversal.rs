@@ -12,7 +12,7 @@ use dom::inheritance::Castable;
 use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
-use layout::traversal::compute_values;
+use layout::rule_colectors::collect_rules;
 use selectors::context::QuirksMode;
 
 #[derive(Debug)]
@@ -50,7 +50,7 @@ fn demo() {
 
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(
-		r#"<div style="color: red;">Hello world!</div>"#,
+		r#"<div style="color: red;">Hello world!</div><p id="hello">my friends</p>"#,
 	));
 
 	let output = parser.finish();
@@ -70,12 +70,13 @@ fn demo() {
 		5,
 	);
 	let mut stylist = Stylist::new(QuirksMode::NoQuirks);
-	stylist.add_stylesheet(Rc::new(stylesheet));
+	stylist.add_stylesheet(&stylesheet, Origin::Author);
 
-	let root = output.document.upcast().get_first_child().unwrap();
+	let root = output.document.upcast().first_child().unwrap();
 	for node in root.traverse_preorder() {
-		if node.get_node_type_id().is_element() {
-			compute_values(NodeRef(node), &stylist)
+		if node.node_type_id().is_element() {
+			let rules = collect_rules(NodeRef(node), &stylist);
+			println!("{:?}", rules);
 		}
 	}
 }
