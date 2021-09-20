@@ -110,7 +110,7 @@ impl ToCss for Number {
 
 pub type PositiveInteger = GreaterThanOrEqualToOne<Integer>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Integer(i32);
 
 impl Integer {
@@ -243,7 +243,7 @@ impl PartialOrd<f32> for NonNegativeNumber {
 }
 
 /// Generic for Number/Auto
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericNumberOrAuto<Number> {
 	Number(Number),
 	Auto,

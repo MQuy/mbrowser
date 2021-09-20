@@ -5,7 +5,7 @@ use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 
 /// https://drafts.csswg.org/css-content/#typedef-quote
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Quote {
 	OpenQuote,
 	CloseQuote,

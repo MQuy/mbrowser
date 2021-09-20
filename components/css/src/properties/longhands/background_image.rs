@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::image::Image;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BgImage {
 	None,
 	Image(Image),
@@ -41,7 +41,7 @@ impl ToCss for BgImage {
 }
 
 /// https://drafts.csswg.org/css-backgrounds/#background-image
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundImage {
 	images: Vec<BgImage>,
 }

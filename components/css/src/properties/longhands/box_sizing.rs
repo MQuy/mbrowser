@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-sizing/#box-sizing
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BoxSizing {
 	ContentBox,
 	BorderBox,

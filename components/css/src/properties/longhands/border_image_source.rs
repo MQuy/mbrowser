@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::image::Image;
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-source
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BorderImageSource {
 	None,
 	Image(Image),

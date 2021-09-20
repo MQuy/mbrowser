@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::time::Time;
 
 /// https://drafts.csswg.org/css-transitions/#transition-duration-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransitionDuration {
 	durations: Vec<Time>,
 }

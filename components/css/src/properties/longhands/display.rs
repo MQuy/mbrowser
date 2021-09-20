@@ -7,7 +7,7 @@ use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DisplayOutside {
 	Block,
 	Inline,
@@ -20,7 +20,7 @@ property_keywords_impl! { DisplayOutside,
 	DisplayOutside::RunIn, "run-in",
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DisplayInside {
 	Flow,
 	FlowRoot,
@@ -30,7 +30,7 @@ pub enum DisplayInside {
 	Ruby,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DisplayBasic {
 	outside: Option<DisplayOutside>,
 	inside: Option<DisplayInside>,
@@ -85,7 +85,7 @@ property_keywords_impl! { DisplayInside,
 	DisplayInside::Ruby, "ruby",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DisplayListItem {
 	outside: Option<DisplayOutside>,
 	inside: Option<DisplayInside>, // only allow flow, flow-root
@@ -147,7 +147,7 @@ impl ToCss for DisplayListItem {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum DisplayInternal {
 	TableRowGroup,
 	TableHeaderGroup,
@@ -178,7 +178,7 @@ property_keywords_impl! { DisplayInternal,
 	DisplayInternal::RubyTextContainer, "ruby-text-container",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum DisplayBox {
 	Contents,
 	None,
@@ -189,7 +189,7 @@ property_keywords_impl! { DisplayBox,
 	DisplayBox::None, "none",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum DisplayLegacy {
 	InlineBlock,
 	InlineTable,
@@ -205,7 +205,7 @@ property_keywords_impl! { DisplayLegacy,
 }
 
 /// https://drafts.csswg.org/css-display/#the-display-properties
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Display {
 	Basic(DisplayBasic),
 	ListItem(DisplayListItem),

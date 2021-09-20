@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-text/#white-space-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum WhiteSpace {
 	Normal,
 	Pre,

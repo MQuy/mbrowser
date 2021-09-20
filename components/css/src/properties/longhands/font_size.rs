@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AbsoluteSize {
 	XXSmall,
 	XSmall,
@@ -29,7 +29,7 @@ property_keywords_impl! { AbsoluteSize,
 	AbsoluteSize::XXXLarge, "xxx-large",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum RelativeSize {
 	Larger,
 	Smaller,
@@ -41,7 +41,7 @@ property_keywords_impl! { RelativeSize,
 }
 
 /// https://drafts.csswg.org/css-fonts/#font-size-prop
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FontSize {
 	AbsoluteSize(AbsoluteSize),
 	RelativeSize(RelativeSize),

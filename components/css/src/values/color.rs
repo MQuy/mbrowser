@@ -9,7 +9,7 @@ use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct RGBA {
 	pub red: u8,
@@ -104,7 +104,7 @@ impl ToCss for RGBA {
 	}
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CMYK {
 	pub cyan: NumberOrPercentage,
 	pub magenta: NumberOrPercentage,
@@ -170,7 +170,7 @@ impl ToCss for CMYK {
 	}
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Hue {
 	Number(Number),
 	Angle(Angle),
@@ -205,7 +205,7 @@ impl ToCss for Hue {
 	}
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum SystemColor {
 	Canvas,
 	CanvasText,
@@ -419,7 +419,7 @@ pub static NAMED_COLORS: [NamedColor; 148] = [
 ];
 
 /// https://drafts.csswg.org/css-color/#color-syntax
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Color {
 	CurrentColor,
 	Transparent,

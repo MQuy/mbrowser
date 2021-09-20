@@ -9,7 +9,7 @@ use crate::values::number::{NonNegativeNumberOrPercentage, Zero};
 use crate::values::specified::angle::Angle;
 use crate::values::url::CssUrl;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DropShadow {
 	color: Color,
 	lengths: (Length, Length, Length),
@@ -50,7 +50,7 @@ impl ToCss for DropShadow {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FilterFunction {
 	Blur(NonNegativeLength),
 	Brightness(NonNegativeNumberOrPercentage),
@@ -242,7 +242,7 @@ impl ToCss for FilterFunction {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FilterFunctionOrUrl {
 	Function(FilterFunction),
 	Url(CssUrl),
@@ -278,7 +278,7 @@ impl ToCss for FilterFunctionOrUrl {
 }
 
 /// https://drafts.fxtf.org/filter-effects/#FilterProperty
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Filter {
 	None,
 	List(Vec<FilterFunctionOrUrl>),

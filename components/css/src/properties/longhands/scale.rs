@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::NumberOrPercentage;
 
 /// https://drafts.csswg.org/css-transforms-2/#propdef-scale
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Scale {
 	None,
 	Scale(NumberOrPercentage, NumberOrPercentage, NumberOrPercentage),

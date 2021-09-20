@@ -7,7 +7,7 @@ use crate::values::length::Rect;
 use crate::values::number::NonNegativeNumberOrPercentage;
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-slice
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BorderImageSlice {
 	pub offsets: Rect<NonNegativeNumberOrPercentage>,
 	pub fill: bool,

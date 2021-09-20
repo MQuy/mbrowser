@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::layout::Box;
 
 /// https://drafts.csswg.org/css-backgrounds/#background-origin
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundOrigin {
 	boxes: Vec<Box>,
 }

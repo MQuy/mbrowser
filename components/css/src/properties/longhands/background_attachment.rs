@@ -5,7 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Attachment {
 	Scroll,
 	Fixed,
@@ -19,7 +19,7 @@ property_keywords_impl! { Attachment,
 }
 
 /// https://drafts.csswg.org/css-backgrounds/#background-attachment
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundAttachment {
 	attachments: Vec<Attachment>,
 }

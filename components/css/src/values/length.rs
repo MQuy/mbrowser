@@ -236,7 +236,7 @@ impl ToCss for ViewportPercentageLength {
 
 /// https://www.w3.org/TR/css-values-4/#typedef-length-percentage
 /// <length-percentage> = [ <length> | <percentage> ]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LengthPercentage {
 	Length(Length),
 	Percentage(Percentage),
@@ -336,7 +336,7 @@ impl NonNegativeLengthPercentage {
 }
 
 /// Generic for Length/Auto
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericLengthOrAuto<Length> {
 	Length(Length),
 	Auto,
@@ -386,7 +386,7 @@ impl LengthOrAuto {
 }
 
 /// Generic for Length/None
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericLengthOrNone<Length> {
 	Length(Length),
 	None,
@@ -437,7 +437,7 @@ impl NonNegativeLengthOrNone {
 }
 
 /// Generic for Length/Percentage/Auto
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericLengthPercentageOrAuto<LengthPercent> {
 	LengthPercentage(LengthPercent),
 	Auto,
@@ -499,7 +499,7 @@ impl NonNegativeLengthOrAuto {
 }
 
 /// Generic for Length/Percentage/Number/Auto
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericLengthPercentageNumberOrAuto<LengthPercent, Number> {
 	LengthPercentage(LengthPercent),
 	Number(Number),
@@ -565,7 +565,7 @@ impl NonNegativeLengthPercentageNumberOrAuto {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ExtremumLength<LengthPercent> {
 	MaxContent,
 	MinContent,
@@ -587,7 +587,7 @@ impl<LP: ToCss> ToCss for ExtremumLength<LP> {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericSize<LengthPercent> {
 	Auto,
 	LengthPercentage(LengthPercent),
@@ -669,7 +669,7 @@ impl Size {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C, u8)]
 pub enum GenericLengthPercentageOrNormal<LengthPercent> {
 	LengthPercentage(LengthPercent),
@@ -733,7 +733,7 @@ impl NonNegativeLengthPercentageOrNormal {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C, u8)]
 pub enum GenericLengthPercentageNumberOrNormal<Number, LengthPercent> {
 	LengthPercentage(LengthPercent),
@@ -796,7 +796,7 @@ impl NonNegativeLengthPercentageNumberOrNormal {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericLengthOrNumber<N, L> {
 	Number(N),
 	Length(L),
@@ -851,7 +851,7 @@ impl NonNegativeLengthOrNumber {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Rect<T>(pub T, pub T, pub T, pub T)
 where
 	T: Clone;
@@ -918,7 +918,7 @@ impl NonNegativeLengthOrNumberRect {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericRectOrAuto<T: Clone> {
 	Auto,
 	Rect(Rect<T>),
@@ -969,7 +969,7 @@ impl LengthOrAutoRectAuto {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Pair<T>(pub T, pub T);
 
 impl<T: Clone> Pair<T> {

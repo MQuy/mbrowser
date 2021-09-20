@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SingleTransitionProperty {
 	All,
 	Ident(CustomIdent),
@@ -38,7 +38,7 @@ impl ToCss for SingleTransitionProperty {
 }
 
 /// https://drafts.csswg.org/css-transitions/#transition-property-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransitionProperty {
 	properties: Vec<SingleTransitionProperty>,
 }

@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://svgwg.org/svg2-draft/painting.html#TextRendering
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TextRendering {
 	Auto,
 	Optimizespeed,

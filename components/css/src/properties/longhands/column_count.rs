@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Integer;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ColumnCount {
 	Auto,
 	Integer(Integer),

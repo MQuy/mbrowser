@@ -8,7 +8,7 @@ use crate::values::percentage::Percentage;
 use crate::values::CSSFloat;
 
 /// https://drafts.csswg.org/css-values-4/#angle-value
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Angle {
 	Deg(CSSFloat),
 	Grad(CSSFloat),
@@ -75,7 +75,7 @@ impl ToCss for Angle {
 }
 
 /// https://drafts.csswg.org/css-values-4/#typedef-angle-percentage
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AnglePercentage {
 	Angle(Angle),
 	Percentage(Percentage),

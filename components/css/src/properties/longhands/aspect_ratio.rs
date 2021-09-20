@@ -8,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::percentage::Ratio;
 
 /// https://drafts.csswg.org/css-sizing-4/#aspect-ratio
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AspectRatio {
 	pub auto: bool,
 	pub ratio: Option<Ratio>,

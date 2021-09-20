@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::Pair;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BorderImageRepeatKeyword {
 	Stretch,
 	Repeat,

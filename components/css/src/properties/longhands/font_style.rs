@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::angle::Angle;
 
 /// https://drafts.csswg.org/css-fonts/#font-style-prop
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FontStyle {
 	Normal,
 	Italic,

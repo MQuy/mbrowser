@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-writing-modes/#block-flow
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum WritingMode {
 	HorizontalTb,
 	VerticalRl,

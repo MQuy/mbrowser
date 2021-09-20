@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-logical/#caption-side
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CaptionSide {
 	Top,
 	Bottom,

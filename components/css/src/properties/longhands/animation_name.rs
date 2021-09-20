@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::animation::KeyframesName;
 
 /// https://drafts.csswg.org/css-animations-1/#animation-name
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationName {
 	names: Vec<Option<KeyframesName>>,
 }

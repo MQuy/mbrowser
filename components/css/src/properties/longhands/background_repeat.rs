@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::Pair;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BackgroundRepeatKeyword {
 	Repeat,
 	Space,
@@ -24,7 +24,7 @@ property_keywords_impl! { BackgroundRepeatKeyword,
 pub type RepeatStyle = Pair<BackgroundRepeatKeyword>;
 
 /// https://drafts.csswg.org/css-backgrounds/#background-repeat
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundRepeat {
 	repeat: Vec<RepeatStyle>,
 }

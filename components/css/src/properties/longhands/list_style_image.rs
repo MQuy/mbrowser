@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::image::Image;
 
 /// https://drafts.csswg.org/css-lists/#image-markers
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ListStyleImage {
 	None,
 	Image(Image),

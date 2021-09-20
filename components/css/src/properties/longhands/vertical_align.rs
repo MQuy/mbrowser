@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(u8)]
 pub enum VerticalAlignKeyword {
 	Baseline,
@@ -31,7 +31,7 @@ property_keywords_impl! { VerticalAlignKeyword,
 }
 
 /// https://drafts.csswg.org/css2/#propdef-vertical-align
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum VerticalAlign {
 	Keyword(VerticalAlignKeyword),
 	LengthPercentage(LengthPercentage),

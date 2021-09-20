@@ -7,7 +7,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum VerticalPositionKeyword {
 	Top,
 	Bottom,
@@ -22,7 +22,7 @@ property_keywords_impl! { VerticalPositionKeyword,
 	VerticalPositionKeyword::YEnd, "y-end",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct VerticalPosition {
 	keyword: Option<VerticalPositionKeyword>,
 	length: Option<LengthPercentage>,
@@ -58,7 +58,7 @@ impl ToCss for VerticalPosition {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum VerticalPositionComponent {
 	Center,
 	PositionY(VerticalPosition),
@@ -94,7 +94,7 @@ impl ToCss for VerticalPositionComponent {
 }
 
 /// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-y
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundPositionY {
 	positions: Vec<VerticalPositionComponent>,
 }

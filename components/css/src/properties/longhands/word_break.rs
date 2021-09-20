@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-text/#word-break-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(u8)]
 pub enum WordBreak {
 	Normal,

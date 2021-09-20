@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::{NonNegativeNumber, Number};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(u8)]
 pub enum EasingKeyword {
 	Linear,
@@ -28,7 +28,7 @@ property_keywords_impl! { EasingKeyword,
 	EasingKeyword::StepEnd, "step-end",
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum StepPosition {
 	JumpStart,
@@ -49,7 +49,7 @@ property_keywords_impl! { StepPosition,
 }
 
 /// https://drafts.csswg.org/css-easing-1/#easing-functions
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum EasingFunction {
 	Keyword(EasingKeyword),
 	CubicBezier {

@@ -7,7 +7,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TimeUnit {
 	Second,
 	Millisecond,
@@ -23,7 +23,7 @@ impl Display for TimeUnit {
 }
 
 /// https://drafts.csswg.org/css-values-3/#time
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Time {
 	amount: CSSFloat,
 	unit: TimeUnit,

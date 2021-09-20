@@ -22,7 +22,7 @@ impl CounterWithInteger {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SymbolsType {
 	Cyclic,
 	Numeric,
@@ -39,7 +39,7 @@ property_keywords_impl! { SymbolsType,
 	SymbolsType::Fixed, "fixed",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum StringOrImage {
 	String(String),
 	Image(Image),
@@ -74,7 +74,7 @@ impl ToCss for StringOrImage {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Symbols {
 	symbols_type: Option<SymbolsType>,
 	idents: Vec<StringOrImage>,
@@ -117,7 +117,7 @@ impl ToCss for Symbols {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CounterStyle {
 	Name(CustomIdent),
 	Symbols(Symbols),
@@ -152,7 +152,7 @@ impl ToCss for CounterStyle {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct InnerMostCounter {
 	name: CustomIdent,
 	style: Option<CounterStyle>,
@@ -192,7 +192,7 @@ impl ToCss for InnerMostCounter {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AllCounters {
 	name: CustomIdent,
 	string: String,
@@ -241,7 +241,7 @@ impl ToCss for AllCounters {
 }
 
 /// https://drafts.csswg.org/css-lists-3/#typedef-counter
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Counter {
 	Counter(InnerMostCounter),
 	Counters(AllCounters),

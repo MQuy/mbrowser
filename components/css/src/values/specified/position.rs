@@ -12,7 +12,7 @@ macro_rules! return_unexpected_token {
 	};
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LeftOrRight {
 	Left,
 	Right,
@@ -23,7 +23,7 @@ property_keywords_impl! { LeftOrRight,
 	LeftOrRight::Right, "right",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum HorizontalPosition {
 	Left,
 	Right,
@@ -94,7 +94,7 @@ impl ToCss for HorizontalPosition {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TopOrBottom {
 	Top,
 	Bottom,
@@ -105,7 +105,7 @@ property_keywords_impl! { TopOrBottom,
 	TopOrBottom::Bottom, "bottom",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum VerticalPosition {
 	Top,
 	Bottom,
@@ -177,7 +177,7 @@ impl ToCss for VerticalPosition {
 }
 
 /// https://drafts.csswg.org/css-values-4/#position
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Position {
 	horizontal: HorizontalPosition,
 	vertical: VerticalPosition,
@@ -256,7 +256,7 @@ impl ToCss for Position {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FirstOrLast {
 	First,
 	Last,
@@ -267,7 +267,7 @@ property_keywords_impl! { FirstOrLast,
 	FirstOrLast::Last, "last",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaselinePosition {
 	preference: FirstOrLast,
 }
@@ -295,7 +295,7 @@ impl ToCss for BaselinePosition {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ContentDistribution {
 	SpaceBetween,
 	SpaceAround,
@@ -310,7 +310,7 @@ property_keywords_impl! { ContentDistribution,
 	ContentDistribution::Stretch, "stretch",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OverflowPosition {
 	Unsafe,
 	Safe,
@@ -321,7 +321,7 @@ property_keywords_impl! { OverflowPosition,
 	OverflowPosition::Safe, "safe",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ContentPosition {
 	Center,
 	Start,
@@ -337,7 +337,7 @@ property_keywords_impl! { ContentPosition,
 	ContentPosition::FlexStart, "flex-start",
 	ContentPosition::FlexEnd, "flex-end",
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SelfPosition {
 	Center,
 	Start,

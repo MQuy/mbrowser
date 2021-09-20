@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://svgwg.org/svg2-draft/interact.html#PointerEventsProp
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum PointerEvents {
 	Auto,
 	BoundingBox,

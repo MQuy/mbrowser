@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::NonNegativeNumber;
 
 /// https://drafts.csswg.org/css-fonts/#font-weight-prop
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FontWeight {
 	Weight(NonNegativeNumber),
 	Normal,

@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::time::Time;
 
 /// https://drafts.csswg.org/css-transitions/#transition-delay-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransitionDelay {
 	delays: Vec<Time>,
 }

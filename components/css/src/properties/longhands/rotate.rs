@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
 use crate::values::specified::angle::Angle;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum NumberOrKeyword {
 	Number(Number, Number, Number),
 	X,
@@ -63,7 +63,7 @@ impl ToCss for NumberOrKeyword {
 }
 
 /// https://drafts.csswg.org/css-transforms-2/#propdef-rotate
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Rotate {
 	None,
 	Rotate(Angle),

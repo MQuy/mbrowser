@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
 use crate::values::url::CssUrl;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(u8)]
 pub enum CursorKind {
 	None,
@@ -87,7 +87,7 @@ property_keywords_impl! { CursorKind,
 	CursorKind::Auto, "auto",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct CursorImage {
 	pub url: CssUrl,
@@ -125,7 +125,7 @@ impl ToCss for CursorImage {
 }
 
 /// https://drafts.csswg.org/css-ui/#cursor
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Cursor {
 	pub images: Vec<CursorImage>,
 	pub keyword: CursorKind,

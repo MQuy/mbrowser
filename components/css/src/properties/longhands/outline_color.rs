@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 
 /// https://drafts.csswg.org/css-ui/#outline-color
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OutlineColor {
 	Invert,
 	Color(Color),

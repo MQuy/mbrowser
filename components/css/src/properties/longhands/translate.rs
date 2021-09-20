@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::{Length, LengthPercentage};
 
 /// https://drafts.csswg.org/css-transforms-2/#individual-transforms
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Translate {
 	None,
 	LengthPercentage(LengthPercentage, LengthPercentage, Length),

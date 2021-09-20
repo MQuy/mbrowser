@@ -4,7 +4,7 @@ use crate::css_writer::write_elements;
 use crate::parser::{parse_repeated, ParseError};
 use crate::values::CustomIdent;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericCounterOrNone<Counter> {
 	None,
 	Counter(Vec<Counter>),
@@ -45,7 +45,7 @@ impl<C: ToCss> ToCss for GenericCounterOrNone<C> {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GenericCounter<I> {
 	name: CustomIdent,
 	value: Option<I>,
@@ -76,7 +76,7 @@ impl<I: ToCss> ToCss for GenericCounter<I> {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct GenericReversedCounter<I> {
 	name: CustomIdent,
 	value: Option<I>,

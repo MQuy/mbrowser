@@ -8,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::url::CssUrl;
 use crate::values::CustomIdent;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TargetCounter {
 	url: CssUrl,
 	ident: CustomIdent,
@@ -51,7 +51,7 @@ impl ToCss for TargetCounter {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TargetCounters {
 	url: CssUrl,
 	ident: CustomIdent,
@@ -103,7 +103,7 @@ impl ToCss for TargetCounters {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TargetTextKeyword {
 	Content,
 	Before,
@@ -118,7 +118,7 @@ property_keywords_impl! { TargetTextKeyword,
 	TargetTextKeyword::FirstLetter, "first-letter",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TargetText {
 	url: CssUrl,
 	keyword: Option<TargetTextKeyword>,
@@ -157,7 +157,7 @@ impl ToCss for TargetText {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Target {
 	Counter(TargetCounter),
 	Counters(TargetCounters),

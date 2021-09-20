@@ -8,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
 /// https://drafts.csswg.org/css-text/#text-indent-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextIndent {
 	indent: LengthPercentage,
 	hanging: bool,

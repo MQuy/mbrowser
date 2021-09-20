@@ -5,7 +5,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::NonNegativeLength;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LineWidth {
 	Thin,
 	Medium,

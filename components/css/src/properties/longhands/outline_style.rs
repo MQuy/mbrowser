@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-ui/#outline-style
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OutlineStyle {
 	Auto,
 	BorderStyle(LineStyle),

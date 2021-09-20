@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-text/#text-justify-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TextJustify {
 	Auto,
 	None,

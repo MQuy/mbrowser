@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::easing::EasingFunction;
 
 /// https://drafts.csswg.org/css-animations-1/#animation-timing-function
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationTimingFunction {
 	timing: Vec<EasingFunction>,
 }

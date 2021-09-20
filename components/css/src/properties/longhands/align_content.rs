@@ -8,7 +8,7 @@ use crate::values::specified::position::{
 };
 
 /// https://drafts.csswg.org/css-align-3/#propdef-align-content
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AlignContent {
 	Normal,
 	Baseline(BaselinePosition),

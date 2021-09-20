@@ -16,7 +16,7 @@ use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ImageDirection {
 	Ltr,
 	Rtl,
@@ -27,7 +27,7 @@ property_keywords_impl! { ImageDirection,
 	ImageDirection::Rtl, "rtl",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Annotation {
 	tag: Option<ImageDirection>,
 	src: Option<CssUrl>,
@@ -82,7 +82,7 @@ impl ToCss for Annotation {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ImageReference {
 	Image(Image),
 	String(CssUrl),
@@ -117,7 +117,7 @@ impl ToCss for ImageReference {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ImageSetOption {
 	reference: ImageReference,
 	resolution: Resolution,
@@ -179,7 +179,7 @@ impl ToCss for ImageSetOption {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ImageOrColor {
 	Image(Image),
 	Color(Color),
@@ -214,7 +214,7 @@ impl ToCss for ImageOrColor {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CFImage {
 	percentage: Option<Percentage>,
 	fade: ImageOrColor,
@@ -266,7 +266,7 @@ impl ToCss for CFImage {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Side {
 	Left,
 	Right,
@@ -277,7 +277,7 @@ property_keywords_impl! { Side,
 	Side::Right, "right",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Corner {
 	Top,
 	Bottom,
@@ -288,7 +288,7 @@ property_keywords_impl! { Corner,
 	Corner::Bottom, "bottom",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LineDirection {
 	Angle(Angle),
 	Keyword(Option<Side>, Option<Corner>),
@@ -349,7 +349,7 @@ impl ToCss for LineDirection {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LinearColorStop<T> {
 	color: Color,
 	length: Option<T>,
@@ -403,7 +403,7 @@ impl<T: ToCss> ToCss for LinearColorStop<T> {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LinearColorHint<T> {
 	hint: Option<T>,
 	color: LinearColorStop<T>,
@@ -443,7 +443,7 @@ impl<T: ToCss> ToCss for LinearColorHint<T> {
 }
 
 /// https://drafts.csswg.org/css-images-3/#color-stop-syntax
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ColorStopList<T> {
 	starting: LinearColorStop<T>,
 	ending: Vec<LinearColorHint<T>>,
@@ -490,7 +490,7 @@ impl<T: ToCss> ToCss for ColorStopList<T> {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LinearGradient {
 	direction: LineDirection,
 	color_stop: ColorStopList<LengthPercentage>,
@@ -550,7 +550,7 @@ property_keywords_impl! { EndingShape,
 	EndingShape::Ellipse, "ellipse",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum RadialSize {
 	ClosestSide,
 	FarthestSide,
@@ -610,7 +610,7 @@ impl ToCss for RadialSize {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RadialGradient {
 	end_shape: EndingShape,
 	size: RadialSize,
@@ -696,7 +696,7 @@ impl ToCss for RadialGradient {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ConicRadient {
 	angle: Angle,
 	position: Position,
@@ -760,7 +760,7 @@ impl ToCss for ConicRadient {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Gradient {
 	Linear(LinearGradient),
 	Radial(RadialGradient),
@@ -781,7 +781,7 @@ impl ToCss for Gradient {
 }
 
 /// https://drafts.csswg.org/css-images-4/#image-values
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Image {
 	Url(CssUrl),
 	Image(Annotation),

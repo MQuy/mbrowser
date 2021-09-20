@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TextOverflowSide {
 	Clip,
 	Ellipsis,
@@ -67,7 +67,7 @@ impl ToCss for TextOverflowSide {
 }
 
 /// https://drafts.csswg.org/css-overflow-4/#text-overflow
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextOverflow {
 	first: TextOverflowSide,
 	second: Option<TextOverflowSide>,

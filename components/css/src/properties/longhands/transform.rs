@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::transform::TransformFunction;
 
 /// https://drafts.csswg.org/css-transforms-1/#transform-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transform(Vec<TransformFunction>);
 
 impl Transform {

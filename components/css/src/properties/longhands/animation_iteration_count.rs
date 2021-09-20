@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Number;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SingleAnimationIterationCount {
 	Number(Number),
 	Infinite,
@@ -43,7 +43,7 @@ impl ToCss for SingleAnimationIterationCount {
 }
 
 /// https://drafts.csswg.org/css-animations/#animation-iteration-count
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationIterationCount {
 	iteration_count: Vec<SingleAnimationIterationCount>,
 }

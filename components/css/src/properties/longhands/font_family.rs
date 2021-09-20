@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CustomIdent;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum GenericFamilyName {
 	Serif,
 	SansSerif,
@@ -39,7 +39,7 @@ property_keywords_impl! { GenericFamilyName,
 	GenericFamilyName::UIRounded, "ui-rounded",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FamilyName {
 	String(String),
 	Ident(Vec<CustomIdent>),
@@ -71,7 +71,7 @@ impl ToCss for FamilyName {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SingleFontFamily {
 	FamilyName(FamilyName),
 	GenericFamily(GenericFamilyName),
@@ -107,7 +107,7 @@ impl ToCss for SingleFontFamily {
 }
 
 /// https://drafts.csswg.org/css-fonts/#font-family-prop
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FontFamily(Vec<SingleFontFamily>);
 
 impl FontFamily {

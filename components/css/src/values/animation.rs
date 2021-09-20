@@ -4,7 +4,7 @@ use super::CustomIdent;
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum KeyframesName {
 	Ident(CustomIdent),
 	QuotedString(String),

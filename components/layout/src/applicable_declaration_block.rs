@@ -1,4 +1,5 @@
 use css::properties::declaration_block::PropertyDeclarationBlock;
+use css::properties::SelectorSpecificity;
 use css::stylesheets::style_rule::StyleRule;
 use css::stylist::Rule;
 
@@ -18,7 +19,7 @@ impl ApplicableDeclarationBlock {
 
 	pub fn from_style(declaration: &PropertyDeclarationBlock) -> Self {
 		Self {
-			specificity: 1 << 30,
+			specificity: SelectorSpecificity::STYLE.bits(),
 			source: StyleSource::DeclarationBlock(declaration.clone()),
 		}
 	}

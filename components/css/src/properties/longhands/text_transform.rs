@@ -19,7 +19,7 @@ bitflags! {
 }
 
 /// https://drafts.csswg.org/css-text/#text-transform
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TextTransform {
 	None,
 	Transform(TextTransformCase),

@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.csswg.org/css-content/#quotes-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Quotes {
 	Auto,
 	None,

@@ -7,7 +7,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum HorizontalPositionKeyword {
 	Left,
 	Right,
@@ -22,7 +22,7 @@ property_keywords_impl! { HorizontalPositionKeyword,
 	HorizontalPositionKeyword::XEnd, "x-end",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct HorizontalPosition {
 	keyword: Option<HorizontalPositionKeyword>,
 	length: Option<LengthPercentage>,
@@ -58,7 +58,7 @@ impl ToCss for HorizontalPosition {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum HorizontalPositionComponent {
 	Center,
 	PositionX(HorizontalPosition),
@@ -94,7 +94,7 @@ impl HorizontalPositionComponent {
 }
 
 /// https://drafts.csswg.org/css-backgrounds-4/#propdef-background-position-x
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundPositionX {
 	positions: Vec<HorizontalPositionComponent>,
 }

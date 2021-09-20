@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// https://drafts.fxtf.org/compositing/#mix-blend-mode
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum MixBlendMode {
 	Normal,
 	Multiply,

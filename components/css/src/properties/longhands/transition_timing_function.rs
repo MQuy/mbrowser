@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::easing::EasingFunction;
 
 /// https://drafts.csswg.org/css-transitions/#transition-timing-function-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransitionTimingFunction(Vec<EasingFunction>);
 
 impl TransitionTimingFunction {

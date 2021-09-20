@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::position::{BaselinePosition, OverflowPosition, SelfPosition};
 
 /// https://drafts.csswg.org/css-align-3/#align-self-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AlignSelf {
 	Auto,
 	Normal,

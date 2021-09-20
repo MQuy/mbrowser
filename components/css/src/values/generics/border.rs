@@ -2,7 +2,7 @@ use cssparser::ToCss;
 
 use crate::values::length::Pair;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct GenericBorderCornerRadius<L>(pub Pair<L>);
 

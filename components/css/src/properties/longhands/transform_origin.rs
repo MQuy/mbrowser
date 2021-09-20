@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum OffsetKeyword {
 	Left,
 	Center,
@@ -54,7 +54,7 @@ impl ToCss for OffsetKeyword {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum LengthPercentageOrKeyword {
 	LengthPercentage(LengthPercentage),
 	Keyword(OffsetKeyword),
@@ -73,7 +73,7 @@ impl ToCss for LengthPercentageOrKeyword {
 }
 
 /// https://drafts.csswg.org/css-transforms-1/#transform-origin-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TransformOrigin {
 	x: LengthPercentageOrKeyword,
 	y: LengthPercentageOrKeyword,

@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::counter::CounterStyle;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ListStyleType {
 	None,
 	String(String),

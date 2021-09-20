@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::percentage::Percentage;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GenericNumberOrPercentage<Number> {
 	Number(Number),
 	Percentage(Percentage),

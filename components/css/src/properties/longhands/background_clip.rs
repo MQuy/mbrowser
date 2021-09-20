@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::layout::Box;
 
 /// https://drafts.csswg.org/css-backgrounds/#background-clip
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundClip {
 	boxes: Vec<Box>,
 }

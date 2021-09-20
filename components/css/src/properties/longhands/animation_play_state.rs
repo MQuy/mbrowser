@@ -5,7 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SingleAnimationPlayState {
 	Running,
 	Paused,
@@ -17,7 +17,7 @@ property_keywords_impl! { SingleAnimationPlayState,
 }
 
 /// https://drafts.csswg.org/css-animations-1/#animation-play-state
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationPlayState {
 	play_states: Vec<SingleAnimationPlayState>,
 }

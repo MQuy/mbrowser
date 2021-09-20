@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::time::Time;
 
 /// https://drafts.csswg.org/css-animations-1/#animation-duration
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationDuration {
 	durations: Vec<Time>,
 }

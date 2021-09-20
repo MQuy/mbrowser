@@ -9,7 +9,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::number::Integer;
 use crate::{properties, values};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum PropertyDeclaration {
 	/// `align-content`
 	AlignContent(properties::longhands::align_content::AlignContent),
@@ -375,12 +375,6 @@ pub enum PropertyDeclaration {
 	Top(values::length::LengthPercentageOrAuto),
 	/// A CSS-wide keyword.
 	CSSWideKeyword(WideKeywordDeclaration),
-}
-
-impl std::fmt::Debug for PropertyDeclaration {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		todo!()
-	}
 }
 
 impl PropertyDeclaration {
@@ -860,7 +854,7 @@ impl Importance {
 	}
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct WideKeywordDeclaration {
 	id: LonghandId,
 	/// The CSS-wide keyword.

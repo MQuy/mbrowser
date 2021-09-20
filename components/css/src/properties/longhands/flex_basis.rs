@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::Size;
 
 /// https://drafts.csswg.org/css-flexbox/#flex-basis-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FlexBasis {
 	Content,
 	Width(Size),

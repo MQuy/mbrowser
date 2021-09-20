@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::percentage::Percentage;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FontStretchKeyword {
 	Normal,
 	Condensed,
@@ -32,7 +32,7 @@ property_keywords_impl! { FontStretchKeyword,
 }
 
 /// https://drafts.csswg.org/css-fonts/#font-stretch-prop
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FontStretch {
 	Stretch(Percentage),
 	Keyword(FontStretchKeyword),

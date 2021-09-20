@@ -6,7 +6,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentageOrAuto;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BgSize {
 	ExplicitSize {
 		width: LengthPercentageOrAuto,
@@ -65,7 +65,7 @@ impl ToCss for BgSize {
 }
 
 /// https://drafts.csswg.org/css-backgrounds/#background-size
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BackgroundSize {
 	size: Vec<BgSize>,
 }

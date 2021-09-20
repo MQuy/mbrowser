@@ -7,7 +7,7 @@ use crate::parser::{parse_repeated, ParseError};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum UrlModifier {
 	Ident(Ident),
 	Function(String),
@@ -26,7 +26,7 @@ impl ToCss for UrlModifier {
 }
 
 /// https://drafts.csswg.org/css-values-4/#urls
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CssUrl {
 	original: String,
 	resolved: Option<BrowserUrl>,

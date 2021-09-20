@@ -5,7 +5,7 @@ use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SingleAnimationDirection {
 	Normal,
 	Reverse,
@@ -21,7 +21,7 @@ property_keywords_impl! { SingleAnimationDirection,
 }
 
 /// https://drafts.csswg.org/css-animations-1/#animation-direction
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AnimationDirection {
 	directions: Vec<SingleAnimationDirection>,
 }

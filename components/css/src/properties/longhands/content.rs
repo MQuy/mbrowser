@@ -10,7 +10,7 @@ use crate::values::specified::leader::Leader;
 use crate::values::specified::quote::Quote;
 use crate::values::specified::target::Target;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ContentList {
 	String(String),
 	Contents,
@@ -87,7 +87,7 @@ impl ToCss for ContentList {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ContentReplacementOrList {
 	Replacement(Image),
 	List(Vec<ContentList>),
@@ -129,7 +129,7 @@ impl ToCss for ContentReplacementOrList {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum CounterOrString {
 	Counter(Counter),
 	String(String),
@@ -164,7 +164,7 @@ impl ToCss for CounterOrString {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ContentData {
 	content: ContentReplacementOrList,
 	alt: Vec<CounterOrString>,
@@ -213,7 +213,7 @@ impl ToCss for ContentData {
 }
 
 /// https://drafts.csswg.org/css-content/#content-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Content {
 	Normal,
 	None,

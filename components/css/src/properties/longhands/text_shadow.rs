@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SingleTextShadow {
 	color: Color,
 	shadow: (Length, Length, NonNegativeLength),
@@ -68,7 +68,7 @@ impl ToCss for SingleTextShadow {
 }
 
 /// https://drafts.csswg.org/css-text-decor/#text-shadow-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextShadow(Vec<SingleTextShadow>);
 
 impl TextShadow {

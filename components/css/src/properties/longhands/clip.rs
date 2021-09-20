@@ -6,7 +6,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthOrAuto;
 
 /// https://drafts.fxtf.org/css-masking/#clip-property
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Clip {
 	top: LengthOrAuto,
 	right: LengthOrAuto,

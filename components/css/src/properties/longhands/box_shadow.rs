@@ -8,7 +8,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::color::Color;
 use crate::values::length::{Length, NonNegativeLength};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Shadow {
 	inset: bool,
 	length: (Length, Length, NonNegativeLength, Length),
@@ -90,7 +90,7 @@ impl ToCss for Shadow {
 }
 
 /// https://drafts.csswg.org/css-backgrounds/#box-shadow
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum BoxShadow {
 	None,
 	Shadow(Vec<Shadow>),

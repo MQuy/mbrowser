@@ -6,7 +6,7 @@ use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum LineStyle {
 	Hidden,
@@ -34,7 +34,7 @@ property_keywords_impl! { LineStyle,
 	LineStyle::Double, "double",
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(u8)]
 pub enum Overflow {
 	Visible,
@@ -110,7 +110,7 @@ impl From<&str> for Resolution {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Box {
 	BorderBox,
 	PaddingBox,

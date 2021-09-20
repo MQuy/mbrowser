@@ -7,7 +7,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::length::LengthPercentage;
 use crate::values::number::{Number, Zero};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum AngleOrZero {
 	Angle(Angle),
 	Zero,
@@ -43,7 +43,7 @@ impl ToCss for AngleOrZero {
 }
 
 /// https://drafts.csswg.org/css-transforms-1/#two-d-transform-functions
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TransformFunction {
 	Matrix(Number, Number, Number, Number, Number, Number),
 	Translate(LengthPercentage, LengthPercentage),
