@@ -24,11 +24,12 @@ pub struct DomParser {
 	current_line: u64,
 }
 
-impl Default for DomParser {
-	fn default() -> Self {
-		let window = Window::new(CSSErrorReporter::new());
-		let document = Rc::new(Document::new(Rc::new(window), None));
+impl DomParser {
+	pub fn new() -> Self {
+		let document = Rc::new(Document::new(None));
 		add_to_global_scope(upcast(document.clone()));
+		let window = Window::new(document.clone(), CSSErrorReporter::new());
+		document.set_window(Rc::new(window));
 		Self {
 			document,
 			current_line: 0,

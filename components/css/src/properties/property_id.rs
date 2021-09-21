@@ -62,6 +62,7 @@ impl PropertyId {
 				"list-style-position" => StaticId::Longhand(LonghandId::ListStylePosition),
 				"list-style-type" => StaticId::Longhand(LonghandId::ListStyleType),
 				"mix-blend-mode" => StaticId::Longhand(LonghandId::MixBlendMode),
+				"object-fit" => StaticId::Longhand(LonghandId::ObjectFit),
 				"opacity" => StaticId::Longhand(LonghandId::Opacity),
 				"order" => StaticId::Longhand(LonghandId::Order),
 				"outline-style" => StaticId::Longhand(LonghandId::OutlineStyle),
@@ -343,7 +344,7 @@ impl ToCss for PropertyId {
 pub struct NonCustomPropertyId(usize);
 
 /// The length of all the non-custom properties.
-pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 224;
+pub const NON_CUSTOM_PROPERTY_ID_COUNT: usize = 225;
 
 impl NonCustomPropertyId {
 	/// Returns the underlying index, used for use counter.
@@ -533,6 +534,7 @@ impl NonCustomPropertyId {
 			"right",
 			"top",
 			"counter-set",
+			"object-fit",
 			"background",
 			"background-position",
 			"border-color",
@@ -597,12 +599,12 @@ impl NonCustomPropertyId {
 		static MAP: [u8; NON_CUSTOM_PROPERTY_ID_COUNT] = [
 			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7,
-			7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7,
+			7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 		];
 		match rule_type {
 			CssRuleType::Style => MAP[self.0] & 1 != 0,

@@ -232,15 +232,12 @@ impl VirtualMethods for Element {
 			&local_name!("style") => {
 				let changed_style = match mutation {
 					AttributeMutation::Set(..) => match self.node.owner_doc() {
-						Some(document) => {
-							let window = document.window();
-							Some(parse_style_attribute(
-								&attr.value(),
-								Some(window.error_reporter()),
-								document.quirks_mode(),
-								CssRuleType::Style,
-							))
-						},
+						Some(document) => Some(parse_style_attribute(
+							&attr.value(),
+							Some(document.window().unwrap().error_reporter()),
+							document.quirks_mode(),
+							CssRuleType::Style,
+						)),
 						None => not_supported!(),
 					},
 					AttributeMutation::Removed => None,

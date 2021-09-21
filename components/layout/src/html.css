@@ -1,0 +1,794 @@
+@namespace "http://www.w3.org/1999/xhtml";
+
+html {
+  display: block;
+}
+
+/* children of the <head> element all have display:none */
+head,
+link,
+meta,
+script,
+style,
+title {
+  display: none;
+}
+
+/* generic block-level elements */
+
+body {
+  display: block;
+  margin: 8px;
+}
+
+p {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+address,
+article,
+aside,
+div,
+footer,
+header,
+hgroup,
+layer,
+main,
+nav,
+section {
+  display: block;
+}
+
+marquee {
+  display: inline-block;
+}
+
+blockquote {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 40px;
+  margin-inline-end: 40px;
+}
+
+figcaption {
+  display: block;
+}
+
+figure {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 40px;
+  margin-inline-end: 40px;
+}
+
+q {
+  display: inline;
+}
+
+q::before {
+  content: open-quote;
+}
+
+q::after {
+  content: close-quote;
+}
+
+center {
+  display: block;
+}
+
+hr {
+  display: block;
+  margin-block-start: 0.5em;
+  margin-block-end: 0.5em;
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+  border-style: inset;
+  border-width: 1px;
+}
+
+/* media elements */
+
+video {
+  object-fit: contain;
+}
+
+audio {
+  width: 200px;
+  height: 25px;
+}
+
+/* heading elements */
+
+h1 {
+  display: block;
+  font-size: 2em;
+  margin-block-start: 0.67em;
+  margin-block-end: 0.67em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+:is(article, aside, nav, section) h1 {
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+}
+
+:is(article, aside, nav, section) :is(article, aside, nav, section) h1 {
+  font-size: 1.17em;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+
+:is(article, aside, nav, section) :is(article, aside, nav, section) :is(article, aside, nav, section) h1 {
+  font-size: 1em;
+  margin-block-start: 1.33em;
+  margin-block-end: 1.33em;
+}
+
+:is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  h1 {
+  font-size: 0.83em;
+  margin-block-start: 1.67em;
+  margin-block-end: 1.67em;
+}
+
+:is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  :is(article, aside, nav, section)
+  h1 {
+  font-size: 0.67em;
+  margin-block-start: 2.33em;
+  margin-block-end: 2.33em;
+}
+
+h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+h3 {
+  display: block;
+  font-size: 1.17em;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+h4 {
+  display: block;
+  margin-block-start: 1.33em;
+  margin-block-end: 1.33em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+h5 {
+  display: block;
+  font-size: 0.83em;
+  margin-block-start: 1.67em;
+  margin-block-end: 1.67em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+h6 {
+  display: block;
+  font-size: 0.67em;
+  margin-block-start: 2.33em;
+  margin-block-end: 2.33em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  font-weight: bold;
+}
+
+/* tables */
+
+table {
+  display: table;
+  border-collapse: separate;
+  border-spacing: 2px;
+  border-color: gray;
+}
+
+thead {
+  display: table-header-group;
+  vertical-align: middle;
+  border-color: inherit;
+}
+
+tbody {
+  display: table-row-group;
+  vertical-align: middle;
+  border-color: inherit;
+}
+
+tfoot {
+  display: table-footer-group;
+  vertical-align: middle;
+  border-color: inherit;
+}
+
+/* for tables without table section elements (can happen with XHTML or dynamically created tables) */
+table > tr {
+  vertical-align: middle;
+}
+
+col {
+  display: table-column;
+}
+
+colgroup {
+  display: table-column-group;
+}
+
+tr {
+  display: table-row;
+  vertical-align: inherit;
+  border-color: inherit;
+}
+
+td,
+th {
+  display: table-cell;
+  vertical-align: inherit;
+}
+
+th {
+  font-weight: bold;
+}
+
+caption {
+  display: table-caption;
+  text-align: center;
+}
+
+/* lists */
+
+ul,
+menu,
+dir {
+  display: block;
+  list-style-type: disc;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  padding-inline-start: 40px;
+}
+
+ol {
+  display: block;
+  list-style-type: decimal;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  padding-inline-start: 40px;
+}
+
+li {
+  display: list-item;
+}
+
+ul ul,
+ol ul {
+  list-style-type: circle;
+}
+
+ol ol ul,
+ol ul ul,
+ul ol ul,
+ul ul ul {
+  list-style-type: square;
+}
+
+dd {
+  display: block;
+  margin-inline-start: 40px;
+}
+
+dl {
+  display: block;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+dt {
+  display: block;
+}
+
+ol ul,
+ul ol,
+ul ul,
+ol ol {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
+/* form elements */
+
+form {
+  display: block;
+  margin-top: 0em;
+}
+
+label {
+  cursor: default;
+}
+
+legend {
+  display: block;
+  padding-inline-start: 2px;
+  padding-inline-end: 2px;
+  border: none;
+}
+
+fieldset {
+  display: block;
+  margin-inline-start: 2px;
+  margin-inline-end: 2px;
+  padding-block-start: 0.35em;
+  padding-inline-start: 0.75em;
+  padding-inline-end: 0.75em;
+  padding-block-end: 0.625em;
+  border: 2px groove ThreeDFace;
+  min-width: min-content;
+}
+
+button {
+  appearance: button;
+}
+
+/* Form controls don't go vertical. */
+input,
+textarea,
+keygen,
+select,
+button,
+meter,
+progress {
+  writing-mode: horizontal-tb !important;
+}
+
+input,
+textarea,
+keygen,
+select,
+button {
+  margin: 0em;
+  color: initial;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  text-indent: 0;
+  text-shadow: none;
+  display: inline-block;
+  text-align: start;
+}
+
+input[type="hidden"] {
+  display: none;
+}
+
+input {
+  appearance: textfield;
+  background-color: white;
+  border: 2px inset;
+  padding: 1px;
+  cursor: auto;
+}
+
+input[type="search"] {
+  appearance: searchfield;
+  box-sizing: border-box;
+}
+
+keygen,
+select {
+  border-radius: 5px;
+}
+
+textarea {
+  appearance: textarea;
+  background-color: white;
+  border: 1px solid;
+  padding: 2px;
+  flex-direction: column;
+  resize: auto;
+  cursor: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+::placeholder {
+  color: darkGray;
+  pointer-events: none !important;
+}
+
+input::placeholder {
+  white-space: pre;
+  word-wrap: normal;
+  overflow: hidden;
+  line-height: initial;
+}
+
+input:is([type="hidden"], [type="image"], [type="file"]) {
+  appearance: initial;
+  padding: initial;
+  background-color: initial;
+  border: initial;
+}
+
+input[type="file"] {
+  align-items: baseline;
+  color: inherit;
+  text-align: start !important;
+}
+
+input:is([type="radio"], [type="checkbox"]) {
+  margin: 3px 2px;
+  padding: initial;
+  background-color: initial;
+  border: initial;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]) {
+  appearance: push-button;
+  white-space: pre;
+}
+
+input[type="file"]::file-selector-button {
+  appearance: push-button;
+  white-space: nowrap;
+  margin: 0;
+  font-size: inherit;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]),
+input[type="file"]::file-selector-button,
+button {
+  align-items: flex-start;
+  text-align: center;
+  cursor: default;
+  color: ButtonText;
+  padding: 2px 6px 3px 6px;
+  border: 2px outset ButtonFace;
+  background-color: ButtonFace;
+  box-sizing: border-box;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]):active,
+input[type="file"]::file-selector-button:active,
+button:active {
+  color: ActiveButtonText;
+}
+
+input[type="range"] {
+  appearance: slider-horizontal;
+  padding: initial;
+  border: initial;
+  margin: 2px;
+  color: #909090;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]):disabled,
+input[type="file"]:disabled::file-selector-button,
+button:disabled,
+select:disabled,
+keygen:disabled,
+optgroup:disabled,
+option:disabled,
+select[disabled] > option {
+  color: GrayText;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]):active,
+input[type="file"]:active::file-selector-button,
+button:active {
+  border-style: inset;
+}
+
+input:is([type="button"], [type="submit"], [type="reset"]):active:disabled,
+input[type="file"]:active:disabled::file-selector-button,
+button:active:disabled {
+  border-style: outset;
+}
+
+area,
+param {
+  display: none;
+}
+
+input[type="checkbox"] {
+  appearance: checkbox;
+  box-sizing: border-box;
+}
+
+input[type="radio"] {
+  appearance: radio;
+  box-sizing: border-box;
+}
+
+select {
+  box-sizing: border-box;
+  appearance: menulist;
+  border: 1px solid;
+  color: black;
+  background-color: white;
+  align-items: center;
+  white-space: pre;
+  cursor: default;
+}
+
+select:is([size], [multiple]),
+select[size][multiple] {
+  appearance: listbox;
+  align-items: flex-start;
+  border: 1px inset gray;
+  border-radius: initial;
+  white-space: initial;
+}
+
+select:is([size=""], [size="0"], [size="1"]) {
+  appearance: menulist;
+  align-items: center;
+  border: 1px solid;
+  border-radius: 5px;
+  white-space: pre;
+}
+
+optgroup {
+  font-weight: bolder;
+}
+
+option {
+  font-weight: normal;
+}
+
+output {
+  display: inline;
+}
+
+/* meter */
+
+meter {
+  appearance: meter;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 1em;
+  width: 5em;
+  vertical-align: -0.2em;
+}
+
+/* progress */
+
+progress {
+  appearance: progress-bar;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 1em;
+  width: 10em;
+  vertical-align: -0.2em;
+}
+
+/* inline elements */
+
+u,
+ins {
+  text-decoration: underline;
+}
+
+strong,
+b {
+  font-weight: bold;
+}
+
+i,
+cite,
+em,
+var,
+address,
+dfn {
+  font-style: italic;
+}
+
+tt,
+code,
+kbd,
+samp {
+  font-family: monospace;
+}
+
+pre,
+xmp,
+plaintext,
+listing {
+  display: block;
+  font-family: monospace;
+  white-space: pre;
+  margin: 1em 0;
+}
+
+mark {
+  background-color: yellow;
+  color: black;
+}
+
+big {
+  font-size: larger;
+}
+
+small {
+  font-size: smaller;
+}
+
+s,
+strike,
+del {
+  text-decoration: line-through;
+}
+
+sub {
+  vertical-align: sub;
+  font-size: smaller;
+}
+
+sup {
+  vertical-align: super;
+  font-size: smaller;
+}
+
+nobr {
+  white-space: nowrap;
+}
+
+/* Read-only text fields do not show a focus ring but do still receive focus */
+html:focus,
+body:focus,
+input[readonly]:focus,
+applet:focus,
+embed:focus,
+iframe:focus,
+object:focus {
+  outline: none;
+}
+
+input:focus,
+textarea:focus,
+keygen:focus,
+select:focus {
+  outline-offset: -2px;
+}
+
+input:is([type="button"], [type="checkbox"], [type="file"], [type="hidden"], [type="image"], [type="radio"], [type="reset"], [type="search"], [type="submit"]):focus,
+input[type="file"]:focus::file-selector-button {
+  outline-offset: 0;
+}
+
+a:any-link {
+  color: LinkText;
+  text-decoration: underline;
+  cursor: auto;
+}
+
+a:any-link:active {
+  color: ActiveText;
+}
+
+/* HTML5 ruby elements */
+
+ruby,
+rt {
+  text-indent: 0; /* blocks used for ruby rendering should not trigger this */
+}
+
+rt {
+  line-height: normal;
+  text-emphasis: none;
+}
+
+ruby > rt {
+  display: block;
+  text-align: start;
+}
+
+ruby > rp {
+  display: none;
+}
+
+/* other elements */
+
+noframes {
+  display: none;
+}
+
+frameset,
+frame {
+  display: block;
+}
+
+frameset {
+  border-color: inherit;
+}
+
+iframe {
+  border: 2px inset;
+}
+
+details {
+  display: block;
+}
+
+summary {
+  display: block;
+}
+
+template {
+  display: none;
+}
+
+bdi,
+output {
+  unicode-bidi: isolate;
+}
+
+bdo {
+  unicode-bidi: bidi-override;
+}
+
+slot {
+  display: contents;
+}
+
+/* page */
+
+@page {
+  /* FIXME: Define the right default values for page properties. */
+  size: auto;
+  margin: auto;
+  padding: 0px;
+  border-width: 0px;
+}
+
+/* noscript is handled internally, as it depends on settings. */
+
+/* Default support for "Smart Invert" where all content color except media is inverted. */
+@media (inverted-colors) {
+  img,
+  picture,
+  video {
+    filter: invert(100%);
+  } /* Images and videos double-inverted. */
+}
+
+/* https://drafts.csswg.org/css-text-decor-4/#text-decoration-skipping */
+ins,
+del {
+  text-decoration-skip: none;
+}

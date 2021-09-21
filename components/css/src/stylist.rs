@@ -8,6 +8,7 @@ use crate::stylesheets::origin::Origin;
 use crate::stylesheets::style_rule::StyleRule;
 use crate::stylesheets::stylesheet::Stylesheet;
 
+#[derive(Debug)]
 pub struct Stylist {
 	user_agent: CascadeData,
 	author: CascadeData,
@@ -40,6 +41,7 @@ impl Stylist {
 	}
 }
 
+#[derive(Debug)]
 pub struct CascadeData {
 	rules: Vec<Rule>,
 	rules_source_order: u32,

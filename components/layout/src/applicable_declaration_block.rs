@@ -1,5 +1,6 @@
 use css::properties::declaration_block::PropertyDeclarationBlock;
 use css::properties::SelectorSpecificity;
+use css::stylesheets::origin::Origin;
 use css::stylesheets::style_rule::StyleRule;
 use css::stylist::Rule;
 
@@ -7,11 +8,13 @@ use css::stylist::Rule;
 pub struct ApplicableDeclarationBlock {
 	pub source: StyleSource,
 	pub specificity: u32,
+	pub origin: Origin,
 }
 
 impl ApplicableDeclarationBlock {
-	pub fn from_rule(rule: &Rule) -> Self {
+	pub fn from_rule(rule: &Rule, origin: Origin) -> Self {
 		Self {
+			origin,
 			specificity: rule.selector.specificity(),
 			source: StyleSource::StyleRule(rule.style_rule.clone()),
 		}
@@ -19,6 +22,7 @@ impl ApplicableDeclarationBlock {
 
 	pub fn from_style(declaration: &PropertyDeclarationBlock) -> Self {
 		Self {
+			origin: Origin::Author,
 			specificity: SelectorSpecificity::STYLE.bits(),
 			source: StyleSource::DeclarationBlock(declaration.clone()),
 		}

@@ -1,6 +1,7 @@
 use std::ops::Deref;
 
 use css::selectors::select::Selectors;
+use css::stylesheets::origin::Origin;
 use css::stylist::{Rule, Stylist};
 use dom::global_scope::NodeRef;
 use selectors::context::{MatchingContext, MatchingMode};
@@ -37,6 +38,7 @@ pub fn collect_rules(element: NodeRef, stylist: &Stylist) -> Vec<ApplicableDecla
 		stylist.author_cascade_data().rules(),
 		&mut matching_context,
 		&mut set_selector_flags,
+		Origin::Author,
 	);
 	applicable_declarations
 }
@@ -47,6 +49,7 @@ fn collect_from_origin<F>(
 	rules: &Vec<Rule>,
 	context: &mut MatchingContext<Selectors>,
 	flags_setter: &mut F,
+	origin: Origin,
 ) where
 	F: FnMut(&NodeRef, ElementSelectorFlags),
 {
@@ -59,7 +62,7 @@ fn collect_from_origin<F>(
 			context,
 			flags_setter,
 		) {
-			applicable_declarations.push(ApplicableDeclarationBlock::from_rule(rule));
+			applicable_declarations.push(ApplicableDeclarationBlock::from_rule(rule, origin));
 		}
 	}
 }

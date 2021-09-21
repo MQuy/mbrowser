@@ -1,5 +1,3 @@
-use common::vector::permutate;
-use css::str::join_strings;
 use dyn_fmt::AsStrFormatExt;
 use number::number_or_percentage_data;
 use setup::{assert_css, parse};

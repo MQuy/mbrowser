@@ -13,6 +13,7 @@ use crate::element::Element;
 use crate::inheritance::downcast;
 use crate::node::Node;
 use crate::nodetype::NodeTypeId;
+use crate::window::Window;
 
 #[derive(Clone, Debug)]
 pub struct NodeRef(pub Rc<Node>);
@@ -86,6 +87,13 @@ impl NodeRef {
 		downcast::<Node, Element>(self.0.clone())
 			.style_attribute()
 			.clone()
+	}
+
+	pub fn window(&self) -> Option<Rc<Window>> {
+		match self.0.owner_doc() {
+			Some(document) => document.window(),
+			None => None,
+		}
 	}
 }
 

@@ -63,6 +63,8 @@ pub enum PropertyDeclaration {
 	ListStyleType(properties::longhands::list_style_type::ListStyleType),
 	/// `mix-blend-mode`
 	MixBlendMode(properties::longhands::mix_blend_mode::MixBlendMode),
+	/// `object-fit`
+	ObjectFit(properties::longhands::object_fit::ObjectFit),
 	/// `opacity`
 	Opacity(properties::longhands::opacity::Opacity),
 	/// `order`
@@ -411,6 +413,7 @@ impl PropertyDeclaration {
 			PropertyDeclaration::ListStylePosition(..) => LonghandId::ListStylePosition,
 			PropertyDeclaration::ListStyleType(..) => LonghandId::ListStyleType,
 			PropertyDeclaration::MixBlendMode(..) => LonghandId::MixBlendMode,
+			PropertyDeclaration::ObjectFit(..) => LonghandId::ObjectFit,
 			PropertyDeclaration::Opacity(..) => LonghandId::Opacity,
 			PropertyDeclaration::Order(..) => LonghandId::Order,
 			PropertyDeclaration::OutlineStyle(..) => LonghandId::OutlineStyle,
@@ -675,6 +678,7 @@ impl ToCss for PropertyDeclaration {
 			PropertyDeclaration::ListStylePosition(property) => property.to_css(dest),
 			PropertyDeclaration::ListStyleType(property) => property.to_css(dest),
 			PropertyDeclaration::MixBlendMode(property) => property.to_css(dest),
+			PropertyDeclaration::ObjectFit(property) => property.to_css(dest),
 			PropertyDeclaration::Opacity(property) => property.to_css(dest),
 			PropertyDeclaration::Order(property) => property.to_css(dest),
 			PropertyDeclaration::OutlineStyle(property) => property.to_css(dest),

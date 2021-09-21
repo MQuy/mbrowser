@@ -373,6 +373,8 @@ pub enum LonghandId {
 
 	/// counter-set
 	CounterSet = 177,
+	/// object-fit
+	ObjectFit = 178,
 }
 
 impl ToCss for LonghandId {
@@ -443,6 +445,7 @@ impl LonghandId {
 			&[ShorthandId::All, ShorthandId::ListStyle];
 		static MIX_BLEND_MODE: &'static [ShorthandId] = &[ShorthandId::All];
 		static OPACITY: &'static [ShorthandId] = &[ShorthandId::All];
+		static OBJECTFIT: &'static [ShorthandId] = &[ShorthandId::All];
 		static ORDER: &'static [ShorthandId] = &[ShorthandId::All];
 		static OUTLINE_STYLE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Outline];
 		static OVERFLOW_WRAP: &'static [ShorthandId] = &[ShorthandId::All];
@@ -803,6 +806,7 @@ impl LonghandId {
 				LonghandId::ListStylePosition => LIST_STYLE_POSITION,
 				LonghandId::ListStyleType => LIST_STYLE_TYPE,
 				LonghandId::MixBlendMode => MIX_BLEND_MODE,
+				LonghandId::ObjectFit => OBJECTFIT,
 				LonghandId::Opacity => OPACITY,
 				LonghandId::Order => ORDER,
 				LonghandId::OutlineStyle => OUTLINE_STYLE,
@@ -992,6 +996,7 @@ impl LonghandId {
 			LonghandId::ListStylePosition => longhands::list_style_position::parse_declared,
 			LonghandId::ListStyleType => longhands::list_style_type::parse_declared,
 			LonghandId::MixBlendMode => longhands::mix_blend_mode::parse_declared,
+			LonghandId::ObjectFit => longhands::object_fit::parse_declared,
 			LonghandId::Opacity => longhands::opacity::parse_declared,
 			LonghandId::Order => longhands::order::parse_declared,
 			LonghandId::OutlineStyle => longhands::outline_style::parse_declared,

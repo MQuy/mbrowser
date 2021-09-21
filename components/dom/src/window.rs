@@ -1,16 +1,23 @@
 use std::cell::RefCell;
+use std::rc::{Rc, Weak};
 
 use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use cssparser::SourceLocation;
 
+use crate::document::Document;
+
 #[derive(Debug)]
 pub struct Window {
 	error_reporter: CSSErrorReporter,
+	document: Weak<Document>,
 }
 
 impl Window {
-	pub fn new(error_reporter: CSSErrorReporter) -> Self {
-		Window { error_reporter }
+	pub fn new(document: Rc<Document>, error_reporter: CSSErrorReporter) -> Self {
+		Window {
+			error_reporter,
+			document: Rc::downgrade(&document),
+		}
 	}
 
 	pub fn error_reporter(&self) -> &CSSErrorReporter {

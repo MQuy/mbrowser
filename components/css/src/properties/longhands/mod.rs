@@ -122,6 +122,7 @@ pub mod min_height;
 pub mod min_inline_size;
 pub mod min_width;
 pub mod mix_blend_mode;
+pub mod object_fit;
 pub mod opacity;
 pub mod order;
 pub mod outline_color;

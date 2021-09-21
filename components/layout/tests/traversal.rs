@@ -5,7 +5,6 @@ use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use css::media_queries::media_list::MediaList;
 use css::stylesheets::origin::Origin;
 use css::stylesheets::stylesheet::Stylesheet;
-use css::stylist::Stylist;
 use cssparser::SourceLocation;
 use dom::global_scope::NodeRef;
 use dom::inheritance::Castable;
@@ -13,6 +12,7 @@ use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
 use layout::rule_colectors::collect_rules;
+use layout::style_tree::StyleTree;
 use selectors::context::QuirksMode;
 
 #[derive(Debug)]
@@ -46,7 +46,7 @@ impl ParseErrorReporter for TestingErrorReporter {
 
 #[test]
 fn demo() {
-	let sink = DomParser::default();
+	let sink = DomParser::new();
 
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(
@@ -69,13 +69,14 @@ fn demo() {
 		QuirksMode::NoQuirks,
 		5,
 	);
-	let mut stylist = Stylist::new(QuirksMode::NoQuirks);
-	stylist.add_stylesheet(&stylesheet, Origin::Author);
-
 	let root = output.document.upcast().first_child().unwrap();
+	let style_tree = StyleTree::new(NodeRef(root.clone()), QuirksMode::NoQuirks);
+	style_tree.import_user_agent();
+	style_tree.add_stylesheet(&stylesheet);
+
 	for node in root.traverse_preorder() {
 		if node.node_type_id().is_element() {
-			let rules = collect_rules(NodeRef(node), &stylist);
+			let rules = collect_rules(NodeRef(node), style_tree.stylist());
 			println!("{:?}", rules);
 		}
 	}

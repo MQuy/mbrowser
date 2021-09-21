@@ -12,6 +12,7 @@ use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
 use crate::window::Window;
 
+/// <https://dom.spec.whatwg.org/#document>
 #[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Document {
@@ -21,11 +22,11 @@ pub struct Document {
 	encoding: &'static Encoding,
 	quirks_mode: Cell<QuirksMode>,
 	base_element: RefCell<Option<Rc<HTMLBaseElement>>>,
-	window: Rc<Window>,
+	window: RefCell<Option<Rc<Window>>>,
 }
 
 impl Document {
-	pub fn new(window: Rc<Window>, url: Option<BrowserUrl>) -> Self {
+	pub fn new(url: Option<BrowserUrl>) -> Self {
 		let url = url.unwrap_or_else(|| BrowserUrl::parse("about:blank").unwrap());
 		Self {
 			node: Node::new(crate::nodetype::NodeTypeId::Document, None),
@@ -34,7 +35,7 @@ impl Document {
 			quirks_mode: Cell::new(QuirksMode::NoQuirks),
 			base_element: RefCell::new(None),
 			url: RefCell::new(url),
-			window: window.clone(),
+			window: RefCell::new(None),
 		}
 	}
 
@@ -71,8 +72,15 @@ impl Document {
 		self.url()
 	}
 
-	pub fn window(&self) -> Rc<Window> {
-		self.window.clone()
+	pub fn set_window(&self, window: Rc<Window>) {
+		*self.window.borrow_mut() = Some(window);
+	}
+
+	pub fn window(&self) -> Option<Rc<Window>> {
+		match self.window.borrow().as_ref() {
+			Some(window) => Some(window.clone()),
+			None => None,
+		}
 	}
 }
 

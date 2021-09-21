@@ -122,6 +122,7 @@ mod properties {
 	mod min_inline_size;
 	mod min_width;
 	mod mix_blend_mode;
+	pub mod object_fit;
 	mod opacity;
 	mod order;
 	mod outline_color;
