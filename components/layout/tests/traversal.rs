@@ -11,7 +11,6 @@ use dom::inheritance::Castable;
 use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
-use layout::rule_colectors::collect_rules;
 use layout::style_tree::StyleTree;
 use selectors::context::QuirksMode;
 
@@ -67,17 +66,12 @@ fn demo() {
 		media,
 		Some(&error_reporter),
 		QuirksMode::NoQuirks,
-		5,
+		0,
 	);
 	let root = output.document.upcast().first_child().unwrap();
 	let style_tree = StyleTree::new(NodeRef(root.clone()), QuirksMode::NoQuirks);
 	style_tree.import_user_agent();
 	style_tree.add_stylesheet(&stylesheet);
-
-	for node in root.traverse_preorder() {
-		if node.node_type_id().is_element() {
-			let rules = collect_rules(NodeRef(node), style_tree.stylist());
-			println!("{:?}", rules);
-		}
-	}
+	style_tree.match_rules();
+	style_tree.log();
 }

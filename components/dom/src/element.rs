@@ -460,7 +460,7 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn parent_element(&self) -> Option<Self> {
-		self.parent_element()
+		self.parent()
 	}
 
 	fn parent_node_is_shadow_root(&self) -> bool {
@@ -476,11 +476,11 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn prev_sibling_element(&self) -> Option<Self> {
-		self.prev_sibling_element()
+		self.prev_sibling()
 	}
 
 	fn next_sibling_element(&self) -> Option<Self> {
-		self.next_sibling_element()
+		self.next_sibling()
 	}
 
 	fn is_html_element_in_html_document(&self) -> bool {

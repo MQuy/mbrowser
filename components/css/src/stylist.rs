@@ -32,6 +32,10 @@ impl Stylist {
 		&self.author
 	}
 
+	pub fn user_agent_cascade_data(&self) -> &CascadeData {
+		&self.user_agent
+	}
+
 	pub fn add_stylesheet(&mut self, stylesheet: &Stylesheet, origin: Origin) {
 		match origin {
 			Origin::UserAgent => self.user_agent.add_stylesheet(stylesheet),

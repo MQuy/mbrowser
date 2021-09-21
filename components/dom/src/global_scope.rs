@@ -19,16 +19,24 @@ use crate::window::Window;
 pub struct NodeRef(pub Rc<Node>);
 
 impl NodeRef {
-	pub fn parent_element(&self) -> Option<NodeRef> {
+	pub fn parent(&self) -> Option<NodeRef> {
 		self.0.parent_node().map(|v| NodeRef(v))
 	}
 
-	pub fn prev_sibling_element(&self) -> Option<NodeRef> {
+	pub fn prev_sibling(&self) -> Option<NodeRef> {
 		self.0.prev_sibling().map(|v| NodeRef(v))
 	}
 
-	pub fn next_sibling_element(&self) -> Option<NodeRef> {
+	pub fn next_sibling(&self) -> Option<NodeRef> {
 		self.0.next_sibling().map(|v| NodeRef(v))
+	}
+
+	pub fn first_child(&self) -> Option<NodeRef> {
+		self.0.first_child().map(|v| NodeRef(v))
+	}
+
+	pub fn last_child(&self) -> Option<NodeRef> {
+		self.0.last_child().map(|v| NodeRef(v))
 	}
 
 	pub fn namespace(&self) -> Namespace {

@@ -22,7 +22,7 @@ pub fn collect_rules(element: NodeRef, stylist: &Stylist) -> Vec<ApplicableDecla
 		}
 		let parent_flags = flags.for_parent();
 		if !parent_flags.is_empty() {
-			if let Some(p) = element.parent_element() {
+			if let Some(p) = element.parent() {
 				p.insert_selector_flags(parent_flags);
 			}
 		}
@@ -32,6 +32,14 @@ pub fn collect_rules(element: NodeRef, stylist: &Stylist) -> Vec<ApplicableDecla
 	if let Some(style) = element.style_attribute().borrow().deref() {
 		applicable_declarations.push(ApplicableDeclarationBlock::from_style(style));
 	}
+	collect_from_origin(
+		&element,
+		&mut applicable_declarations,
+		stylist.user_agent_cascade_data().rules(),
+		&mut matching_context,
+		&mut set_selector_flags,
+		Origin::UserAgent,
+	);
 	collect_from_origin(
 		&element,
 		&mut applicable_declarations,

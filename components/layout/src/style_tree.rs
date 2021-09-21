@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::{Rc, Weak};
@@ -12,13 +13,14 @@ use dom::window::Window;
 use selectors::context::QuirksMode;
 
 use crate::applicable_declaration_block::ApplicableDeclarationBlock;
+use crate::rule_colectors::collect_rules;
 
 /// https://chromium.googlesource.com/chromium/blink/+/refs/heads/main/Source/core/css/html.css
 /// https://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css
 // https://searchfox.org/mozilla-central/source/layout/style/res/html.css
 #[derive(Debug)]
 pub struct StyleTree {
-	root: StyleTreeNode,
+	root: Rc<StyleTreeNode>,
 	window: Rc<Window>,
 	stylist: RefCell<Stylist>,
 }
@@ -28,7 +30,7 @@ impl StyleTree {
 		Self {
 			window: dom_node.window().unwrap(),
 			stylist: RefCell::new(Stylist::new(quirks_mode)),
-			root: StyleTreeNode::new(dom_node),
+			root: Rc::new(StyleTreeNode::new(dom_node, None)),
 		}
 	}
 
@@ -58,29 +60,89 @@ impl StyleTree {
 			.borrow_mut()
 			.add_stylesheet(&stylesheet, Origin::Author);
 	}
+
+	pub fn match_rules(&self) {
+		self.match_rule_for_node(self.root.clone());
+	}
+
+	fn match_rule_for_node(&self, parent: Rc<StyleTreeNode>) {
+		let rules = collect_rules(parent.dom_node.clone(), self.stylist());
+		*parent.rules.borrow_mut() = rules;
+
+		let mut dom_child = parent.dom_node.first_child();
+		loop {
+			let noderef_child = if let Some(noderef_child) = &dom_child {
+				noderef_child
+			} else {
+				break;
+			};
+			let style_child = Rc::new(StyleTreeNode::new(
+				noderef_child.clone(),
+				Some(parent.clone()),
+			));
+			parent.append_child(style_child.clone());
+			if noderef_child.node_type_id().is_element() {
+				self.match_rule_for_node(style_child.clone());
+			}
+
+			dom_child = dom_child.map(|d| d.next_sibling()).flatten();
+		}
+	}
+
+	pub fn log(&self) {
+		fn log_node(parent: Rc<StyleTreeNode>) {
+			let mut child = parent.first_child.borrow().as_ref().map(|n| n.clone());
+			loop {
+				let noderef = if let Some(ref noderef) = child {
+					noderef.clone()
+				} else {
+					break;
+				};
+				log_node(noderef.clone());
+				child = if let Some(child) = noderef.next_sibling.borrow().as_ref() {
+					child.upgrade()
+				} else {
+					None
+				};
+			}
+		}
+
+		log_node(self.root.clone());
+	}
 }
 
 #[derive(Debug)]
 pub struct StyleTreeNode {
-	dom_node: NodeRef,
-	rules: Vec<ApplicableDeclarationBlock>,
-	parent_node: RefCell<Option<Weak<StyleTreeNode>>>,
-	first_child: RefCell<Option<Rc<StyleTreeNode>>>,
-	last_child: RefCell<Option<Rc<StyleTreeNode>>>,
-	next_sibling: RefCell<Option<Weak<StyleTreeNode>>>,
-	prev_sibling: RefCell<Option<Weak<StyleTreeNode>>>,
+	pub dom_node: NodeRef,
+	pub rules: RefCell<Vec<ApplicableDeclarationBlock>>,
+	pub parent_node: RefCell<Option<Weak<StyleTreeNode>>>,
+	pub first_child: RefCell<Option<Rc<StyleTreeNode>>>,
+	pub last_child: RefCell<Option<Rc<StyleTreeNode>>>,
+	pub next_sibling: RefCell<Option<Weak<StyleTreeNode>>>,
+	pub prev_sibling: RefCell<Option<Weak<StyleTreeNode>>>,
 }
 
 impl StyleTreeNode {
-	pub fn new(node: NodeRef) -> Self {
+	pub fn new(node: NodeRef, parent_node: Option<Rc<StyleTreeNode>>) -> Self {
 		StyleTreeNode {
 			dom_node: node.clone(),
 			rules: Default::default(),
-			parent_node: Default::default(),
+			parent_node: RefCell::new(parent_node.map(|n| Rc::downgrade(&n))),
 			first_child: Default::default(),
 			last_child: Default::default(),
 			next_sibling: Default::default(),
 			prev_sibling: Default::default(),
 		}
+	}
+
+	pub fn append_child(&self, node: Rc<StyleTreeNode>) {
+		if let Some(last_child) = self.last_child.borrow().as_ref() {
+			last_child.next_sibling.replace(Some(Rc::downgrade(&node)));
+			node.prev_sibling.replace(Some(Rc::downgrade(&last_child)));
+		} else {
+			self.first_child.replace(Some(node.clone()));
+		}
+
+		self.last_child.replace(Some(node.clone()));
 	}
 }
