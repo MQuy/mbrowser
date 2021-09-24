@@ -73,5 +73,4 @@ fn demo() {
 	style_tree.import_user_agent();
 	style_tree.add_stylesheet(&stylesheet);
 	style_tree.match_rules();
-	style_tree.log();
 }

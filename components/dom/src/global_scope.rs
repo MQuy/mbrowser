@@ -3,6 +3,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use css::computed_values::ComputedValues;
 use css::element_state::ElementState;
 use css::properties::declaration_block::PropertyDeclarationBlock;
 use html5ever::{LocalName, Namespace};
@@ -103,18 +104,55 @@ impl NodeRef {
 			None => None,
 		}
 	}
+
+	pub fn computed_values(&self) -> Option<Rc<ComputedValues>> {
+		self.0.computed_values()
+	}
+
+	pub fn id(&self) -> u64 {
+		self.0.id()
+	}
 }
 
-struct GlobalScope {
+pub struct GlobalScope {
 	counted: u64,
 	nodes: Option<HashMap<u64, Rc<Node>>>,
+	computed_values: Option<HashMap<u64, ComputedValues>>,
 }
 
-impl GlobalScope {}
+impl GlobalScope {
+	fn init_computed_values<'a>(id: u64) -> &'a mut ComputedValues {
+		unsafe {
+			if let Some(values) = &mut SCOPE.computed_values {
+				values.insert(id, ComputedValues::default());
+				return values.get_mut(&id).unwrap();
+			}
+			unreachable!()
+		}
+	}
+
+	pub fn get_or_init_computed_values<'a>(id: u64) -> &'a mut ComputedValues {
+		unsafe {
+			if SCOPE.computed_values.is_none() {
+				SCOPE.computed_values = Some(HashMap::new());
+			}
+			if let Some(values) = &mut SCOPE.computed_values {
+				if let Some(value) = values.get_mut(&id) {
+					value
+				} else {
+					GlobalScope::init_computed_values(id)
+				}
+			} else {
+				unreachable!()
+			}
+		}
+	}
+}
 
 static mut SCOPE: GlobalScope = GlobalScope {
 	counted: 0,
 	nodes: None,
+	computed_values: None,
 };
 
 pub fn add_to_global_scope(node: Rc<Node>) -> Rc<Node> {

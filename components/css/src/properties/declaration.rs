@@ -386,8 +386,8 @@ impl PropertyDeclaration {
 		Self::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
 	}
 
-	pub fn id(&self) -> PropertyId {
-		let id = match *self {
+	pub fn longhand_id(&self) -> LonghandId {
+		match *self {
 			PropertyDeclaration::AlignContent(..) => LonghandId::AlignContent,
 			PropertyDeclaration::AlignItems(..) => LonghandId::AlignItems,
 			PropertyDeclaration::AlignSelf(..) => LonghandId::AlignSelf,
@@ -569,11 +569,12 @@ impl PropertyDeclaration {
 			PropertyDeclaration::CounterIncrement(..) => LonghandId::CounterIncrement,
 			PropertyDeclaration::CounterReset(..) => LonghandId::CounterReset,
 			PropertyDeclaration::CounterSet(..) => LonghandId::CounterSet,
-			PropertyDeclaration::CSSWideKeyword(ref declaration) => {
-				return PropertyId::Longhand(declaration.id);
-			},
-		};
-		PropertyId::Longhand(id)
+			PropertyDeclaration::CSSWideKeyword(ref declaration) => declaration.id,
+		}
+	}
+
+	pub fn id(&self) -> PropertyId {
+		PropertyId::Longhand(self.longhand_id())
 	}
 
 	/// The `context` parameter controls this:

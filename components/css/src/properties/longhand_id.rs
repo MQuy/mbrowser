@@ -1,9 +1,12 @@
 use core::fmt;
+use std::convert::TryFrom;
 use std::fmt::Write;
 
 use cssparser::Parser;
+use num_enum::TryFromPrimitive;
 
 use super::property_id::{NonCustomPropertyId, NonCustomPropertyIterator};
+use crate::computed_values::StyleContext;
 use crate::css_writer::{CssWriter, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
@@ -12,7 +15,7 @@ use crate::properties::shorthand_id::ShorthandId;
 use crate::stylesheets::stylesheet::ParserContext;
 
 /// An identifier for a given longhand property.
-#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq, TryFromPrimitive)]
 #[repr(u16)]
 pub enum LonghandId {
 	/// align-content
@@ -1175,6 +1178,261 @@ impl LonghandId {
 			LonghandId::CounterSet => longhands::counter_set::parse_declared,
 		};
 		parser_func(context, input)
+	}
+
+	pub fn cascade<'a>(
+		&self,
+		declaration: Option<&PropertyDeclaration>,
+		context: &'a StyleContext,
+	) {
+		let cascade_func = match self {
+			LonghandId::AlignContent => todo!(),
+			LonghandId::AlignItems => todo!(),
+			LonghandId::AlignSelf => todo!(),
+			LonghandId::AspectRatio => todo!(),
+			LonghandId::BackfaceVisibility => todo!(),
+			LonghandId::BorderCollapse => todo!(),
+			LonghandId::BorderImageRepeat => todo!(),
+			LonghandId::BoxSizing => todo!(),
+			LonghandId::CaptionSide => todo!(),
+			LonghandId::Clear => todo!(),
+			LonghandId::ColumnCount => todo!(),
+			LonghandId::Direction => todo!(),
+			LonghandId::Display => longhands::display::cascade_property,
+			LonghandId::EmptyCells => todo!(),
+			LonghandId::FlexDirection => todo!(),
+			LonghandId::FlexWrap => todo!(),
+			LonghandId::Float => todo!(),
+			LonghandId::FontStretch => todo!(),
+			LonghandId::FontStyle => todo!(),
+			LonghandId::FontVariantCaps => todo!(),
+			LonghandId::FontWeight => todo!(),
+			LonghandId::ImageRendering => todo!(),
+			LonghandId::JustifyContent => todo!(),
+			LonghandId::ListStylePosition => todo!(),
+			LonghandId::ListStyleType => todo!(),
+			LonghandId::MixBlendMode => todo!(),
+			LonghandId::Opacity => todo!(),
+			LonghandId::Order => todo!(),
+			LonghandId::OutlineStyle => todo!(),
+			LonghandId::OverflowWrap => todo!(),
+			LonghandId::PointerEvents => todo!(),
+			LonghandId::Position => todo!(),
+			LonghandId::TableLayout => todo!(),
+			LonghandId::TextAlign => todo!(),
+			LonghandId::TextDecorationLine => todo!(),
+			LonghandId::TextJustify => todo!(),
+			LonghandId::TextRendering => todo!(),
+			LonghandId::TextTransform => todo!(),
+			LonghandId::TransformStyle => todo!(),
+			LonghandId::UnicodeBidi => todo!(),
+			LonghandId::Visibility => todo!(),
+			LonghandId::WhiteSpace => todo!(),
+			LonghandId::WordBreak => todo!(),
+			LonghandId::WritingMode => todo!(),
+			LonghandId::ZIndex => todo!(),
+			LonghandId::FlexGrow => todo!(),
+			LonghandId::FlexShrink => todo!(),
+			LonghandId::OverflowBlock => todo!(),
+			LonghandId::OverflowInline => todo!(),
+			LonghandId::OverflowX => todo!(),
+			LonghandId::OverflowY => todo!(),
+			LonghandId::BorderBlockEndStyle => todo!(),
+			LonghandId::BorderBlockStartStyle => todo!(),
+			LonghandId::BorderBottomStyle => todo!(),
+			LonghandId::BorderInlineEndStyle => todo!(),
+			LonghandId::BorderInlineStartStyle => todo!(),
+			LonghandId::BorderLeftStyle => todo!(),
+			LonghandId::BorderRightStyle => todo!(),
+			LonghandId::BorderTopStyle => todo!(),
+			LonghandId::AnimationDelay => todo!(),
+			LonghandId::AnimationDirection => todo!(),
+			LonghandId::AnimationDuration => todo!(),
+			LonghandId::AnimationFillMode => todo!(),
+			LonghandId::AnimationIterationCount => todo!(),
+			LonghandId::AnimationName => todo!(),
+			LonghandId::AnimationPlayState => todo!(),
+			LonghandId::AnimationTimingFunction => todo!(),
+			LonghandId::BackgroundAttachment => todo!(),
+			LonghandId::BackgroundClip => todo!(),
+			LonghandId::BackgroundImage => todo!(),
+			LonghandId::BackgroundOrigin => todo!(),
+			LonghandId::BackgroundPositionX => todo!(),
+			LonghandId::BackgroundPositionY => todo!(),
+			LonghandId::BackgroundRepeat => todo!(),
+			LonghandId::BackgroundSize => todo!(),
+			LonghandId::BorderImageOutset => todo!(),
+			LonghandId::BorderImageSlice => todo!(),
+			LonghandId::BorderImageWidth => todo!(),
+			LonghandId::BorderSpacing => todo!(),
+			LonghandId::BoxShadow => todo!(),
+			LonghandId::Clip => todo!(),
+			LonghandId::Color => todo!(),
+			LonghandId::ColumnGap => todo!(),
+			LonghandId::ColumnWidth => todo!(),
+			LonghandId::Content => todo!(),
+			LonghandId::CounterIncrement => todo!(),
+			LonghandId::CounterReset => todo!(),
+			LonghandId::Cursor => todo!(),
+			LonghandId::Filter => todo!(),
+			LonghandId::FlexBasis => todo!(),
+			LonghandId::FontFamily => todo!(),
+			LonghandId::FontSize => todo!(),
+			LonghandId::LetterSpacing => todo!(),
+			LonghandId::LineHeight => todo!(),
+			LonghandId::OutlineOffset => todo!(),
+			LonghandId::Perspective => todo!(),
+			LonghandId::PerspectiveOrigin => todo!(),
+			LonghandId::Quotes => todo!(),
+			LonghandId::Rotate => todo!(),
+			LonghandId::Scale => todo!(),
+			LonghandId::TextIndent => todo!(),
+			LonghandId::TextOverflow => todo!(),
+			LonghandId::TextShadow => todo!(),
+			LonghandId::Transform => todo!(),
+			LonghandId::TransformOrigin => todo!(),
+			LonghandId::TransitionDelay => todo!(),
+			LonghandId::TransitionDuration => todo!(),
+			LonghandId::TransitionProperty => todo!(),
+			LonghandId::TransitionTimingFunction => todo!(),
+			LonghandId::Translate => todo!(),
+			LonghandId::VerticalAlign => todo!(),
+			LonghandId::WordSpacing => todo!(),
+			LonghandId::BorderImageSource => todo!(),
+			LonghandId::ListStyleImage => todo!(),
+			LonghandId::MaxBlockSize => todo!(),
+			LonghandId::MaxHeight => todo!(),
+			LonghandId::MaxInlineSize => todo!(),
+			LonghandId::MaxWidth => todo!(),
+			LonghandId::BorderBottomLeftRadius => todo!(),
+			LonghandId::BorderBottomRightRadius => todo!(),
+			LonghandId::BorderEndEndRadius => todo!(),
+			LonghandId::BorderEndStartRadius => todo!(),
+			LonghandId::BorderStartEndRadius => todo!(),
+			LonghandId::BorderStartStartRadius => todo!(),
+			LonghandId::BorderTopLeftRadius => todo!(),
+			LonghandId::BorderTopRightRadius => todo!(),
+			LonghandId::PaddingBlockEnd => todo!(),
+			LonghandId::PaddingBlockStart => todo!(),
+			LonghandId::PaddingBottom => todo!(),
+			LonghandId::PaddingInlineEnd => todo!(),
+			LonghandId::PaddingInlineStart => todo!(),
+			LonghandId::PaddingLeft => todo!(),
+			LonghandId::PaddingRight => todo!(),
+			LonghandId::PaddingTop => todo!(),
+			LonghandId::BlockSize => todo!(),
+			LonghandId::Height => todo!(),
+			LonghandId::InlineSize => todo!(),
+			LonghandId::MinBlockSize => todo!(),
+			LonghandId::MinHeight => todo!(),
+			LonghandId::MinInlineSize => todo!(),
+			LonghandId::MinWidth => todo!(),
+			LonghandId::Width => todo!(),
+			LonghandId::BorderBlockEndWidth => todo!(),
+			LonghandId::BorderBlockStartWidth => todo!(),
+			LonghandId::BorderBottomWidth => todo!(),
+			LonghandId::BorderInlineEndWidth => todo!(),
+			LonghandId::BorderInlineStartWidth => todo!(),
+			LonghandId::BorderLeftWidth => todo!(),
+			LonghandId::BorderRightWidth => todo!(),
+			LonghandId::BorderTopWidth => todo!(),
+			LonghandId::OutlineWidth => todo!(),
+			LonghandId::BackgroundColor => todo!(),
+			LonghandId::BorderBlockEndColor => todo!(),
+			LonghandId::BorderBlockStartColor => todo!(),
+			LonghandId::BorderBottomColor => todo!(),
+			LonghandId::BorderInlineEndColor => todo!(),
+			LonghandId::BorderInlineStartColor => todo!(),
+			LonghandId::BorderLeftColor => todo!(),
+			LonghandId::BorderRightColor => todo!(),
+			LonghandId::BorderTopColor => todo!(),
+			LonghandId::OutlineColor => todo!(),
+			LonghandId::Bottom => todo!(),
+			LonghandId::InsetBlockEnd => todo!(),
+			LonghandId::InsetBlockStart => todo!(),
+			LonghandId::InsetInlineEnd => todo!(),
+			LonghandId::InsetInlineStart => todo!(),
+			LonghandId::Left => todo!(),
+			LonghandId::MarginBlockEnd => todo!(),
+			LonghandId::MarginBlockStart => todo!(),
+			LonghandId::MarginBottom => todo!(),
+			LonghandId::MarginInlineEnd => todo!(),
+			LonghandId::MarginInlineStart => todo!(),
+			LonghandId::MarginLeft => todo!(),
+			LonghandId::MarginRight => todo!(),
+			LonghandId::MarginTop => todo!(),
+			LonghandId::Right => todo!(),
+			LonghandId::Top => todo!(),
+			LonghandId::CounterSet => todo!(),
+			LonghandId::ObjectFit => todo!(),
+		};
+		cascade_func(declaration, context);
+	}
+
+	pub fn is_early_property(&self) -> bool {
+		matches!(
+			*self,
+			// Needed to compute the first available font, in order to
+			// compute font-relative units correctly.
+			LonghandId::FontSize |
+            LonghandId::FontWeight |
+            LonghandId::FontStretch |
+            LonghandId::FontStyle |
+            LonghandId::FontFamily |
+
+            // Needed to properly compute the writing mode, to resolve logical
+            // properties, and similar stuff.
+            LonghandId::WritingMode |
+            LonghandId::Direction
+		)
+	}
+
+	pub fn ids(phase: PhaseOrder) -> LonghandIdPhaseIterator {
+		LonghandIdPhaseIterator { index: 0, phase }
+	}
+}
+
+#[derive(PartialEq, Eq)]
+pub enum PhaseOrder {
+	Early,
+	Other,
+	All,
+}
+
+pub struct LonghandIdPhaseIterator {
+	index: u16,
+	phase: PhaseOrder,
+}
+
+impl LonghandIdPhaseIterator {
+	pub fn take(&mut self) -> Option<LonghandId> {
+		let mut id = None;
+		loop {
+			id = LonghandId::try_from(self.index).ok();
+			if let Some(id) = id {
+				if self.phase == PhaseOrder::All {
+					break;
+				} else if self.phase == PhaseOrder::Early && id.is_early_property() {
+					break;
+				} else if self.phase == PhaseOrder::Other && !id.is_early_property() {
+					break;
+				}
+			} else {
+				break;
+			}
+			self.index += 1;
+		}
+		id
+	}
+}
+
+impl Iterator for LonghandIdPhaseIterator {
+	type Item = LonghandId;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		let current = self.take();
+		self.index += 1;
+		current
 	}
 }
 

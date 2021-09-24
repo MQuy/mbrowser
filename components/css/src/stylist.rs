@@ -1,4 +1,3 @@
-use common::not_supported;
 use selectors::context::QuirksMode;
 use selectors::parser::{AncestorHashes, Selector};
 
@@ -40,7 +39,6 @@ impl Stylist {
 		match origin {
 			Origin::UserAgent => self.user_agent.add_stylesheet(stylesheet),
 			Origin::Author => self.author.add_stylesheet(stylesheet),
-			Origin::User => not_supported!(),
 		}
 	}
 }

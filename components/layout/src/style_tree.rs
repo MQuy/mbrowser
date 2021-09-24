@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::{Rc, Weak};
@@ -65,11 +64,11 @@ impl StyleTree {
 		self.match_rule_for_node(self.root.clone());
 	}
 
-	fn match_rule_for_node(&self, parent: Rc<StyleTreeNode>) {
-		let rules = collect_rules(parent.dom_node.clone(), self.stylist());
-		*parent.rules.borrow_mut() = rules;
+	fn match_rule_for_node(&self, style_node: Rc<StyleTreeNode>) {
+		let rules = collect_rules(style_node.dom_node.clone(), self.stylist());
+		*style_node.rules.borrow_mut() = rules;
 
-		let mut dom_child = parent.dom_node.first_child();
+		let mut dom_child = style_node.dom_node.first_child();
 		loop {
 			let noderef_child = if let Some(noderef_child) = &dom_child {
 				noderef_child
@@ -78,36 +77,15 @@ impl StyleTree {
 			};
 			let style_child = Rc::new(StyleTreeNode::new(
 				noderef_child.clone(),
-				Some(parent.clone()),
+				Some(style_node.clone()),
 			));
-			parent.append_child(style_child.clone());
+			style_node.append_child(style_child.clone());
 			if noderef_child.node_type_id().is_element() {
 				self.match_rule_for_node(style_child.clone());
 			}
 
 			dom_child = dom_child.map(|d| d.next_sibling()).flatten();
 		}
-	}
-
-	pub fn log(&self) {
-		fn log_node(parent: Rc<StyleTreeNode>) {
-			let mut child = parent.first_child.borrow().as_ref().map(|n| n.clone());
-			loop {
-				let noderef = if let Some(ref noderef) = child {
-					noderef.clone()
-				} else {
-					break;
-				};
-				log_node(noderef.clone());
-				child = if let Some(child) = noderef.next_sibling.borrow().as_ref() {
-					child.upgrade()
-				} else {
-					None
-				};
-			}
-		}
-
-		log_node(self.root.clone());
 	}
 }
 

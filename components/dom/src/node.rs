@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::rc::{Rc, Weak};
 
+use css::computed_values::ComputedValues;
+
 use crate::document::Document;
 use crate::error::{Error, ErrorResult, Fallible};
 use crate::global_scope::{get_from_global_scope, get_next_id};
@@ -20,6 +22,7 @@ pub struct Node {
 	prev_sibling: RefCell<Option<Weak<Node>>>,
 	children_count: u32,
 	owner_doc: RefCell<Option<Weak<Document>>>,
+	computed_values: RefCell<Option<Rc<ComputedValues>>>,
 }
 impl Castable for Node {}
 
@@ -44,6 +47,7 @@ impl Node {
 				Some(doc) => Some(Rc::downgrade(&doc)),
 				None => None,
 			}),
+			computed_values: Default::default(),
 		}
 	}
 
@@ -478,6 +482,10 @@ impl Node {
 			current: self.first_child.borrow().deref().clone(),
 			next_node: |n: &Rc<Node>| n.next_sibling(),
 		}
+	}
+
+	pub fn computed_values(&self) -> Option<Rc<ComputedValues>> {
+		self.computed_values.borrow().clone()
 	}
 }
 

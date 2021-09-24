@@ -127,6 +127,34 @@ impl PropertyDeclarationBlock {
 	pub fn is_empty(&self) -> bool {
 		self.declarations.is_empty()
 	}
+
+	pub fn properties(&self) -> impl Iterator<Item = (bool, &PropertyDeclaration)> {
+		PropertyIterator {
+			index: 0,
+			source: self,
+		}
+	}
+}
+
+pub struct PropertyIterator<'a> {
+	index: usize,
+	source: &'a PropertyDeclarationBlock,
+}
+
+impl<'a> Iterator for PropertyIterator<'a> {
+	type Item = (bool, &'a PropertyDeclaration);
+
+	fn next(&mut self) -> Option<Self::Item> {
+		if let Some(property) = self.source.declarations.get(self.index) {
+			if let Some(importance) = self.source.declarations_importance.get(self.index) {
+				Some((importance, property))
+			} else {
+				None
+			}
+		} else {
+			None
+		}
+	}
 }
 
 impl ToCss for PropertyDeclarationBlock {

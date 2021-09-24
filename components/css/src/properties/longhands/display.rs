@@ -1,5 +1,6 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use crate::computed_values::StyleContext;
 use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
@@ -262,6 +263,10 @@ impl ToCss for Display {
 			Display::Legacy(legacy) => legacy.to_css(dest),
 		}
 	}
+}
+
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a StyleContext) {
+	todo!()
 }
 
 pub fn parse_declared<'i, 't>(

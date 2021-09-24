@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate bitflags;
 
+pub mod computed_values;
 pub mod css_writer;
 pub mod element_state;
 pub mod error_reporting;
