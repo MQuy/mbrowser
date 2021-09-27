@@ -18,7 +18,7 @@ use selectors::OpaqueElement;
 use crate::attr::{Attr, AttrValue};
 use crate::characterdata::CharacterData;
 use crate::document::Document;
-use crate::global_scope::{add_to_global_scope, get_from_global_scope, NodeRef};
+use crate::global_scope::{GlobalScope, NodeRef};
 use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmldivelement::HTMLDivElement;
 use crate::htmlelement::HTMLElement;
@@ -131,7 +131,7 @@ impl Element {
 			name,
 			namespace,
 			prefix,
-			downcast(get_from_global_scope(self.node.id())),
+			downcast(GlobalScope::get_node(self.node.id())),
 		);
 		self.push_attribute(attr);
 	}
@@ -186,7 +186,7 @@ impl Element {
 			ns!(svg) => create_svg_element(name, prefix, document),
 			_ => Rc::new(Element::new(name.local, name.ns, prefix, document)),
 		};
-		add_to_global_scope(upcast(element.clone()));
+		GlobalScope::add_node(upcast(element.clone()));
 		element
 	}
 

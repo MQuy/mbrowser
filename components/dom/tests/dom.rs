@@ -8,7 +8,7 @@ use html5ever::tendril::{StrTendril, TendrilSink};
 
 #[test]
 fn check_parser() {
-	let sink = DomParser::default();
+	let sink = DomParser::new();
 
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(r#"<div class="hello">Hello world!</div>"#));

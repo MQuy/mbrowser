@@ -1183,7 +1183,7 @@ impl LonghandId {
 	pub fn cascade<'a>(
 		&self,
 		declaration: Option<&PropertyDeclaration>,
-		context: &'a StyleContext,
+		context: &'a mut StyleContext,
 	) {
 		let cascade_func = match self {
 			LonghandId::AlignContent => todo!(),

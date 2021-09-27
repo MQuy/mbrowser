@@ -3,7 +3,11 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 use crate::computed_values::StyleContext;
 use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
-use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::properties::declaration::{
+	property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration,
+};
+use crate::properties::longhand_id::LonghandId;
+use crate::properties::property_id::CSSWideKeyword;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -265,8 +269,35 @@ impl ToCss for Display {
 	}
 }
 
-pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a StyleContext) {
-	todo!()
+pub fn initial_value() -> Display {
+	Display::Basic(DisplayBasic {
+		inside: Some(DisplayInside::Flow),
+		outside: Some(DisplayOutside::Inline),
+	})
+}
+
+pub fn cascade_property<'a>(
+	declaration: Option<&PropertyDeclaration>,
+	context: &'a mut StyleContext,
+) {
+	let initial_value = initial_value();
+	let specified_value = match declaration {
+		Some(declaration) => match declaration {
+			PropertyDeclaration::Display(value) => value,
+			PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
+				if *id == LonghandId::Display =>
+			{
+				match keyword {
+					CSSWideKeyword::Initial | CSSWideKeyword::Unset => &initial_value,
+					CSSWideKeyword::Inherit => context.parent_style.get_display(),
+					CSSWideKeyword::Revert => unreachable!(),
+				}
+			},
+			_ => unreachable!(),
+		},
+		None => &initial_value,
+	};
+	context.computed_values.set_display(specified_value.clone());
 }
 
 pub fn parse_declared<'i, 't>(

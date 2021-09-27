@@ -12,7 +12,7 @@ use crate::comment::Comment;
 use crate::document::Document;
 use crate::documenttype::DocumentType;
 use crate::element::Element;
-use crate::global_scope::add_to_global_scope;
+use crate::global_scope::GlobalScope;
 use crate::inheritance::{downcast, upcast, Castable};
 use crate::node::Node;
 use crate::text::Text;
@@ -27,7 +27,7 @@ pub struct DomParser {
 impl DomParser {
 	pub fn new() -> Self {
 		let document = Rc::new(Document::new(None));
-		add_to_global_scope(upcast(document.clone()));
+		GlobalScope::add_node(upcast(document.clone()));
 		let window = Window::new(document.clone(), CSSErrorReporter::new());
 		document.set_window(Rc::new(window));
 		Self {

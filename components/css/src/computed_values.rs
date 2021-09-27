@@ -1,11 +1,9 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
-use crate::stylesheets::origin::Origin;
+use crate::values::color::RGBA;
 use crate::values::length::LengthPercentageOrAuto;
 
 #[derive(Debug)]
@@ -30,10 +28,22 @@ pub struct Box {
 }
 
 #[derive(Debug)]
+pub struct Text {
+	pub color: RGBA,
+}
+
+#[derive(Debug)]
+pub struct Background {
+	pub background_color: RGBA,
+}
+
+#[derive(Debug)]
 pub struct ComputedValues {
-	box_: Rc<Box>,
-	margin: Rc<Margin>,
-	padding: Rc<Padding>,
+	background: Background,
+	box_: Box,
+	margin: Margin,
+	padding: Padding,
+	text: Text,
 }
 
 impl Default for ComputedValues {
@@ -43,21 +53,31 @@ impl Default for ComputedValues {
 }
 
 impl ComputedValues {
-	pub fn set_margin_top(&self) {}
+	pub fn get_display(&self) -> &Display {
+		&self.box_.display
+	}
+
+	pub fn set_display(&mut self, value: Display) {
+		self.box_.display = value;
+	}
+
+	pub fn get_margin_top(&self) -> &LengthPercentageOrAuto {
+		&self.margin.margin_top
+	}
+
+	pub fn set_margin_top(&mut self, value: LengthPercentageOrAuto) {
+		self.margin.margin_top = value;
+	}
 }
 
-pub struct ElementStyles {
-	primary: ComputedValues,
-}
-
-pub struct StyleContext<'a, 'b, 'c> {
-	pub parent_style: Option<&'c ComputedValues>,
-	pub cascade_data: HashMap<LonghandId, PropertyCascade<'a>>,
+pub struct StyleContext<'a, 'b, 'c, 'd> {
+	pub author_data: HashMap<LonghandId, PropertyCascade<'a>>,
+	pub useragent_data: HashMap<LonghandId, PropertyCascade<'d>>,
 	pub computed_values: &'b mut ComputedValues,
+	pub parent_style: &'c ComputedValues,
 }
 
 pub struct PropertyCascade<'a> {
-	pub origin: Origin,
 	pub specificity: u32,
 	pub importance: bool,
 	pub property: &'a PropertyDeclaration,

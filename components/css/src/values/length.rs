@@ -59,6 +59,10 @@ impl Length {
 			ref t => return Err(location.new_unexpected_token_error(t.clone())),
 		}
 	}
+
+	pub fn zero() -> Length {
+		Length::NoCalc(NoCalcLength::Absolute(AbsoluteLength::Px(0.0)))
+	}
 }
 
 impl From<&str> for Length {
@@ -484,6 +488,10 @@ impl LengthPercentageOrAuto {
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self, ParseError<'i>> {
 		Self::parse_with(input, |input| LengthPercentage::parse(context, input))
+	}
+
+	pub fn zero() -> Self {
+		Self::LengthPercentage(LengthPercentage::Length(Length::zero()))
 	}
 }
 

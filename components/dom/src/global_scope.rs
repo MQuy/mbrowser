@@ -147,6 +147,34 @@ impl GlobalScope {
 			}
 		}
 	}
+
+	pub fn get_node(id: u64) -> Rc<Node> {
+		unsafe {
+			match &SCOPE.nodes {
+				Some(nodes) => nodes.get(&id).unwrap().clone(),
+				None => panic!(),
+			}
+		}
+	}
+
+	pub fn add_node(node: Rc<Node>) -> Rc<Node> {
+		unsafe {
+			if SCOPE.nodes.is_none() {
+				SCOPE.nodes = Some(HashMap::new());
+			}
+			if let Some(nodes) = &mut SCOPE.nodes {
+				nodes.insert(node.id(), node.clone());
+			}
+			node
+		}
+	}
+
+	pub fn get_next_id() -> u64 {
+		unsafe {
+			SCOPE.counted += 1;
+			SCOPE.counted
+		}
+	}
 }
 
 static mut SCOPE: GlobalScope = GlobalScope {
@@ -154,31 +182,3 @@ static mut SCOPE: GlobalScope = GlobalScope {
 	nodes: None,
 	computed_values: None,
 };
-
-pub fn add_to_global_scope(node: Rc<Node>) -> Rc<Node> {
-	unsafe {
-		if SCOPE.nodes.is_none() {
-			SCOPE.nodes = Some(HashMap::new());
-		}
-		if let Some(nodes) = &mut SCOPE.nodes {
-			nodes.insert(node.id(), node.clone());
-		}
-		node
-	}
-}
-
-pub fn get_from_global_scope(id: u64) -> Rc<Node> {
-	unsafe {
-		match &SCOPE.nodes {
-			Some(nodes) => nodes.get(&id).unwrap().clone(),
-			None => panic!(),
-		}
-	}
-}
-
-pub fn get_next_id() -> u64 {
-	unsafe {
-		SCOPE.counted += 1;
-		SCOPE.counted
-	}
-}

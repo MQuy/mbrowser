@@ -6,7 +6,7 @@ use css::computed_values::ComputedValues;
 
 use crate::document::Document;
 use crate::error::{Error, ErrorResult, Fallible};
-use crate::global_scope::{get_from_global_scope, get_next_id};
+use crate::global_scope::GlobalScope;
 use crate::inheritance::{Castable, DerivedFrom};
 use crate::nodetype::{CharacterDataTypeId, NodeTypeId};
 use crate::virtualmethods::{vtable_for, VirtualMethods};
@@ -35,7 +35,7 @@ impl PartialEq for Node {
 impl Node {
 	pub fn new(node_type_id: NodeTypeId, doc: Option<Rc<Document>>) -> Node {
 		Node {
-			id: get_next_id(),
+			id: GlobalScope::get_next_id(),
 			node_type_id,
 			parent_node: Default::default(),
 			first_child: Default::default(),
@@ -105,7 +105,7 @@ impl Node {
 	fn add_child(&self, new_child: Rc<Node>, before: Option<Rc<Node>>) {
 		new_child
 			.parent_node
-			.replace(Some(Rc::downgrade(&get_from_global_scope(self.id))));
+			.replace(Some(Rc::downgrade(&GlobalScope::get_node(self.id))));
 
 		match before {
 			Some(ref before) => {
@@ -163,7 +163,7 @@ impl Node {
 	pub fn get_root(&self) -> Rc<Node> {
 		let parent_node = self.parent_node();
 		if parent_node.is_none() {
-			get_from_global_scope(self.id)
+			GlobalScope::get_node(self.id)
 		} else {
 			parent_node.unwrap().get_root()
 		}
@@ -179,7 +179,7 @@ impl Node {
 	/// https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor
 	pub fn inclusive_ancestors(&self) -> impl Iterator<Item = Rc<Node>> {
 		SimpleNodeIterator {
-			current: Some(get_from_global_scope(self.id)),
+			current: Some(GlobalScope::get_node(self.id)),
 			next_node: |n: &Rc<Node>| n.parent_node(),
 		}
 	}
@@ -190,7 +190,7 @@ impl Node {
 
 	/// Iterates over this node and all its descendants, in preorder.
 	pub fn traverse_preorder(&self) -> TreeIterator {
-		TreeIterator::new(get_from_global_scope(self.id))
+		TreeIterator::new(GlobalScope::get_node(self.id))
 	}
 
 	// https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
