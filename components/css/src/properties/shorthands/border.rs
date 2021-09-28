@@ -8,9 +8,9 @@ use crate::properties::longhands::border_image_slice::BorderImageSlice;
 use crate::properties::longhands::border_image_source::BorderImageSource;
 use crate::properties::longhands::border_image_width::BorderImageWidth;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
-use crate::values::layout::LineStyle;
-use crate::values::length::NonNegativeLengthOrNumberRect;
+use crate::values::specified::layout::LineStyle;
+use crate::values::specified::color::Color;
+use crate::values::specified::length::NonNegativeLengthOrNumberRect;
 use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {

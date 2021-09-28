@@ -4,8 +4,8 @@ use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
-use crate::values::length::{Length, NonNegativeLength};
+use crate::values::specified::color::Color;
+use crate::values::specified::length::{Length, NonNegativeLength};
 
 #[derive(Clone, Debug)]
 pub struct SingleTextShadow {

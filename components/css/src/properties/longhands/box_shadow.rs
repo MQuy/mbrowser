@@ -5,8 +5,8 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
-use crate::values::length::{Length, NonNegativeLength};
+use crate::values::specified::length::{Length, NonNegativeLength};
+use crate::values::specified::color::Color;
 
 #[derive(Clone, Debug)]
 pub struct Shadow {

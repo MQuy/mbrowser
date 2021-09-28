@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::Integer;
+use crate::values::specified::number::Integer;
 
 #[derive(Clone, Debug)]
 pub enum ColumnCount {

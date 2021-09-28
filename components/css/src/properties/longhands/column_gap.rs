@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthPercentageOrNormal;
+use crate::values::specified::length::NonNegativeLengthPercentageOrNormal;
 
 /// https://drafts.csswg.org/css-align-3/#propdef-column-gap
 pub fn parse_declared<'i, 't>(

@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::Box;
+use crate::values::specified::layout::Box;
 
 /// https://drafts.csswg.org/css-backgrounds/#background-origin
 #[derive(Clone, Debug)]

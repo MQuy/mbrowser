@@ -6,7 +6,7 @@ use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::{CSSWideKeyword, PropertyId};
 use crate::properties::shorthand_id::ShorthandId;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::Integer;
+use crate::values::specified::number::Integer;
 use crate::{properties, values};
 
 #[derive(Clone, Debug)]
@@ -102,35 +102,35 @@ pub enum PropertyDeclaration {
 	/// `writing-mode`
 	WritingMode(properties::longhands::writing_mode::WritingMode),
 	/// `z-index`
-	ZIndex(values::number::IntegerAuto),
+	ZIndex(values::specified::number::IntegerAuto),
 	/// `flex-grow`
-	FlexGrow(values::number::NonNegativeNumber),
+	FlexGrow(values::specified::number::NonNegativeNumber),
 	/// `flex-shrink`
-	FlexShrink(values::number::NonNegativeNumber),
+	FlexShrink(values::specified::number::NonNegativeNumber),
 	/// `overflow-block`
-	OverflowBlock(values::layout::Overflow),
+	OverflowBlock(values::specified::layout::Overflow),
 	/// `overflow-inline`
-	OverflowInline(values::layout::Overflow),
+	OverflowInline(values::specified::layout::Overflow),
 	/// `overflow-x`
-	OverflowX(values::layout::Overflow),
+	OverflowX(values::specified::layout::Overflow),
 	/// `overflow-y`
-	OverflowY(values::layout::Overflow),
+	OverflowY(values::specified::layout::Overflow),
 	/// `border-block-end-style`
-	BorderBlockEndStyle(values::layout::LineStyle),
+	BorderBlockEndStyle(values::specified::layout::LineStyle),
 	/// `border-block-start-style`
-	BorderBlockStartStyle(values::layout::LineStyle),
+	BorderBlockStartStyle(values::specified::layout::LineStyle),
 	/// `border-bottom-style`
-	BorderBottomStyle(values::layout::LineStyle),
+	BorderBottomStyle(values::specified::layout::LineStyle),
 	/// `border-inline-end-style`
-	BorderInlineEndStyle(values::layout::LineStyle),
+	BorderInlineEndStyle(values::specified::layout::LineStyle),
 	/// `border-inline-start-style`
-	BorderInlineStartStyle(values::layout::LineStyle),
+	BorderInlineStartStyle(values::specified::layout::LineStyle),
 	/// `border-left-style`
-	BorderLeftStyle(values::layout::LineStyle),
+	BorderLeftStyle(values::specified::layout::LineStyle),
 	/// `border-right-style`
-	BorderRightStyle(values::layout::LineStyle),
+	BorderRightStyle(values::specified::layout::LineStyle),
 	/// `border-top-style`
-	BorderTopStyle(values::layout::LineStyle),
+	BorderTopStyle(values::specified::layout::LineStyle),
 	/// `animation-delay`
 	AnimationDelay(properties::longhands::animation_delay::AnimationDelay),
 	/// `animation-direction`
@@ -168,7 +168,7 @@ pub enum PropertyDeclaration {
 	/// `background-size`
 	BackgroundSize(properties::longhands::background_size::BackgroundSize),
 	/// `border-image-outset`
-	BorderImageOutset(values::length::NonNegativeLengthOrNumberRect),
+	BorderImageOutset(values::specified::length::NonNegativeLengthOrNumberRect),
 	/// `border-image-slice`
 	BorderImageSlice(properties::longhands::border_image_slice::BorderImageSlice),
 	/// `border-image-width`
@@ -180,11 +180,11 @@ pub enum PropertyDeclaration {
 	/// `clip`
 	Clip(properties::longhands::clip::Clip),
 	/// `color`
-	Color(values::color::Color),
+	Color(values::specified::color::Color),
 	/// `column-gap`
-	ColumnGap(values::length::NonNegativeLengthPercentageOrNormal),
+	ColumnGap(values::specified::length::NonNegativeLengthPercentageOrNormal),
 	/// `column-width`
-	ColumnWidth(values::length::NonNegativeLengthOrAuto),
+	ColumnWidth(values::specified::length::NonNegativeLengthOrAuto),
 	/// `content`
 	Content(properties::longhands::content::Content),
 	/// `counter-increment`
@@ -204,13 +204,13 @@ pub enum PropertyDeclaration {
 	/// `font-size`
 	FontSize(properties::longhands::font_size::FontSize),
 	/// `letter-spacing`
-	LetterSpacing(values::length::LengthPercentageOrNormal),
+	LetterSpacing(values::specified::length::LengthPercentageOrNormal),
 	/// `line-height`
 	LineHeight(properties::longhands::line_height::LineHeight),
 	/// `outline-offset`
-	OutlineOffset(values::length::Length),
+	OutlineOffset(values::specified::length::Length),
 	/// `perspective`
-	Perspective(values::length::NonNegativeLengthOrNone),
+	Perspective(values::specified::length::NonNegativeLengthOrNone),
 	/// `perspective-origin`
 	PerspectiveOrigin(values::specified::position::Position),
 	/// `quotes`
@@ -244,67 +244,67 @@ pub enum PropertyDeclaration {
 	/// `vertical-align`
 	VerticalAlign(properties::longhands::vertical_align::VerticalAlign),
 	/// `word-spacing`
-	WordSpacing(values::length::LengthPercentageOrNormal),
+	WordSpacing(values::specified::length::LengthPercentageOrNormal),
 	/// `border-image-source`
 	BorderImageSource(properties::longhands::border_image_source::BorderImageSource),
 	/// `list-style-image`
 	ListStyleImage(properties::longhands::list_style_image::ListStyleImage),
 	/// `max-block-size`
-	MaxBlockSize(values::length::Size),
+	MaxBlockSize(values::specified::length::Size),
 	/// `max-height`
-	MaxHeight(values::length::Size),
+	MaxHeight(values::specified::length::Size),
 	/// `max-inline-size`
-	MaxInlineSize(values::length::Size),
+	MaxInlineSize(values::specified::length::Size),
 	/// `max-width`
-	MaxWidth(values::length::Size),
+	MaxWidth(values::specified::length::Size),
 	/// `border-bottom-left-radius`
-	BorderBottomLeftRadius(values::border::BorderCornerRadius),
+	BorderBottomLeftRadius(values::specified::border::BorderCornerRadius),
 	/// `border-bottom-right-radius`
-	BorderBottomRightRadius(values::border::BorderCornerRadius),
+	BorderBottomRightRadius(values::specified::border::BorderCornerRadius),
 	/// `border-end-end-radius`
-	BorderEndEndRadius(values::border::BorderCornerRadius),
+	BorderEndEndRadius(values::specified::border::BorderCornerRadius),
 	/// `border-end-start-radius`
-	BorderEndStartRadius(values::border::BorderCornerRadius),
+	BorderEndStartRadius(values::specified::border::BorderCornerRadius),
 	/// `border-start-end-radius`
-	BorderStartEndRadius(values::border::BorderCornerRadius),
+	BorderStartEndRadius(values::specified::border::BorderCornerRadius),
 	/// `border-start-start-radius`
-	BorderStartStartRadius(values::border::BorderCornerRadius),
+	BorderStartStartRadius(values::specified::border::BorderCornerRadius),
 	/// `border-top-left-radius`
-	BorderTopLeftRadius(values::border::BorderCornerRadius),
+	BorderTopLeftRadius(values::specified::border::BorderCornerRadius),
 	/// `border-top-right-radius`
-	BorderTopRightRadius(values::border::BorderCornerRadius),
+	BorderTopRightRadius(values::specified::border::BorderCornerRadius),
 	/// `padding-block-end`
-	PaddingBlockEnd(values::length::NonNegativeLengthPercentage),
+	PaddingBlockEnd(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-block-start`
-	PaddingBlockStart(values::length::NonNegativeLengthPercentage),
+	PaddingBlockStart(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-bottom`
-	PaddingBottom(values::length::NonNegativeLengthPercentage),
+	PaddingBottom(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-inline-end`
-	PaddingInlineEnd(values::length::NonNegativeLengthPercentage),
+	PaddingInlineEnd(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-inline-start`
-	PaddingInlineStart(values::length::NonNegativeLengthPercentage),
+	PaddingInlineStart(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-left`
-	PaddingLeft(values::length::NonNegativeLengthPercentage),
+	PaddingLeft(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-right`
-	PaddingRight(values::length::NonNegativeLengthPercentage),
+	PaddingRight(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-top`
-	PaddingTop(values::length::NonNegativeLengthPercentage),
+	PaddingTop(values::specified::length::NonNegativeLengthPercentage),
 	/// `block-size`
-	BlockSize(values::length::Size),
+	BlockSize(values::specified::length::Size),
 	/// `height`
-	Height(values::length::Size),
+	Height(values::specified::length::Size),
 	/// `inline-size`
-	InlineSize(values::length::Size),
+	InlineSize(values::specified::length::Size),
 	/// `min-block-size`
-	MinBlockSize(values::length::Size),
+	MinBlockSize(values::specified::length::Size),
 	/// `min-height`
-	MinHeight(values::length::Size),
+	MinHeight(values::specified::length::Size),
 	/// `min-inline-size`
-	MinInlineSize(values::length::Size),
+	MinInlineSize(values::specified::length::Size),
 	/// `min-width`
-	MinWidth(values::length::Size),
+	MinWidth(values::specified::length::Size),
 	/// `width`
-	Width(values::length::Size),
+	Width(values::specified::length::Size),
 	/// `border-block-end-width`
 	BorderBlockEndWidth(values::specified::line::LineWidth),
 	/// `border-block-start-width`
@@ -324,57 +324,57 @@ pub enum PropertyDeclaration {
 	/// `outline-width`
 	OutlineWidth(values::specified::line::LineWidth),
 	/// `background-color`
-	BackgroundColor(values::color::Color),
+	BackgroundColor(values::specified::color::Color),
 	/// `border-block-end-color`
-	BorderBlockEndColor(values::color::Color),
+	BorderBlockEndColor(values::specified::color::Color),
 	/// `border-block-start-color`
-	BorderBlockStartColor(values::color::Color),
+	BorderBlockStartColor(values::specified::color::Color),
 	/// `border-bottom-color`
-	BorderBottomColor(values::color::Color),
+	BorderBottomColor(values::specified::color::Color),
 	/// `border-inline-end-color`
-	BorderInlineEndColor(values::color::Color),
+	BorderInlineEndColor(values::specified::color::Color),
 	/// `border-inline-start-color`
-	BorderInlineStartColor(values::color::Color),
+	BorderInlineStartColor(values::specified::color::Color),
 	/// `border-left-color`
-	BorderLeftColor(values::color::Color),
+	BorderLeftColor(values::specified::color::Color),
 	/// `border-right-color`
-	BorderRightColor(values::color::Color),
+	BorderRightColor(values::specified::color::Color),
 	/// `border-top-color`
-	BorderTopColor(values::color::Color),
+	BorderTopColor(values::specified::color::Color),
 	/// `outline-color`
 	OutlineColor(properties::longhands::outline_color::OutlineColor),
 	/// `bottom`
-	Bottom(values::length::LengthPercentageOrAuto),
+	Bottom(values::specified::length::LengthPercentageOrAuto),
 	/// `inset-block-end`
-	InsetBlockEnd(values::length::LengthPercentageOrAuto),
+	InsetBlockEnd(values::specified::length::LengthPercentageOrAuto),
 	/// `inset-block-start`
-	InsetBlockStart(values::length::LengthPercentageOrAuto),
+	InsetBlockStart(values::specified::length::LengthPercentageOrAuto),
 	/// `inset-inline-end`
-	InsetInlineEnd(values::length::LengthPercentageOrAuto),
+	InsetInlineEnd(values::specified::length::LengthPercentageOrAuto),
 	/// `inset-inline-start`
-	InsetInlineStart(values::length::LengthPercentageOrAuto),
+	InsetInlineStart(values::specified::length::LengthPercentageOrAuto),
 	/// `left`
-	Left(values::length::LengthPercentageOrAuto),
+	Left(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-block-end`
-	MarginBlockEnd(values::length::LengthPercentageOrAuto),
+	MarginBlockEnd(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-block-start`
-	MarginBlockStart(values::length::LengthPercentageOrAuto),
+	MarginBlockStart(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-bottom`
-	MarginBottom(values::length::LengthPercentageOrAuto),
+	MarginBottom(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-inline-end`
-	MarginInlineEnd(values::length::LengthPercentageOrAuto),
+	MarginInlineEnd(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-inline-start`
-	MarginInlineStart(values::length::LengthPercentageOrAuto),
+	MarginInlineStart(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-left`
-	MarginLeft(values::length::LengthPercentageOrAuto),
+	MarginLeft(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-right`
-	MarginRight(values::length::LengthPercentageOrAuto),
+	MarginRight(values::specified::length::LengthPercentageOrAuto),
 	/// `margin-top`
-	MarginTop(values::length::LengthPercentageOrAuto),
+	MarginTop(values::specified::length::LengthPercentageOrAuto),
 	/// `right`
-	Right(values::length::LengthPercentageOrAuto),
+	Right(values::specified::length::LengthPercentageOrAuto),
 	/// `top`
-	Top(values::length::LengthPercentageOrAuto),
+	Top(values::specified::length::LengthPercentageOrAuto),
 	/// A CSS-wide keyword.
 	CSSWideKeyword(WideKeywordDeclaration),
 }

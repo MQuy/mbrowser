@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::image::Image;
+use crate::values::specified::image::Image;
 
 /// https://drafts.csswg.org/css-lists/#image-markers
 #[derive(Clone, Debug)]

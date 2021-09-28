@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands::column_count::ColumnCount;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthOrAuto;
+use crate::values::specified::length::NonNegativeLengthOrAuto;
 
 pub struct Longhands {
 	pub column_width: NonNegativeLengthOrAuto,

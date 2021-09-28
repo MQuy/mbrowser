@@ -8,7 +8,7 @@ use crate::properties::longhands::border_image_slice::BorderImageSlice;
 use crate::properties::longhands::border_image_source::BorderImageSource;
 use crate::properties::longhands::border_image_width::BorderImageWidth;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthOrNumberRect;
+use crate::values::specified::length::NonNegativeLengthOrNumberRect;
 
 pub struct Longhands {
 	pub border_image_outset: NonNegativeLengthOrNumberRect,

@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
-use crate::values::color::RGBA;
-use crate::values::length::LengthPercentageOrAuto;
+use crate::values::specified::color::RGBA;
+use crate::values::specified::length::LengthPercentageOrAuto;
 
 #[derive(Debug)]
 pub struct Margin {

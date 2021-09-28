@@ -4,12 +4,14 @@ use std::ops::Range;
 
 use cssparser::{Parser, ToCss};
 
-use super::generics::number::{GenericNumberOrPercentage, GreaterThanOrEqualToOne, NonNegative};
 use super::percentage::Percentage;
-use super::CSSFloat;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::generics::number::{
+	GenericNumberOrAuto, GenericNumberOrPercentage, GreaterThanOrEqualToOne, NonNegative,
+};
+use crate::values::CSSFloat;
 
 /// https://www.w3.org/TR/css-values-4/#numbers
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
@@ -238,45 +240,6 @@ impl PartialOrd<f32> for NonNegativeNumber {
 			Some(Ordering::Less)
 		} else {
 			Some(Ordering::Equal)
-		}
-	}
-}
-
-/// Generic for Number/Auto
-#[derive(Clone, Debug)]
-pub enum GenericNumberOrAuto<Number> {
-	Number(Number),
-	Auto,
-}
-
-impl<L> GenericNumberOrAuto<L> {
-	pub fn parse_with<'i, 't, LP>(
-		input: &mut Parser<'i, 't>,
-		number_parser: LP,
-	) -> Result<Self, ParseError<'i>>
-	where
-		LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
-	{
-		input
-			.try_parse(|input| {
-				input.expect_ident_matching("auto")?;
-				Ok(Self::Auto)
-			})
-			.or_else(|_err: ParseError<'i>| {
-				let length = number_parser(input)?;
-				Ok(Self::Number(length))
-			})
-	}
-}
-
-impl<N: ToCss> ToCss for GenericNumberOrAuto<N> {
-	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
-	where
-		W: std::fmt::Write,
-	{
-		match self {
-			GenericNumberOrAuto::Number(value) => value.to_css(dest),
-			GenericNumberOrAuto::Auto => dest.write_str("auto"),
 		}
 	}
 }

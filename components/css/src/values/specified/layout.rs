@@ -1,10 +1,10 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
-use super::CSSFloat;
 use crate::parser::ParseError;
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::CSSFloat;
 
 #[derive(Clone, Debug, PartialEq)]
 #[repr(u8)]

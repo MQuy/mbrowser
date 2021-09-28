@@ -1,9 +1,9 @@
 use cssparser::Parser;
 
-use super::generics::border::GenericBorderCornerRadius;
 use super::length::{NonNegativeLengthPercentage, Pair};
 use crate::parser::ParseError;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::generics::border::GenericBorderCornerRadius;
 
 pub type BorderCornerRadius = GenericBorderCornerRadius<NonNegativeLengthPercentage>;
 

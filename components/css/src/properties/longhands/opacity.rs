@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::NumberOrPercentage;
+use crate::values::specified::number::NumberOrPercentage;
 
 /// https://drafts.csswg.org/css-color/#transparency
 pub type Opacity = NumberOrPercentage;

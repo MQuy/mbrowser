@@ -4,8 +4,8 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
-use crate::values::layout::LineStyle;
+use crate::values::specified::color::Color;
+use crate::values::specified::layout::LineStyle;
 use crate::values::specified::line::LineWidth;
 
 pub struct Longhands {

@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::time::Time;
+use crate::values::specified::time::Time;
 
 /// https://drafts.csswg.org/css-transitions/#transition-duration-property
 #[derive(Clone, Debug)]

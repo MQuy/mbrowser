@@ -3,7 +3,8 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::{NonNegativeLengthPercentageNumberOrAuto, Rect};
+use crate::values::generics::length::Rect;
+use crate::values::specified::length::NonNegativeLengthPercentageNumberOrAuto;
 
 /// https://drafts.csswg.org/css-backgrounds/#border-image-width
 pub type BorderImageWidth = Rect<NonNegativeLengthPercentageNumberOrAuto>;

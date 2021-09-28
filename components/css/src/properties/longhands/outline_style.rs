@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::LineStyle;
+use crate::values::specified::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-ui/#outline-style
 #[derive(Clone, Debug)]

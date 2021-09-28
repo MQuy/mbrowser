@@ -2,7 +2,7 @@ use std::cell::{Ref, RefCell};
 use std::rc::{Rc, Weak};
 
 use common::url::BrowserUrl;
-use css::values::length::Length;
+use css::values::specified::length::Length;
 use css::values::CSSString;
 use cssparser::{Color, RGBA};
 use html5ever::{LocalName, Namespace, Prefix};

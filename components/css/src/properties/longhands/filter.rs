@@ -3,10 +3,10 @@ use cssparser::{Parser, ToCss};
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
-use crate::values::length::{Length, NonNegativeLength};
-use crate::values::number::{NonNegativeNumberOrPercentage, Zero};
 use crate::values::specified::angle::Angle;
+use crate::values::specified::color::Color;
+use crate::values::specified::length::{Length, NonNegativeLength};
+use crate::values::specified::number::{NonNegativeNumberOrPercentage, Zero};
 use crate::values::url::CssUrl;
 
 #[derive(Clone, Debug)]

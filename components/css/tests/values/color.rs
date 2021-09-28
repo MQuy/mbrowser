@@ -1,6 +1,6 @@
 use common::vector::permutate;
-use css::values::color::CMYK;
-use css::values::number::NumberOrPercentage;
+use css::values::specified::color::CMYK;
+use css::values::specified::number::NumberOrPercentage;
 use cssparser::ToCss;
 
 pub fn keyword_data() -> Vec<(String, String)> {

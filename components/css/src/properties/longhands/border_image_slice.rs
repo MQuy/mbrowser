@@ -3,8 +3,8 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::Rect;
-use crate::values::number::NonNegativeNumberOrPercentage;
+use crate::values::generics::length::Rect;
+use crate::values::specified::number::NonNegativeNumberOrPercentage;
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-slice
 #[derive(Clone, Debug)]

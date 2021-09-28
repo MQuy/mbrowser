@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::LineStyle;
+use crate::values::specified::layout::LineStyle;
 
 pub struct Longhands {
 	pub border_top_style: LineStyle,

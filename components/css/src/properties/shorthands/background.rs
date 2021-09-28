@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
+use crate::values::specified::color::Color;
 
 pub struct Longhands {
 	pub background_color: Color,

@@ -14,10 +14,10 @@ use crate::parser::ParseError;
 use crate::str::starts_with_ignore_ascii_case;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::Resolution;
-use crate::values::length::Length;
-use crate::values::number::{Integer, Number};
-use crate::values::percentage::Ratio;
+use crate::values::specified::layout::Resolution;
+use crate::values::specified::length::Length;
+use crate::values::specified::number::{Integer, Number};
+use crate::values::specified::percentage::Ratio;
 use crate::values::{CSSFloat, Ident};
 
 /// The kind of matching that should be performed on a media feature value.

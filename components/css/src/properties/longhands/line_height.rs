@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthPercentageNumberOrNormal;
+use crate::values::specified::length::NonNegativeLengthPercentageNumberOrNormal;
 
 /// https://drafts.csswg.org/css-inline/#line-height-property
 pub type LineHeight = NonNegativeLengthPercentageNumberOrNormal;

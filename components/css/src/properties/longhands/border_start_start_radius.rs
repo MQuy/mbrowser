@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderCornerRadius;
+use crate::values::specified::border::BorderCornerRadius;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-start-start-radius
 pub fn parse_declared<'i, 't>(

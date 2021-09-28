@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::Pair;
+use crate::values::specified::length::Pair;
 
 #[derive(Clone, Debug)]
 pub enum BorderImageRepeatKeyword {

@@ -4,7 +4,7 @@ use crate::parser::{parse_repeated_with_delimitor, ParseError};
 use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::Number;
+use crate::values::specified::number::Number;
 use crate::values::url::CssUrl;
 
 #[derive(Clone, Debug)]

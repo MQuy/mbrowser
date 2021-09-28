@@ -5,7 +5,7 @@ use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::percentage::Ratio;
+use crate::values::specified::percentage::Ratio;
 
 /// https://drafts.csswg.org/css-sizing-4/#aspect-ratio
 #[derive(Clone, Debug)]

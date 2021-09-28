@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::NonNegativeLengthPercentage;
+use crate::values::specified::length::NonNegativeLengthPercentage;
 
 pub struct Longhands {
 	pub padding_block_start: NonNegativeLengthPercentage,

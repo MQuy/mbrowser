@@ -1,12 +1,12 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use super::image::Image;
+use super::number::Integer;
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::generics::counter::{GenericCounter, GenericCounterOrNone};
-use crate::values::image::Image;
-use crate::values::number::Integer;
 use crate::values::CustomIdent;
 
 pub type CounterWithInteger = GenericCounterOrNone<GenericCounter<Integer>>;

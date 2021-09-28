@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::LineStyle;
+use crate::values::specified::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-block-start-style
 pub fn parse_declared<'i, 't>(

@@ -6,7 +6,7 @@ use crate::properties::declaration::{PropertyDeclaration, WideKeywordDeclaration
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::CSSWideKeyword;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::LengthPercentageOrAuto;
+use crate::values::specified::length::LengthPercentageOrAuto;
 
 pub fn initial_value() -> LengthPercentageOrAuto {
 	LengthPercentageOrAuto::zero()

@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::LineStyle;
+use crate::values::specified::layout::LineStyle;
 
 /// https://drafts.csswg.org/css-backgrounds-3/#propdef-border-top-style
 pub fn parse_declared<'i, 't>(

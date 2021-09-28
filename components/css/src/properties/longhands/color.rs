@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::color::Color;
+use crate::values::specified::color::Color;
 
 /// https://drafts.csswg.org/css-color/#color-syntax
 pub fn parse_declared<'i, 't>(

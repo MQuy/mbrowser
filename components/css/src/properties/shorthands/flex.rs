@@ -5,7 +5,7 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::properties::longhands::flex_basis::FlexBasis;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::number::NonNegativeNumber;
+use crate::values::specified::number::NonNegativeNumber;
 
 pub struct Longhands {
 	pub flex_grow: NonNegativeNumber,

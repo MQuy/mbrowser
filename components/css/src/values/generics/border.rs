@@ -1,6 +1,6 @@
 use cssparser::ToCss;
 
-use crate::values::length::Pair;
+use crate::values::specified::length::Pair;
 
 #[derive(Clone, Debug)]
 #[repr(C)]

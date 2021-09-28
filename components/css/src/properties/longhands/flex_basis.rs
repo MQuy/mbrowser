@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::Size;
+use crate::values::specified::length::Size;
 
 /// https://drafts.csswg.org/css-flexbox/#flex-basis-property
 #[derive(Clone, Debug)]

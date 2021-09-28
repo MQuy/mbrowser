@@ -2,10 +2,10 @@ use std::fmt::{Display, Write};
 
 use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
-use super::CSSFloat;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::CSSFloat;
 
 #[derive(Clone, Debug)]
 pub enum TimeUnit {

@@ -1,9 +1,17 @@
 pub mod angle;
+pub mod border;
+pub mod color;
 pub mod counter;
 pub mod easing;
+pub mod image;
+pub mod layout;
 pub mod leader;
+pub mod length;
 pub mod line;
+pub mod number;
+pub mod percentage;
 pub mod position;
 pub mod quote;
 pub mod target;
+pub mod time;
 pub mod transform;

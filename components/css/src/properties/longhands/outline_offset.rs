@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::Length;
+use crate::values::specified::length::Length;
 
 /// https://drafts.csswg.org/css-ui/#outline-offset
 pub fn parse_declared<'i, 't>(

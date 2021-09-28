@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::layout::Overflow;
+use crate::values::specified::layout::Overflow;
 
 pub struct Longhands {
 	pub overflow_x: Overflow,

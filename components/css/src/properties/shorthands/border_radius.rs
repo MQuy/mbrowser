@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::border::BorderCornerRadius;
+use crate::values::specified::border::BorderCornerRadius;
 
 pub struct Longhands {
 	pub border_top_left_radius: BorderCornerRadius,

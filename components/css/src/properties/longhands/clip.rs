@@ -3,7 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::LengthOrAuto;
+use crate::values::specified::length::LengthOrAuto;
 
 /// https://drafts.fxtf.org/css-masking/#clip-property
 #[derive(Clone, Debug)]

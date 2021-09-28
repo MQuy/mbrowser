@@ -4,7 +4,7 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::LengthPercentageOrAuto;
+use crate::values::specified::length::LengthPercentageOrAuto;
 
 #[derive(Clone, Debug)]
 pub enum BgSize {

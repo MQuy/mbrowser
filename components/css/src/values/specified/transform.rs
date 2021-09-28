@@ -1,11 +1,11 @@
 use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use super::angle::Angle;
+use super::length::LengthPercentage;
+use super::number::{Number, Zero};
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::LengthPercentage;
-use crate::values::number::{Number, Zero};
 
 #[derive(Clone, Debug)]
 pub enum AngleOrZero {

@@ -15,16 +15,8 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 
 pub mod animation;
-pub mod border;
-pub mod color;
 pub mod generics;
-pub mod image;
-pub mod layout;
-pub mod length;
-pub mod number;
-pub mod percentage;
 pub mod specified;
-pub mod time;
 pub mod url;
 
 /// Whether to allow negative lengths or not.

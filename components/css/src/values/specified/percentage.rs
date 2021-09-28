@@ -3,10 +3,10 @@ use std::ops::Range;
 use cssparser::{Parser, ToCss, Token};
 
 use super::number::NonNegativeNumber;
-use super::CSSFloat;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::CSSFloat;
 
 /// https://drafts.csswg.org/css-values/#percentages
 #[derive(Clone, Debug, PartialEq)]

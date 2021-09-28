@@ -3,7 +3,7 @@ use cssparser::Parser;
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::length::{NonNegativeLength, Pair};
+use crate::values::specified::length::{NonNegativeLength, Pair};
 
 /// https://drafts.csswg.org/css2/#separated-borders
 pub type BorderSpacing = Pair<NonNegativeLength>;

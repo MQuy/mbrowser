@@ -1,10 +1,10 @@
 use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 use regex::Regex;
 
+use super::percentage::Percentage;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::percentage::Percentage;
 use crate::values::CSSFloat;
 
 /// https://drafts.csswg.org/css-values-4/#angle-value
