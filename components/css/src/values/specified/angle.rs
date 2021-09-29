@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use cssparser::{Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 use regex::Regex;
 
@@ -40,6 +42,15 @@ impl Angle {
 			},
 			_ => return_unexpected_token!(location, token),
 		})
+	}
+
+	pub fn to_deg(&self) -> CSSFloat {
+		match *self {
+			Angle::Deg(value) => value,
+			Angle::Grad(value) => value * 360.0 / 400.0,
+			Angle::Rad(value) => value * 180.0 / PI,
+			Angle::Turn(value) => value * 360.0,
+		}
 	}
 }
 

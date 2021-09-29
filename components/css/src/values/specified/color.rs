@@ -1,13 +1,17 @@
+use std::ops::Range;
+
+use common::not_supported;
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
 use super::angle::Angle;
 use super::number::{Number, NumberOrPercentage};
 use super::percentage::Percentage;
+use crate::computed_values::StyleContext;
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::Ident;
+use crate::values::{CSSFloat, Ident};
 
 #[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
@@ -89,6 +93,86 @@ impl RGBA {
 				};
 				acc + value as usize * usize::pow(16, (length - index - 1) as u32)
 			})
+	}
+
+	pub fn from_rgb(red: u8, green: u8, blue: u8) -> Self {
+		RGBA {
+			red,
+			green,
+			blue,
+			alpha: 1,
+		}
+	}
+
+	// https://drafts.csswg.org/css-color/#hsl-to-rgb
+	pub fn from_hsla(hue: CSSFloat, sat: CSSFloat, light: CSSFloat, alpha: u8) -> Self {
+		let t2;
+		if light <= 0.5 {
+			t2 = light * (sat + 1.0);
+		} else {
+			t2 = light + sat - (light * sat);
+		}
+		let t1 = light * 2.0 - t2;
+		let red = RGBA::hue_to_rgb(t1, t2, hue + 2.0);
+		let green = RGBA::hue_to_rgb(t1, t2, hue);
+		let blue = RGBA::hue_to_rgb(t1, t2, hue - 2.0);
+		RGBA {
+			red,
+			blue,
+			green,
+			alpha,
+		}
+	}
+
+	// https://en.wikipedia.org/wiki/HWB_color_model
+	// https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_HSL
+	pub fn from_hwb(hue: CSSFloat, black: CSSFloat, white: CSSFloat, alpha: u8) -> Self {
+		let mut black = black;
+		let mut white = white;
+		if black + white > 1.0 {
+			black = black / (black + white);
+			white = white / (black + white);
+		}
+		let saturation = 1.0 - white / (1.0 - black);
+		let value = 1.0 - black;
+		let lightness = value * (1.0 - saturation / 2.0);
+		let lsaturation = if lightness == 0.0 || lightness == 1.0 {
+			0.0
+		} else {
+			(value - lightness) / f32::min(lightness, 1.0 - lightness)
+		};
+
+		RGBA::from_hsla(hue, lightness, lsaturation, alpha)
+	}
+
+	pub fn hue_to_rgb(t1: CSSFloat, t2: CSSFloat, hue: CSSFloat) -> u8 {
+		let mut hue = hue;
+		if hue < 0.0 {
+			hue += 6.0;
+		}
+		if hue >= 6.0 {
+			hue -= 6.0;
+		}
+
+		let value = if hue < 1.0 {
+			(t2 - t1) * hue + t1
+		} else if hue < 3.0 {
+			t2
+		} else if hue < 4.0 {
+			(t2 - t1) * (4.0 - hue) + t1
+		} else {
+			t1
+		};
+		(value * 255.0) as u8
+	}
+
+	pub fn transparent() -> Self {
+		RGBA {
+			red: 0,
+			green: 0,
+			blue: 0,
+			alpha: 0,
+		}
 	}
 }
 
@@ -191,6 +275,14 @@ impl Hue {
 				Ok(Hue::Angle(angle))
 			})
 	}
+
+	pub fn normalize(&self, range: &Range<CSSFloat>) -> CSSFloat {
+		let deg = match self {
+			Hue::Number(value) => value.get(),
+			Hue::Angle(value) => value.to_deg(),
+		};
+		range.start + (range.end - range.start) * (deg / 360.0)
+	}
 }
 
 impl ToCss for Hue {
@@ -222,6 +314,28 @@ pub enum SystemColor {
 	Mark,
 	MarkText,
 	GrayText,
+}
+
+impl SystemColor {
+	pub fn to_computed_value(&self) -> RGBA {
+		match self {
+			SystemColor::Canvas => RGBA::from_rgb(255, 255, 255),
+			SystemColor::CanvasText => RGBA::from_rgb(0, 0, 0),
+			SystemColor::LinkText => RGBA::from_rgb(0, 102, 204),
+			SystemColor::VisitedText => RGBA::from_rgb(0, 102, 204),
+			SystemColor::ActiveText => RGBA::from_rgb(0, 102, 204),
+			SystemColor::ButtonFace => RGBA::from_rgb(240, 240, 240),
+			SystemColor::ButtonText => RGBA::from_rgb(0, 0, 0),
+			SystemColor::ButtonBorder => not_supported!(),
+			SystemColor::Field => RGBA::from_rgb(255, 255, 255),
+			SystemColor::FieldText => RGBA::from_rgb(0, 0, 0),
+			SystemColor::Highlight => RGBA::from_rgb(0, 120, 215),
+			SystemColor::HighlightText => RGBA::from_rgb(255, 255, 255),
+			SystemColor::Mark => not_supported!(),
+			SystemColor::MarkText => not_supported!(),
+			SystemColor::GrayText => RGBA::from_rgb(109, 109, 109),
+		}
+	}
 }
 
 property_keywords_impl! { SystemColor,
@@ -640,6 +754,31 @@ impl Color {
 					})
 			})
 			.map_or(255, |v| v as u8)
+	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> RGBA {
+		match self {
+			Color::CurrentColor => context.computed_values.get_color().clone(),
+			Color::Transparent => RGBA::transparent(),
+			Color::RGB(value) => value.clone(),
+			Color::HSL(hue, saturation, lightness, alpha) => RGBA::from_hsla(
+				hue.normalize(&(0.0..6.0)),
+				saturation.to_value(&(0.0..255.0)),
+				lightness.to_value(&(0.0..255.0)),
+				*alpha,
+			),
+			Color::HWB(hue, black, white, alpha) => RGBA::from_hwb(
+				hue.normalize(&(0.0..6.0)),
+				black.to_value(&(0.0..255.0)),
+				white.to_value(&(0.0..255.0)),
+				*alpha,
+			),
+			Color::LAB(_, _, _, _) => todo!(),
+			Color::LCH(_, _, _, _) => todo!(),
+			Color::Color(_, _, _) => todo!(),
+			Color::DeviceCMYK(_, _, _) => todo!(),
+			Color::System(value) => value.to_computed_value(),
+		}
 	}
 }
 

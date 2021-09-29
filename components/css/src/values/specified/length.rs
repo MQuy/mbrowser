@@ -1,5 +1,6 @@
 use std::fmt::Write;
 
+use common::not_supported;
 use cssparser::{
 	CowRcStr, Parser, ToCss, Token, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
 };
@@ -7,6 +8,7 @@ use regex::Regex;
 
 use super::number::NonNegativeNumber;
 use super::percentage::Percentage;
+use crate::computed_values::StyleContext;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
@@ -17,7 +19,7 @@ use crate::values::generics::length::{
 	Rect,
 };
 use crate::values::generics::number::NonNegative;
-use crate::values::{AllowedNumericType, CSSFloat};
+use crate::values::{computed, generics, AllowedNumericType, CSSFloat};
 
 /// <https://drafts.csswg.org/css-values/#lengths>
 #[derive(Clone, Debug, PartialEq)]
@@ -68,6 +70,16 @@ impl Length {
 
 	pub fn zero() -> Length {
 		Length::NoCalc(NoCalcLength::Absolute(AbsoluteLength::Px(0.0)))
+	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> CSSFloat {
+		match self {
+			Length::NoCalc(value) => match value {
+				NoCalcLength::Absolute(absolute) => absolute.to_px(),
+				NoCalcLength::FontRelative(_) => not_supported!(),
+				NoCalcLength::ViewportPercentage(_) => not_supported!(),
+			},
+		}
 	}
 }
 
@@ -168,6 +180,21 @@ pub enum AbsoluteLength {
 	Pt(CSSFloat),
 	/// An absolute length in pica (pc)
 	Pc(CSSFloat),
+}
+
+impl AbsoluteLength {
+	/// https://drafts.csswg.org/css-values-4/#absolute-lengths
+	pub fn to_px(&self) -> CSSFloat {
+		match *self {
+			AbsoluteLength::Px(value) => value,
+			AbsoluteLength::In(value) => value * 96.0,
+			AbsoluteLength::Cm(value) => value * 96.0 / 2.54,
+			AbsoluteLength::Mm(value) => (value * 96.0 / 2.54) / 10.0,
+			AbsoluteLength::Q(value) => (value * 96.6 / 2.54) / 40.0,
+			AbsoluteLength::Pt(value) => value * 96.0 / 6.0,
+			AbsoluteLength::Pc(value) => value * 96.0 / 72.0,
+		}
+	}
 }
 
 impl ToCss for AbsoluteLength {
@@ -282,6 +309,17 @@ impl LengthPercentage {
 				Ok(LengthPercentage::Percentage(percentage))
 			})
 	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> computed::length::LengthPercentage {
+		match self {
+			LengthPercentage::Length(value) => {
+				computed::length::LengthPercentage::AbsoluteLength(value.to_computed_value(context))
+			},
+			LengthPercentage::Percentage(value) => {
+				computed::length::LengthPercentage::Percentage(value.clone())
+			},
+		}
+	}
 }
 
 impl From<&str> for LengthPercentage {
@@ -342,6 +380,13 @@ impl NonNegativeLengthPercentage {
 	) -> Result<Self, ParseError<'i>> {
 		let length_percentage = LengthPercentage::parse_non_negative(context, input)?;
 		Ok(Self(length_percentage))
+	}
+
+	pub fn to_computed_value(
+		&self,
+		context: &StyleContext,
+	) -> computed::length::NonNegativeLengthPercentage {
+		generics::number::NonNegative(self.0.to_computed_value(context))
 	}
 }
 
@@ -422,6 +467,34 @@ impl Size {
 		Self::parse_with(input, |input| {
 			NonNegativeLengthPercentage::parse(context, input)
 		})
+	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> computed::length::Size {
+		match self {
+			GenericSize::Auto => computed::length::Size::Auto,
+			GenericSize::LengthPercentage(value) => {
+				computed::length::Size::LengthPercentage(value.to_computed_value(context))
+			},
+			GenericSize::ExtremumLength(value) => match value {
+				generics::length::ExtremumLength::MaxContent => {
+					computed::length::Size::ExtremumLength(
+						generics::length::ExtremumLength::MaxContent,
+					)
+				},
+				generics::length::ExtremumLength::MinContent => {
+					computed::length::Size::ExtremumLength(
+						generics::length::ExtremumLength::MinContent,
+					)
+				},
+				generics::length::ExtremumLength::FitContent(value) => {
+					computed::length::Size::ExtremumLength(
+						generics::length::ExtremumLength::FitContent(
+							value.to_computed_value(context),
+						),
+					)
+				},
+			},
+		}
 	}
 }
 

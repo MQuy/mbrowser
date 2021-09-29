@@ -31,6 +31,39 @@ pub fn keyword_data() -> Vec<(String, String)> {
 	data
 }
 
+pub fn keyword_data_color() -> Vec<(String, String)> {
+	let mut data = Vec::with_capacity(1);
+	for name in [
+		"currentcolor",
+		"transparent",
+		"canvas",
+		"canvastext",
+		"linktext",
+		"visitedtext",
+		"activetext",
+		"buttonface",
+		"buttontext",
+		"buttonborder",
+		"field",
+		"fieldtext",
+		"highlight",
+		"highlighttext",
+		"mark",
+		"marktext",
+		"graytext",
+	]
+	.iter()
+	{
+		let output = if name.eq_ignore_ascii_case("currentcolor") {
+			"inherit"
+		} else {
+			name
+		};
+		data.push((name.to_string(), output.to_string()));
+	}
+	data
+}
+
 pub fn hue_6digits_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for (input, output) in [("#00ff00", "rgb(0 255 0 / 255)")].iter() {

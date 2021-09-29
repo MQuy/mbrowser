@@ -3,28 +3,16 @@ use std::collections::HashMap;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
+use crate::values::computed::length::Size;
 use crate::values::specified::color::RGBA;
-use crate::values::specified::length::LengthPercentageOrAuto;
-
-#[derive(Debug)]
-pub struct Margin {
-	pub margin_top: LengthPercentageOrAuto,
-	pub margin_right: LengthPercentageOrAuto,
-	pub margin_bottom: LengthPercentageOrAuto,
-	pub margin_left: LengthPercentageOrAuto,
-}
-
-#[derive(Debug)]
-pub struct Padding {
-	pub margin_top: LengthPercentageOrAuto,
-	pub margin_right: LengthPercentageOrAuto,
-	pub margin_bottom: LengthPercentageOrAuto,
-	pub margin_left: LengthPercentageOrAuto,
-}
 
 #[derive(Debug)]
 pub struct Box {
 	pub display: Display,
+	pub width: Size,
+	pub min_width: Size,
+	pub height: Size,
+	pub min_height: Size,
 }
 
 #[derive(Debug)]
@@ -41,8 +29,6 @@ pub struct Background {
 pub struct ComputedValues {
 	background: Background,
 	box_: Box,
-	margin: Margin,
-	padding: Padding,
 	text: Text,
 }
 
@@ -61,12 +47,52 @@ impl ComputedValues {
 		self.box_.display = value;
 	}
 
-	pub fn get_margin_top(&self) -> &LengthPercentageOrAuto {
-		&self.margin.margin_top
+	pub fn get_width(&self) -> &Size {
+		&self.box_.width
 	}
 
-	pub fn set_margin_top(&mut self, value: LengthPercentageOrAuto) {
-		self.margin.margin_top = value;
+	pub fn set_width(&mut self, value: Size) {
+		self.box_.width = value;
+	}
+
+	pub fn get_min_width(&self) -> &Size {
+		&self.box_.min_width
+	}
+
+	pub fn set_min_width(&mut self, value: Size) {
+		self.box_.min_width = value;
+	}
+
+	pub fn get_height(&self) -> &Size {
+		&self.box_.height
+	}
+
+	pub fn set_height(&mut self, value: Size) {
+		self.box_.height = value;
+	}
+
+	pub fn get_min_height(&self) -> &Size {
+		&self.box_.min_height
+	}
+
+	pub fn set_min_height(&mut self, value: Size) {
+		self.box_.min_height = value;
+	}
+
+	pub fn get_color(&self) -> &RGBA {
+		&self.text.color
+	}
+
+	pub fn set_color(&mut self, value: RGBA) {
+		self.text.color = value;
+	}
+
+	pub fn get_background_color(&self) -> &RGBA {
+		&self.background.background_color
+	}
+
+	pub fn set_background_color(&mut self, value: RGBA) {
+		self.background.background_color = value;
 	}
 }
 

@@ -11,6 +11,7 @@ use crate::properties::property_id::CSSWideKeyword;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
+use crate::values::computed;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum DisplayOutside {
@@ -280,24 +281,14 @@ pub fn cascade_property<'a>(
 	declaration: Option<&PropertyDeclaration>,
 	context: &'a mut StyleContext,
 ) {
-	let initial_value = initial_value();
-	let specified_value = match declaration {
-		Some(declaration) => match declaration {
-			PropertyDeclaration::Display(value) => value,
-			PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
-				if *id == LonghandId::Display =>
-			{
-				match keyword {
-					CSSWideKeyword::Initial | CSSWideKeyword::Unset => &initial_value,
-					CSSWideKeyword::Inherit => context.parent_style.get_display(),
-					CSSWideKeyword::Revert => unreachable!(),
-				}
-			},
-			_ => unreachable!(),
-		},
-		None => &initial_value,
-	};
-	context.computed_values.set_display(specified_value.clone());
+	let computed_value = computed::from_non_inherited_property!(
+		declaration,
+		context.parent_style.get_display().clone(),
+		initial_value(),
+		LonghandId::Display,
+		PropertyDeclaration::Display(value) => value.clone()
+	);
+	context.computed_values.set_display(computed_value);
 }
 
 pub fn parse_declared<'i, 't>(

@@ -15,6 +15,7 @@ use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 
 pub mod animation;
+pub mod computed;
 pub mod generics;
 pub mod specified;
 pub mod url;

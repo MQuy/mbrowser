@@ -1,6 +1,6 @@
 use color::{
 	color_data, device_cmyk_data, hsl_or_hwb_data, hue_3digits_data, hue_4digits_data,
-	hue_6digits_data, hue_8digits_data, keyword_data, lab_data, lch_data, rgb_data,
+	hue_6digits_data, hue_8digits_data, keyword_data_color, lab_data, lch_data, rgb_data,
 };
 use setup::assert_property;
 
@@ -15,7 +15,7 @@ const TEMPLATE: &str = r#"
 	color: {};
 }}"#;
 
-test_property!(keyword, keyword_data);
+test_property!(keyword, keyword_data_color);
 
 test_property!(hue_6digits, hue_6digits_data);
 
