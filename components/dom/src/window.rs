@@ -3,13 +3,21 @@ use std::rc::{Rc, Weak};
 
 use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use cssparser::SourceLocation;
+use euclid::{Point2D, Rect, Scale, Size2D};
+use webrender::api::units::DevicePixel;
 
 use crate::document::Document;
+
+const DEFAULT_WIDTH: f32 = 1200.0;
+const DEFAULT_HEIGHT: f32 = 800.0;
+const DEFAULT_RATIO: f32 = 1.0;
 
 #[derive(Debug)]
 pub struct Window {
 	error_reporter: CSSErrorReporter,
 	document: Weak<Document>,
+	window_size: WindowSize,
+	viewport: Rect<f32, DevicePixel>,
 }
 
 impl Window {
@@ -17,13 +25,41 @@ impl Window {
 		Window {
 			error_reporter,
 			document: Rc::downgrade(&document),
+			window_size: WindowSize::new(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_RATIO),
+			viewport: Rect::new(
+				Point2D::new(0.0, 0.0),
+				Size2D::new(DEFAULT_WIDTH, DEFAULT_HEIGHT),
+			),
 		}
 	}
 
 	pub fn error_reporter(&self) -> &CSSErrorReporter {
 		&self.error_reporter
 	}
+
+	pub fn viewport(&self) -> &Rect<f32, DevicePixel> {
+		&self.viewport
+	}
 }
+
+/// https://www.w3.org/TR/css-device-adapt/#the-viewport
+#[derive(Debug)]
+pub struct WindowSize {
+	pub initial_viewport: Size2D<f32, CSSPixel>,
+	pub device_pixel_ratio: Scale<f32, CSSPixel, DevicePixel>,
+}
+
+impl WindowSize {
+	pub fn new(width: f32, height: f32, ratio: f32) -> Self {
+		Self {
+			initial_viewport: Size2D::new(width, height),
+			device_pixel_ratio: Scale::new(ratio),
+		}
+	}
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum CSSPixel {}
 
 #[derive(Debug)]
 pub struct CSSError {

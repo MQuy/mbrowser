@@ -278,17 +278,17 @@ pub enum PropertyDeclaration {
 	/// `padding-block-start`
 	PaddingBlockStart(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-bottom`
-	PaddingBottom(values::specified::length::NonNegativeLengthPercentage),
+	PaddingBottom(values::specified::length::NonNegativeLengthPercentageOrAuto),
 	/// `padding-inline-end`
 	PaddingInlineEnd(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-inline-start`
 	PaddingInlineStart(values::specified::length::NonNegativeLengthPercentage),
 	/// `padding-left`
-	PaddingLeft(values::specified::length::NonNegativeLengthPercentage),
+	PaddingLeft(values::specified::length::NonNegativeLengthPercentageOrAuto),
 	/// `padding-right`
-	PaddingRight(values::specified::length::NonNegativeLengthPercentage),
+	PaddingRight(values::specified::length::NonNegativeLengthPercentageOrAuto),
 	/// `padding-top`
-	PaddingTop(values::specified::length::NonNegativeLengthPercentage),
+	PaddingTop(values::specified::length::NonNegativeLengthPercentageOrAuto),
 	/// `block-size`
 	BlockSize(values::specified::length::Size),
 	/// `height`

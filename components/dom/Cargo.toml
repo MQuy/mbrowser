@@ -15,3 +15,5 @@ css = { path = "../css" }
 log = "0.4.14"
 num-traits = "0.2.14"
 selectors = "0.23.0"
+euclid = "0.22.6"
+webrender = "0.61.0"

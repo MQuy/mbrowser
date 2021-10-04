@@ -1,4 +1,4 @@
-use crate::values::generics::length::GenericSize;
+use crate::values::generics::length::{GenericLengthPercentageOrAuto, GenericSize};
 use crate::values::generics::number::NonNegative;
 use crate::values::specified::percentage::Percentage;
 use crate::values::CSSFloat;
@@ -11,7 +11,13 @@ pub enum LengthPercentage {
 	Percentage(Percentage),
 }
 
+/// value = <length> | <percentage> | auto
+pub type LengthPercentageOrAuto = GenericLengthPercentageOrAuto<LengthPercentage>;
+
 /// value = <length [0, ∞]> | <percentage>
 pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
+
+/// value = <length [0, ∞]> | <percentage>
+pub type NonNegativeLengthPercentageOrAuto = NonNegative<LengthPercentageOrAuto>;
 
 pub type Size = GenericSize<NonNegativeLengthPercentage>;

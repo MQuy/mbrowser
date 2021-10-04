@@ -1,4 +1,4 @@
-use length::non_negative_length_percentage_data;
+use length::non_negative_length_percentage_or_auto_data;
 use setup::assert_property;
 
 #[path = "../values/length.rs"]
@@ -13,6 +13,6 @@ const TEMPLATE: &str = r#"
 }}"#;
 
 test_property!(
-	non_negative_length_percentage,
-	non_negative_length_percentage_data
+	non_negative_length_percentage_or_auto,
+	non_negative_length_percentage_or_auto_data
 );

@@ -62,8 +62,6 @@ impl RGBA {
 		hex.as_bytes()
 			.chunks(chunk_size)
 			.map(|s| unsafe { ::std::str::from_utf8_unchecked(s) })
-			.collect::<Vec<_>>()
-			.iter()
 			.map(|value| {
 				let part = if chunk_size == 2 {
 					RGBA::hex_to_decimal(value)

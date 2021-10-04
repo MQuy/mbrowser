@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
-use crate::values::computed::length::Size;
+use crate::values::computed::length::{
+	LengthPercentageOrAuto, NonNegativeLengthPercentageOrAuto, Size,
+};
 use crate::values::specified::color::RGBA;
 
 #[derive(Debug)]
@@ -13,6 +15,22 @@ pub struct Box {
 	pub min_width: Size,
 	pub height: Size,
 	pub min_height: Size,
+}
+
+#[derive(Debug)]
+pub struct Margin {
+	pub margin_top: LengthPercentageOrAuto,
+	pub margin_right: LengthPercentageOrAuto,
+	pub margin_bottom: LengthPercentageOrAuto,
+	pub margin_left: LengthPercentageOrAuto,
+}
+
+#[derive(Debug)]
+pub struct Padding {
+	pub padding_top: NonNegativeLengthPercentageOrAuto,
+	pub padding_right: NonNegativeLengthPercentageOrAuto,
+	pub padding_bottom: NonNegativeLengthPercentageOrAuto,
+	pub padding_left: NonNegativeLengthPercentageOrAuto,
 }
 
 #[derive(Debug)]
@@ -30,6 +48,8 @@ pub struct ComputedValues {
 	background: Background,
 	box_: Box,
 	text: Text,
+	margin: Margin,
+	padding: Padding,
 }
 
 impl Default for ComputedValues {
@@ -93,6 +113,70 @@ impl ComputedValues {
 
 	pub fn set_background_color(&mut self, value: RGBA) {
 		self.background.background_color = value;
+	}
+
+	pub fn get_margin_top(&self) -> &LengthPercentageOrAuto {
+		&self.margin.margin_top
+	}
+
+	pub fn set_margin_top(&mut self, value: LengthPercentageOrAuto) {
+		self.margin.margin_top = value;
+	}
+
+	pub fn get_margin_right(&self) -> &LengthPercentageOrAuto {
+		&self.margin.margin_right
+	}
+
+	pub fn set_margin_right(&mut self, value: LengthPercentageOrAuto) {
+		self.margin.margin_right = value;
+	}
+
+	pub fn get_margin_bottom(&self) -> &LengthPercentageOrAuto {
+		&self.margin.margin_bottom
+	}
+
+	pub fn set_margin_bottom(&mut self, value: LengthPercentageOrAuto) {
+		self.margin.margin_bottom = value;
+	}
+
+	pub fn get_margin_left(&self) -> &LengthPercentageOrAuto {
+		&self.margin.margin_left
+	}
+
+	pub fn set_margin_left(&mut self, value: LengthPercentageOrAuto) {
+		self.margin.margin_left = value;
+	}
+
+	pub fn get_padding_top(&self) -> &NonNegativeLengthPercentageOrAuto {
+		&self.padding.padding_top
+	}
+
+	pub fn set_padding_top(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+		self.padding.padding_top = value;
+	}
+
+	pub fn get_padding_right(&self) -> &NonNegativeLengthPercentageOrAuto {
+		&self.padding.padding_right
+	}
+
+	pub fn set_padding_right(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+		self.padding.padding_right = value;
+	}
+
+	pub fn get_padding_bottom(&self) -> &NonNegativeLengthPercentageOrAuto {
+		&self.padding.padding_bottom
+	}
+
+	pub fn set_padding_bottom(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+		self.padding.padding_bottom = value;
+	}
+
+	pub fn get_padding_left(&self) -> &NonNegativeLengthPercentageOrAuto {
+		&self.padding.padding_left
+	}
+
+	pub fn set_padding_left(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+		self.padding.padding_left = value;
 	}
 }
 
