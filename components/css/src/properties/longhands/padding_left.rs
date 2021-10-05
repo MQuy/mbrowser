@@ -7,10 +7,10 @@ use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::CSSWideKeyword;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::computed;
-use crate::values::specified::length::NonNegativeLengthPercentageOrAuto;
+use crate::values::specified::length::NonNegativeLengthPercentage;
 
-pub fn initial_value() -> NonNegativeLengthPercentageOrAuto {
-	NonNegativeLengthPercentageOrAuto::zero()
+pub fn initial_value() -> NonNegativeLengthPercentage {
+	NonNegativeLengthPercentage::zero()
 }
 
 pub fn cascade_property<'a>(
@@ -32,5 +32,5 @@ pub fn parse_declared<'i, 't>(
 	context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	NonNegativeLengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::PaddingLeft)
+	NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingLeft)
 }

@@ -4,20 +4,77 @@ use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::declaration_block::SourcePropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::specified::length::NonNegativeLengthPercentageOrAuto;
+use crate::values::specified::length::NonNegativeLengthPercentage;
 
 pub struct Longhands {
-	pub padding_top: NonNegativeLengthPercentageOrAuto,
-	pub padding_right: NonNegativeLengthPercentageOrAuto,
-	pub padding_bottom: NonNegativeLengthPercentageOrAuto,
-	pub padding_left: NonNegativeLengthPercentageOrAuto,
+	pub padding_top: NonNegativeLengthPercentage,
+	pub padding_right: NonNegativeLengthPercentage,
+	pub padding_bottom: NonNegativeLengthPercentage,
+	pub padding_left: NonNegativeLengthPercentage,
+}
+
+impl Longhands {
+	pub fn from_single_value(value: NonNegativeLengthPercentage) -> Self {
+		Longhands {
+			padding_top: value.clone(),
+			padding_right: value.clone(),
+			padding_bottom: value.clone(),
+			padding_left: value,
+		}
+	}
+
+	pub fn from_two_values(
+		first: NonNegativeLengthPercentage,
+		second: NonNegativeLengthPercentage,
+	) -> Self {
+		Longhands {
+			padding_top: first.clone(),
+			padding_right: second.clone(),
+			padding_bottom: first,
+			padding_left: second,
+		}
+	}
+
+	pub fn from_three_values(
+		first: NonNegativeLengthPercentage,
+		second: NonNegativeLengthPercentage,
+		third: NonNegativeLengthPercentage,
+	) -> Self {
+		Longhands {
+			padding_top: first,
+			padding_right: second.clone(),
+			padding_bottom: third,
+			padding_left: second,
+		}
+	}
 }
 
 pub fn parse_value<'i, 't>(
 	context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<Longhands, ParseError<'i>> {
-	todo!()
+	let first = NonNegativeLengthPercentage::parse(context, input)?;
+	let second = if let Ok(second) = NonNegativeLengthPercentage::parse(context, input) {
+		second
+	} else {
+		return Ok(Longhands::from_single_value(first));
+	};
+	let third = if let Ok(third) = NonNegativeLengthPercentage::parse(context, input) {
+		third
+	} else {
+		return Ok(Longhands::from_two_values(first, second));
+	};
+	let forth = if let Ok(forth) = NonNegativeLengthPercentage::parse(context, input) {
+		forth
+	} else {
+		return Ok(Longhands::from_three_values(first, second, third));
+	};
+	Ok(Longhands {
+		padding_top: first,
+		padding_right: second,
+		padding_bottom: third,
+		padding_left: forth,
+	})
 }
 
 /// Parse the given shorthand and fill the result into the

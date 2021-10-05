@@ -320,6 +320,10 @@ impl LengthPercentage {
 			},
 		}
 	}
+
+	pub fn zero() -> Self {
+		LengthPercentage::Length(Length::zero())
+	}
 }
 
 impl From<&str> for LengthPercentage {
@@ -388,6 +392,10 @@ impl NonNegativeLengthPercentage {
 	) -> computed::length::NonNegativeLengthPercentage {
 		generics::number::NonNegative(self.0.to_computed_value(context))
 	}
+
+	pub fn zero() -> Self {
+		NonNegative(LengthPercentage::zero())
+	}
 }
 
 pub type LengthOrAuto = GenericLengthOrAuto<Length>;
@@ -434,7 +442,7 @@ impl LengthPercentageOrAuto {
 	}
 
 	pub fn zero() -> Self {
-		Self::LengthPercentage(LengthPercentage::Length(Length::zero()))
+		Self::LengthPercentage(LengthPercentage::zero())
 	}
 
 	pub fn to_computed_value(

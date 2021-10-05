@@ -42,6 +42,9 @@ impl AllowedNumericType {
 /// A CSS float value.
 pub type CSSFloat = f32;
 
+#[derive(Clone, Copy, Debug)]
+pub enum CSSPixel {}
+
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Ident(pub String);
 

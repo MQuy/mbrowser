@@ -15,7 +15,18 @@ pub fn parse_value<'i, 't>(
 	context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<Longhands, ParseError<'i>> {
-	todo!()
+	let first = LengthPercentageOrAuto::parse(context, input)?;
+	if let Ok(second) = LengthPercentageOrAuto::parse(context, input) {
+		Ok(Longhands {
+			margin_block_start: first,
+			margin_block_end: second,
+		})
+	} else {
+		Ok(Longhands {
+			margin_block_start: first.clone(),
+			margin_block_end: first,
+		})
+	}
 }
 
 /// Parse the given shorthand and fill the result into the
