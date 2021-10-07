@@ -3,9 +3,7 @@ use std::collections::HashMap;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
-use crate::values::computed::length::{
-	LengthPercentageOrAuto, NonNegativeLengthPercentageOrAuto, Size,
-};
+use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
 use crate::values::specified::color::RGBA;
 
 #[derive(Debug)]
@@ -27,10 +25,10 @@ pub struct Margin {
 
 #[derive(Debug)]
 pub struct Padding {
-	pub padding_top: NonNegativeLengthPercentageOrAuto,
-	pub padding_right: NonNegativeLengthPercentageOrAuto,
-	pub padding_bottom: NonNegativeLengthPercentageOrAuto,
-	pub padding_left: NonNegativeLengthPercentageOrAuto,
+	pub padding_top: NonNegativeLengthPercentage,
+	pub padding_right: NonNegativeLengthPercentage,
+	pub padding_bottom: NonNegativeLengthPercentage,
+	pub padding_left: NonNegativeLengthPercentage,
 }
 
 #[derive(Debug)]
@@ -147,35 +145,35 @@ impl ComputedValues {
 		self.margin.margin_left = value;
 	}
 
-	pub fn get_padding_top(&self) -> &NonNegativeLengthPercentageOrAuto {
+	pub fn get_padding_top(&self) -> &NonNegativeLengthPercentage {
 		&self.padding.padding_top
 	}
 
-	pub fn set_padding_top(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+	pub fn set_padding_top(&mut self, value: NonNegativeLengthPercentage) {
 		self.padding.padding_top = value;
 	}
 
-	pub fn get_padding_right(&self) -> &NonNegativeLengthPercentageOrAuto {
+	pub fn get_padding_right(&self) -> &NonNegativeLengthPercentage {
 		&self.padding.padding_right
 	}
 
-	pub fn set_padding_right(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+	pub fn set_padding_right(&mut self, value: NonNegativeLengthPercentage) {
 		self.padding.padding_right = value;
 	}
 
-	pub fn get_padding_bottom(&self) -> &NonNegativeLengthPercentageOrAuto {
+	pub fn get_padding_bottom(&self) -> &NonNegativeLengthPercentage {
 		&self.padding.padding_bottom
 	}
 
-	pub fn set_padding_bottom(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+	pub fn set_padding_bottom(&mut self, value: NonNegativeLengthPercentage) {
 		self.padding.padding_bottom = value;
 	}
 
-	pub fn get_padding_left(&self) -> &NonNegativeLengthPercentageOrAuto {
+	pub fn get_padding_left(&self) -> &NonNegativeLengthPercentage {
 		&self.padding.padding_left
 	}
 
-	pub fn set_padding_left(&mut self, value: NonNegativeLengthPercentageOrAuto) {
+	pub fn set_padding_left(&mut self, value: NonNegativeLengthPercentage) {
 		self.padding.padding_left = value;
 	}
 }

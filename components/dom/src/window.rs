@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
 use css::error_reporting::{ContextualParseError, ParseErrorReporter};
+use css::values::CSSPixel;
 use cssparser::SourceLocation;
 use euclid::{Point2D, Rect, Scale, Size2D};
 use webrender::api::units::DevicePixel;
@@ -57,9 +58,6 @@ impl WindowSize {
 		}
 	}
 }
-
-#[derive(Clone, Copy, Debug)]
-pub enum CSSPixel {}
 
 #[derive(Debug)]
 pub struct CSSError {

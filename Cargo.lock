@@ -213,6 +213,7 @@ dependencies = [
  "common",
  "cssparser",
  "dyn-fmt",
+ "euclid 0.22.6",
  "html5ever",
  "murmur3",
  "num_enum",
