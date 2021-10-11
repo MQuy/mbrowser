@@ -512,6 +512,15 @@ where
 	next_node: I,
 }
 
+impl<T, I> SimpleNodeIterator<T, I>
+where
+	I: Fn(&T) -> Option<T>,
+{
+	pub fn new(current: Option<T>, next_node: I) -> Self {
+		SimpleNodeIterator { current, next_node }
+	}
+}
+
 impl<T, I> Iterator for SimpleNodeIterator<T, I>
 where
 	I: Fn(&T) -> Option<T>,

@@ -197,22 +197,20 @@ pub struct BaseBox {
   stacking_context: Rc<StackingContext>,
 }
 
-// Block-level box is also a block container
-pub struct BlockBox {
+pub struct BlockLevelBox {
   base: BaseBox,
-  children: Vec<VisualBox>, // only BlockBox and AnonymousBox
+  children: Vec<LevelBox>,
 }
 
-// Inline-level box is also a block container
-pub struct InlineBox {
+pub struct InlineLevelBox {
   base: BaseBox,
-  children: Vec<VisualBox>, // only InlineBox and AnonymousBox
+  children: Vec<LevelBox>,
 }
 
-pub enum VisualBox {
-  BlockBox(BlockBox),
-  InlineBox(InlineBox),
-  AnonymousBox(VisualBox),
+pub enum LevelBox {
+  BlockLevelBox(BlockLevelBox),
+  InlineLevelBox(InlineLevelBox),
+  AnonymousBox(LevelBox),
 }
 
 pub enum FormattingContextType {
@@ -222,12 +220,12 @@ pub enum FormattingContextType {
 
 pub struct VisualFormattingContext {
   formatting_context_type: FormattingContextType,
-  established_by: Weak<VisualBox>,
+  established_by: Weak<LevelBox>,
 }
 
 pub struct StackingContext {
   z_index: i32,
-  generated_by: Weak<VisualBox>,
+  generated_by: Weak<LevelBox>,
   children: Vec<StackingContext>,
 }
 ```

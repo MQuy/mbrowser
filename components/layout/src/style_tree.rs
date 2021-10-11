@@ -38,6 +38,10 @@ impl StyleTree {
 		}
 	}
 
+	pub fn root(&self) -> Rc<StyleTreeNode> {
+		self.root.clone()
+	}
+
 	pub fn stylist(&self) -> &Stylist {
 		unsafe { self.stylist.as_ptr().as_ref().unwrap() }
 	}
@@ -127,6 +131,24 @@ impl StyleTreeNode {
 		}
 
 		self.last_child.replace(Some(node.clone()));
+	}
+
+	pub fn first_child(&self) -> Option<Rc<StyleTreeNode>> {
+		self.first_child.borrow().clone()
+	}
+
+	pub fn parent(&self) -> Option<Rc<StyleTreeNode>> {
+		match self.parent_node.borrow().as_ref() {
+			Some(node) => node.upgrade(),
+			_ => None,
+		}
+	}
+
+	pub fn next_sibling(&self) -> Option<Rc<StyleTreeNode>> {
+		match self.next_sibling.borrow().as_ref() {
+			Some(node) => node.upgrade(),
+			_ => None,
+		}
 	}
 }
 
@@ -252,5 +274,60 @@ fn apply_properties<'a>(longhands_iter: LonghandIdPhaseIterator, context: &'a mu
 			get_declaration_from_useragent(&context.useragent_data, &longhand_id, &unset)
 		};
 		longhand_id.cascade(declaration, context)
+	}
+}
+
+pub struct StyleTreeIterator {
+	current: Option<Rc<StyleTreeNode>>,
+	depth: usize,
+}
+
+impl StyleTreeIterator {
+	pub fn new(root: Rc<StyleTreeNode>) -> StyleTreeIterator {
+		StyleTreeIterator {
+			current: Some(root),
+			depth: 0,
+		}
+	}
+
+	fn next_skipping_children_impl(
+		&mut self,
+		current: Rc<StyleTreeNode>,
+	) -> Option<Rc<StyleTreeNode>> {
+		let mut ancestor = current.clone();
+		loop {
+			if self.depth == 0 {
+				break;
+			}
+			if let Some(next_sibling) = ancestor.next_sibling() {
+				self.current = Some(next_sibling);
+				return Some(current);
+			}
+			self.depth -= 1;
+			if let Some(parent) = ancestor.parent() {
+				ancestor = parent;
+			} else {
+				break;
+			}
+		}
+		debug_assert_eq!(self.depth, 0);
+		self.current = None;
+		Some(current)
+	}
+}
+
+impl Iterator for StyleTreeIterator {
+	type Item = Rc<StyleTreeNode>;
+
+	fn next(&mut self) -> Option<Rc<StyleTreeNode>> {
+		let current = self.current.take()?;
+
+		if let Some(first_child) = current.first_child() {
+			self.current = Some(first_child);
+			self.depth += 1;
+			return Some(current);
+		};
+
+		self.next_skipping_children_impl(current)
 	}
 }

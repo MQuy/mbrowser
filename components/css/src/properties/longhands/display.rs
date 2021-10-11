@@ -38,8 +38,8 @@ pub enum DisplayInside {
 
 #[derive(Clone, Debug)]
 pub struct DisplayBasic {
-	outside: Option<DisplayOutside>,
-	inside: Option<DisplayInside>,
+	pub outside: Option<DisplayOutside>,
+	pub inside: Option<DisplayInside>,
 }
 
 impl DisplayBasic {
@@ -184,7 +184,7 @@ property_keywords_impl! { DisplayInternal,
 	DisplayInternal::RubyTextContainer, "ruby-text-container",
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DisplayBox {
 	Contents,
 	None,
@@ -195,7 +195,7 @@ property_keywords_impl! { DisplayBox,
 	DisplayBox::None, "none",
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DisplayLegacy {
 	InlineBlock,
 	InlineTable,

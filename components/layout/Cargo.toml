@@ -9,5 +9,6 @@ edition = "2018"
 cssparser = "0.28.1"
 html5ever = "0.25.1"
 selectors = "0.23.0"
+common = { path = "../common" }
 css = { path = "../css" }
 dom = { path = "../dom" }
