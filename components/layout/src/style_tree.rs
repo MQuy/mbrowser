@@ -78,12 +78,7 @@ impl StyleTree {
 		*style_node.rules.borrow_mut() = rules;
 
 		let mut dom_child = style_node.dom_node.first_child();
-		loop {
-			let noderef_child = if let Some(noderef_child) = &dom_child {
-				noderef_child
-			} else {
-				break;
-			};
+		while let Some(noderef_child) = &dom_child {
 			let style_child = Rc::new(StyleTreeNode::new(
 				noderef_child.clone(),
 				Some(style_node.clone()),
@@ -193,12 +188,7 @@ pub fn cascade(style_node: Rc<StyleTreeNode>, parent_style: &ComputedValues) {
 	apply_properties(LonghandId::ids(PhaseOrder::Other), &mut context);
 
 	let mut child = style_node.first_child.borrow().as_ref().map(|n| n.clone());
-	loop {
-		let noderef = if let Some(ref noderef) = child {
-			noderef.clone()
-		} else {
-			break;
-		};
+	while let Some(noderef) = child {
 		cascade(noderef.clone(), computed_values);
 		child = if let Some(child) = noderef.next_sibling.borrow().as_ref() {
 			child.upgrade()
@@ -274,60 +264,5 @@ fn apply_properties<'a>(longhands_iter: LonghandIdPhaseIterator, context: &'a mu
 			get_declaration_from_useragent(&context.useragent_data, &longhand_id, &unset)
 		};
 		longhand_id.cascade(declaration, context)
-	}
-}
-
-pub struct StyleTreeIterator {
-	current: Option<Rc<StyleTreeNode>>,
-	depth: usize,
-}
-
-impl StyleTreeIterator {
-	pub fn new(root: Rc<StyleTreeNode>) -> StyleTreeIterator {
-		StyleTreeIterator {
-			current: Some(root),
-			depth: 0,
-		}
-	}
-
-	fn next_skipping_children_impl(
-		&mut self,
-		current: Rc<StyleTreeNode>,
-	) -> Option<Rc<StyleTreeNode>> {
-		let mut ancestor = current.clone();
-		loop {
-			if self.depth == 0 {
-				break;
-			}
-			if let Some(next_sibling) = ancestor.next_sibling() {
-				self.current = Some(next_sibling);
-				return Some(current);
-			}
-			self.depth -= 1;
-			if let Some(parent) = ancestor.parent() {
-				ancestor = parent;
-			} else {
-				break;
-			}
-		}
-		debug_assert_eq!(self.depth, 0);
-		self.current = None;
-		Some(current)
-	}
-}
-
-impl Iterator for StyleTreeIterator {
-	type Item = Rc<StyleTreeNode>;
-
-	fn next(&mut self) -> Option<Rc<StyleTreeNode>> {
-		let current = self.current.take()?;
-
-		if let Some(first_child) = current.first_child() {
-			self.current = Some(first_child);
-			self.depth += 1;
-			return Some(current);
-		};
-
-		self.next_skipping_children_impl(current)
 	}
 }

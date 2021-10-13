@@ -26,11 +26,7 @@ pub fn parse_in_any_order<'i, 't, T>(
 	input: &mut Parser<'i, 't>,
 	item_parsers: &mut [&mut dyn FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>],
 ) {
-	loop {
-		if input.is_exhausted() {
-			break;
-		}
-
+	while !input.is_exhausted() {
 		let state = input.state();
 		if item_parsers
 			.iter_mut()

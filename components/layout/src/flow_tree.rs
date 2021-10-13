@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
 use common::{not_reached, not_supported};
@@ -42,8 +43,16 @@ impl BaseBox {
 		self.formatting_context.borrow().formatting_context_type
 	}
 
+	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+		self.children.borrow().first().map(|value| value.clone())
+	}
+
 	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
 		self.children.borrow().last().map(|value| value.clone())
+	}
+
+	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+		self.children.borrow().clone()
 	}
 
 	pub fn parent(&self) -> Option<Rc<VisualBox>> {
@@ -87,8 +96,16 @@ impl BlockLevelBox {
 		self.base.formatting_context_type()
 	}
 
+	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+		self.base.get_first_child()
+	}
+
 	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
 		self.base.get_last_child()
+	}
+
+	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+		self.base.children()
 	}
 
 	pub fn parent(&self) -> Option<Rc<VisualBox>> {
@@ -128,8 +145,16 @@ impl InlineLevelBox {
 		self.base.formatting_context_type()
 	}
 
+	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+		self.base.get_first_child()
+	}
+
 	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
 		self.base.get_last_child()
+	}
+
+	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+		self.base.children()
 	}
 
 	pub fn parent(&self) -> Option<Rc<VisualBox>> {
@@ -172,8 +197,16 @@ impl AnonymousBox {
 		self.formatting_context.borrow().formatting_context_type
 	}
 
+	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+		self.boxes.borrow().first().map(|value| value.clone())
+	}
+
 	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
 		self.boxes.borrow().last().map(|value| value.clone())
+	}
+
+	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+		self.boxes.borrow().clone()
 	}
 
 	pub fn parent(&self) -> Option<Rc<VisualBox>> {
@@ -268,11 +301,27 @@ impl VisualBox {
 		child.set_parent(Some(source));
 	}
 
-	fn get_last_child(&self) -> Option<Rc<VisualBox>> {
+	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+		match self {
+			VisualBox::BlockBox(block) => block.get_first_child(),
+			VisualBox::InlineBox(inline) => inline.get_first_child(),
+			VisualBox::AnonymousBox(anonymous) => anonymous.get_first_child(),
+		}
+	}
+
+	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
 		match self {
 			VisualBox::BlockBox(block) => block.get_last_child(),
 			VisualBox::InlineBox(inline) => inline.get_last_child(),
 			VisualBox::AnonymousBox(value) => value.get_last_child(),
+		}
+	}
+
+	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+		match self {
+			VisualBox::BlockBox(block) => block.children(),
+			VisualBox::InlineBox(inline) => inline.children(),
+			VisualBox::AnonymousBox(anonymous) => anonymous.children(),
 		}
 	}
 
@@ -445,24 +494,30 @@ impl BoxTree {
 		visual_box
 	}
 
+	/*
+	- post-order traversal to compute the minimum and preferred width/height for inline-block elements
+	- pre-order traversal to compute used value for width for elements
+	- post-order traversal to compute height for block elements
+	 */
+	pub fn traverse(&self) {
+		todo!()
+	}
+
 	fn get_children_iter(style_node: Rc<StyleTreeNode>) -> impl Iterator<Item = Rc<StyleTreeNode>> {
 		SimpleNodeIterator::new(style_node.first_child(), |n: &Rc<StyleTreeNode>| {
 			let mut next_sibling = n.next_sibling();
-			loop {
-				if let Some(ref style_node) = next_sibling {
-					let computed_values =
-						GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
-					match computed_values.get_display() {
-						longhands::display::Display::Box(value)
-							if *value == longhands::display::DisplayBox::None =>
-						{
-							next_sibling = style_node.next_sibling();
-							continue;
-						}
-						_ => (),
+			while let Some(ref style_node) = next_sibling {
+				let computed_values =
+					GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
+				match computed_values.get_display() {
+					longhands::display::Display::Box(value)
+						if *value == longhands::display::DisplayBox::None =>
+					{
+						next_sibling = style_node.next_sibling();
+						continue;
 					}
+					_ => (),
 				}
-				break;
 			}
 			next_sibling
 		})
@@ -502,5 +557,111 @@ impl BoxTree {
 			},
 			_ => not_supported!(),
 		}
+	}
+}
+
+#[derive(PartialEq, Eq)]
+enum TraversalState {
+	Up,
+	Down,
+}
+
+pub struct PostOrderBoxTreeIterator {
+	current: Option<(usize, Rc<VisualBox>)>,
+	stack: VecDeque<(usize, Rc<VisualBox>)>,
+	state: TraversalState,
+}
+
+impl PostOrderBoxTreeIterator {
+	pub fn new(root: Rc<VisualBox>) -> PostOrderBoxTreeIterator {
+		PostOrderBoxTreeIterator {
+			current: Some((0, root)),
+			stack: VecDeque::with_capacity(1),
+			state: TraversalState::Down,
+		}
+	}
+
+	fn build_left_branch(&mut self, index: usize, value: Rc<VisualBox>) {
+		self.stack.push_back((index, value.clone()));
+		let mut node = value;
+		while let Some(first_child) = node.get_first_child() {
+			node = first_child.clone();
+			self.stack.push_back((0, first_child));
+			self.state = TraversalState::Down;
+		}
+	}
+
+	fn move_next(&mut self, index: usize, value: Rc<VisualBox>) {
+		if value.parent().is_none() || self.stack.len() == 0 {
+			self.current = None;
+			return;
+		} else if let Some(parent) = value.parent() {
+			if let Some(sibling) = parent.children().get(index + 1) {
+				self.state = TraversalState::Down;
+				self.current = Some((index + 1, sibling.clone()))
+			} else if let Some((index, value)) = self.stack.front() {
+				self.state = TraversalState::Up;
+				self.current = Some((index.clone(), value.clone()))
+			} else {
+				unreachable!()
+			}
+		}
+	}
+}
+
+impl Iterator for PostOrderBoxTreeIterator {
+	type Item = Rc<VisualBox>;
+
+	fn next(&mut self) -> Option<Rc<VisualBox>> {
+		let (index, current) = self.current.take()?;
+		if self.state == TraversalState::Down {
+			self.build_left_branch(index, current);
+		};
+		let (index, value) = self.stack.pop_front()?;
+		self.move_next(index, value.clone());
+		Some(value)
+	}
+}
+
+pub struct PreOrderBoxTreeIterator {
+	current: Option<(usize, Rc<VisualBox>)>,
+	stack: VecDeque<(usize, Rc<VisualBox>)>,
+}
+
+impl PreOrderBoxTreeIterator {
+	pub fn new(root: Rc<VisualBox>) -> PreOrderBoxTreeIterator {
+		PreOrderBoxTreeIterator {
+			current: Some((0, root)),
+			stack: VecDeque::with_capacity(1),
+		}
+	}
+
+	pub fn move_next(&mut self) {
+		while let Some((index, _)) = self.stack.pop_front() {
+			if let Some((_, parent)) = self.stack.front() {
+				if let Some(next_sibling) = parent.children().get(index + 1) {
+					self.current = Some((index + 1, next_sibling.clone()));
+					return;
+				} else {
+					continue;
+				}
+			}
+		}
+		self.current = None;
+	}
+}
+
+impl Iterator for PreOrderBoxTreeIterator {
+	type Item = Rc<VisualBox>;
+
+	fn next(&mut self) -> Option<Rc<VisualBox>> {
+		let (index, current) = self.current.take()?;
+		self.stack.push_back((index, current.clone()));
+		if let Some(first_child) = current.get_first_child() {
+			self.current = Some((0, first_child));
+		} else {
+			self.move_next();
+		}
+		Some(current)
 	}
 }
