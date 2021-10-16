@@ -499,7 +499,24 @@ impl BoxTree {
 	- pre-order traversal to compute used value for width for elements
 	- post-order traversal to compute height for block elements
 	 */
-	pub fn traverse(&self) {
+	pub fn compute_layout(&self) {
+		self.bubble_inline_size();
+		self.compute_used_width();
+		self.bubble_height();
+	}
+
+	pub fn bubble_inline_size(&self) {
+		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
+		for node in node_iter {
+			if node.is_inline_level() {}
+		}
+	}
+
+	pub fn compute_used_width(&self) {
+		todo!()
+	}
+
+	pub fn bubble_height(&self) {
 		todo!()
 	}
 
