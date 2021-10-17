@@ -1,10 +1,15 @@
 use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_internal_to_lowercase};
 
+use crate::computed_values::StyleContext;
 use crate::parser::{parse_repeated, ParseError};
-use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration};
+use crate::properties::declaration::{
+	property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration,
+};
+use crate::properties::longhand_id::LonghandId;
+use crate::properties::property_id::CSSWideKeyword;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::CustomIdent;
+use crate::values::{computed, CustomIdent};
 
 #[derive(Clone, Debug)]
 pub enum GenericFamilyName {
@@ -94,6 +99,12 @@ impl SingleFontFamily {
 	}
 }
 
+impl ToString for SingleFontFamily {
+	fn to_string(&self) -> String {
+		self.to_css_string()
+	}
+}
+
 impl ToCss for SingleFontFamily {
 	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
 	where
@@ -128,6 +139,24 @@ impl ToCss for FontFamily {
 		let values: Vec<String> = self.0.iter().map(|v| v.to_css_string()).collect();
 		dest.write_str(&values.join(", "))
 	}
+}
+
+pub fn initial_value() -> String {
+	"sans-seri".to_string()
+}
+
+pub fn cascade_property<'a>(
+	declaration: Option<&PropertyDeclaration>,
+	context: &'a mut StyleContext,
+) {
+	let computed_value = computed::from_inherited_property!(
+		declaration,
+		context.parent_style.get_font_families().clone(),
+		vec![initial_value()],
+		LonghandId::FontFamily,
+		PropertyDeclaration::FontFamily(value) => value.0.iter().map(|v| v.to_css_string()).collect()
+	);
+	context.computed_values.set_font_families(computed_value);
 }
 
 pub fn parse_declared<'i, 't>(

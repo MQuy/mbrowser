@@ -5,6 +5,7 @@ use std::rc::{Rc, Weak};
 use common::{not_reached, not_supported};
 use css::properties::longhands;
 use css::properties::longhands::display::{DisplayBasic, DisplayInside, DisplayOutside};
+use css::properties::longhands::font_family::{GenericFamilyName, SingleFontFamily};
 use dom::global_scope::{GlobalScope, NodeRef};
 use dom::node::SimpleNodeIterator;
 

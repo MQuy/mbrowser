@@ -26,7 +26,12 @@ impl Text {
 		}
 	}
 
-	pub fn measure_size(&self, content: &str, family_names: &[&str], font_size: f32) -> (f32, f32) {
+	pub fn measure_size<T: AsRef<str>>(
+		&self,
+		content: &str,
+		family_names: &[T],
+		font_size: f32,
+	) -> (f32, f32) {
 		let groups = self.matching_fonts(content, family_names);
 		let section = wgpu_glyph::Section {
 			text: groups
@@ -53,10 +58,10 @@ impl Text {
 	- construct array (element is [string slice, font])
 	  if current font is the same last array, modify last string slice
 	 */
-	pub fn matching_fonts<'a>(
+	pub fn matching_fonts<T: AsRef<str>>(
 		&self,
 		content: &str,
-		family_names: &[&str],
+		family_names: &[T],
 	) -> Vec<(String, FontId)> {
 		let mut latest_font = None;
 		let mut styles: Vec<(Vec<char>, FontId)> = Vec::with_capacity(1);
@@ -79,11 +84,11 @@ impl Text {
 			.collect::<Vec<(String, FontId)>>()
 	}
 
-	pub fn load_font<'a>(&self, family_names: &[&str]) -> FontId {
+	pub fn load_font<T: AsRef<str>>(&self, family_names: &[T]) -> FontId {
 		for family_name in family_names {
-			if let Some(font) = self.font_map.borrow().get(*family_name) {
+			if let Some(font) = self.font_map.borrow().get(family_name.as_ref()) {
 				return font.clone();
-			} else if let Some(font) = self.load_system_font(*family_name) {
+			} else if let Some(font) = self.load_system_font(family_name.as_ref()) {
 				return font;
 			}
 		}

@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands::display::Display;
+use crate::properties::longhands::font_family::SingleFontFamily;
 use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
 use crate::values::specified::color::RGBA;
 
@@ -34,6 +35,7 @@ pub struct Padding {
 #[derive(Debug)]
 pub struct Text {
 	pub color: RGBA,
+	pub font_families: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -103,6 +105,14 @@ impl ComputedValues {
 
 	pub fn set_color(&mut self, value: RGBA) {
 		self.text.color = value;
+	}
+
+	pub fn get_font_families(&self) -> &Vec<String> {
+		&self.text.font_families
+	}
+
+	pub fn set_font_families(&mut self, font_families: Vec<String>) {
+		self.text.font_families = font_families;
 	}
 
 	pub fn get_background_color(&self) -> &RGBA {
