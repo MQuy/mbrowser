@@ -9,14 +9,14 @@ use font_kit::source::SystemSource;
 use glyph_brush::ab_glyph::{Font, FontArc, GlyphId};
 use glyph_brush::{FontId, GlyphCruncher};
 
-pub struct Text {
+pub struct TextUI {
 	brush: RefCell<glyph_brush::GlyphBrush<()>>,
 	font_map: RefCell<HashMap<String, FontId>>,
 }
 
 pub const FALLBACK: &[u8] = include_bytes!("../fonts/Lato-Regular.ttf");
 
-impl Text {
+impl TextUI {
 	pub fn new() -> Self {
 		let font = FontArc::try_from_slice(FALLBACK).expect("default font doesn't exist");
 		let brush = glyph_brush::GlyphBrushBuilder::using_font(font).build();

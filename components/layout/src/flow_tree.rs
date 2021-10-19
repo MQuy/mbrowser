@@ -1,21 +1,40 @@
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
 use std::collections::VecDeque;
 use std::rc::{Rc, Weak};
 
 use common::{not_reached, not_supported};
 use css::properties::longhands;
 use css::properties::longhands::display::{DisplayBasic, DisplayInside, DisplayOutside};
-use css::properties::longhands::font_family::{GenericFamilyName, SingleFontFamily};
+use css::values::computed::length::{LengthPercentage, Size};
+use dom::characterdata::CharacterData;
 use dom::global_scope::{GlobalScope, NodeRef};
+use dom::inheritance::Castable;
 use dom::node::SimpleNodeIterator;
 
 use crate::style_tree::{StyleTree, StyleTreeNode};
+use crate::text::TextUI;
+
+pub struct BoxSize {
+	pub intrinsic_width: f32,
+	pub width: f32,
+}
+
+impl Default for BoxSize {
+	fn default() -> Self {
+		Self {
+			intrinsic_width: 0.0,
+			width: 0.0,
+		}
+	}
+}
 
 pub struct BaseBox {
 	pub dom_node: NodeRef,
 	pub formatting_context: RefCell<Rc<FormattingContext>>,
 	pub children: RefCell<Vec<Rc<VisualBox>>>,
 	pub parent: RefCell<Option<Weak<VisualBox>>>,
+	pub containing_block: RefCell<Option<Weak<VisualBox>>>,
+	pub size: RefCell<BoxSize>,
 }
 
 impl BaseBox {
@@ -25,11 +44,17 @@ impl BaseBox {
 			parent: RefCell::new(Default::default()),
 			formatting_context: RefCell::new(formatting_context),
 			children: RefCell::new(Default::default()),
+			containing_block: RefCell::new(Default::default()),
+			size: RefCell::new(Default::default()),
 		}
 	}
 
 	pub fn add_child(&self, child: Rc<VisualBox>) {
 		self.children.borrow_mut().push(child)
+	}
+
+	pub fn dom_node(&self) -> NodeRef {
+		self.dom_node.clone()
 	}
 
 	pub fn formatting_context(&self) -> Rc<FormattingContext> {
@@ -63,9 +88,25 @@ impl BaseBox {
 		}
 	}
 
+	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+		match self.containing_block.borrow().as_ref() {
+			Some(value) => value.upgrade(),
+			None => None,
+		}
+	}
+
+	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+		self.containing_block
+			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
+	}
+
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		self.parent
 			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
+	}
+
+	pub fn size(&self) -> RefMut<'_, BoxSize> {
+		self.size.borrow_mut()
 	}
 }
 
@@ -85,6 +126,10 @@ impl BlockLevelBox {
 		self.base.add_child(child)
 	}
 
+	pub fn dom_node(&self) -> NodeRef {
+		self.base.dom_node()
+	}
+
 	pub fn formatting_context(&self) -> Rc<FormattingContext> {
 		self.base.formatting_context()
 	}
@@ -116,6 +161,18 @@ impl BlockLevelBox {
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		self.base.set_parent(value);
 	}
+
+	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+		self.base.containing_block()
+	}
+
+	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+		self.base.set_containing_block(value);
+	}
+
+	pub fn size(&self) -> RefMut<'_, BoxSize> {
+		self.base.size()
+	}
 }
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
@@ -128,6 +185,10 @@ impl InlineLevelBox {
 		InlineLevelBox {
 			base: BaseBox::new(dom_node, formatting_context),
 		}
+	}
+
+	pub fn dom_node(&self) -> NodeRef {
+		self.base.dom_node()
 	}
 
 	pub fn add_child(&self, child: Rc<VisualBox>) {
@@ -165,12 +226,26 @@ impl InlineLevelBox {
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		self.base.set_parent(value);
 	}
+
+	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+		self.base.containing_block()
+	}
+
+	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+		self.base.set_containing_block(value);
+	}
+
+	pub fn size(&self) -> RefMut<'_, BoxSize> {
+		self.base.size()
+	}
 }
 
+// Anonymous box is always anonymous block box
 pub struct AnonymousBox {
 	boxes: RefCell<Vec<Rc<VisualBox>>>,
 	parent: RefCell<Option<Rc<VisualBox>>>,
 	formatting_context: RefCell<Rc<FormattingContext>>,
+	size: RefCell<BoxSize>,
 }
 
 impl AnonymousBox {
@@ -179,6 +254,7 @@ impl AnonymousBox {
 			parent: RefCell::new(Default::default()),
 			boxes: RefCell::new(vec![]),
 			formatting_context: RefCell::new(formatting_context),
+			size: RefCell::new(Default::default()),
 		}
 	}
 
@@ -216,6 +292,10 @@ impl AnonymousBox {
 
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		self.parent.replace(value);
+	}
+
+	pub fn size(&self) -> RefMut<'_, BoxSize> {
+		self.size.borrow_mut()
 	}
 }
 
@@ -342,6 +422,22 @@ impl VisualBox {
 		}
 	}
 
+	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+		match self {
+			VisualBox::BlockBox(block) => block.containing_block(),
+			VisualBox::InlineBox(inline) => inline.containing_block(),
+			VisualBox::AnonymousBox(_) => not_reached!(),
+		}
+	}
+
+	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+		match self {
+			VisualBox::BlockBox(block) => block.set_containing_block(value),
+			VisualBox::InlineBox(inline) => inline.set_containing_block(value),
+			VisualBox::AnonymousBox(_) => not_reached!(),
+		}
+	}
+
 	pub fn is_block_level(&self) -> bool {
 		match self {
 			VisualBox::BlockBox(_) => true,
@@ -359,6 +455,36 @@ impl VisualBox {
 	pub fn is_anonymous(&self) -> bool {
 		match self {
 			VisualBox::AnonymousBox(_) => true,
+			_ => false,
+		}
+	}
+
+	pub fn is_inline_block(&self) -> bool {
+		match self {
+			VisualBox::InlineBox(inline) => {
+				inline.formatting_context_type() == FormattingContextType::BlockFormattingContext
+			},
+			_ => false,
+		}
+	}
+
+	pub fn size(&self) -> RefMut<'_, BoxSize> {
+		match self {
+			VisualBox::BlockBox(block) => block.size(),
+			VisualBox::InlineBox(inline) => inline.size(),
+			VisualBox::AnonymousBox(anonymous) => anonymous.size(),
+		}
+	}
+
+	pub fn is_block_container(&self) -> bool {
+		match self {
+			VisualBox::BlockBox(_) => true,
+			VisualBox::InlineBox(inline)
+				if inline.formatting_context_type()
+					== FormattingContextType::BlockFormattingContext =>
+			{
+				true
+			},
 			_ => false,
 		}
 	}
@@ -404,6 +530,7 @@ impl BoxTree {
 				)))
 			},
 		);
+		root.size().width = style_node.dom_node.window().unwrap().viewport().width();
 		let children_iter = BoxTree::get_children_iter(style_node);
 		for child in children_iter {
 			let child_box = BoxTree::construct_node(child, root.clone());
@@ -486,6 +613,7 @@ impl BoxTree {
 			_ => not_supported!(),
 		};
 		VisualBox::append_child(parent_box, visual_box.clone());
+		BoxTree::set_containing_box(visual_box.clone());
 
 		let children_iter = BoxTree::get_children_iter(style_node);
 		for child in children_iter {
@@ -495,26 +623,136 @@ impl BoxTree {
 		visual_box
 	}
 
-	/*
-	- post-order traversal to compute the minimum and preferred width/height for inline-block elements
-	- pre-order traversal to compute used value for width for elements
-	- post-order traversal to compute height for block elements
-	 */
-	pub fn compute_layout(&self) {
-		self.bubble_inline_size();
-		self.compute_used_width();
-		self.bubble_height();
-	}
-
-	pub fn bubble_inline_size(&self) {
-		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
-		for node in node_iter {
-			if node.is_inline_level() {}
+	pub fn set_containing_box(src: Rc<VisualBox>) {
+		let mut parent = src.parent();
+		while let Some(ref inner) = parent {
+			// TODO: include box which establishes a new formatting context
+			// https://www.w3.org/TR/CSS22/visudet.html#containing-block-details
+			if inner.is_block_container() {
+				src.set_containing_block(parent);
+				break;
+			}
+			parent = inner.parent();
 		}
 	}
 
+	/*
+	we perform multiple traversals to incremental figure out the used value for every elements:
+		- post-order traversal to compute the intrinsic width for elements.
+		- pre-order traversal to compute used value for width for elements.
+		- post-order traversal to compute height for block elements.
+	 */
+	pub fn compute_layout(&self) {
+		self.bubble_intrinsic_inline_size();
+		self.compute_used_width();
+		// self.bubble_height();
+	}
+
+	/*
+	if box is inline-level and its formatting context is:
+		- inline formatting context (ignore css width):
+			- if box has children, its width = sum of all children's width.
+			- If box has no children and is text node, width = text's width.
+			- otherwise, box's width = 0.
+		- block formatting context:
+			- if width = auto, https://www.w3.org/TR/CSS22/visudet.html#shrink-to-fit-float.
+			- if width in px, box's width = css width.
+			- if width in percentage, keep as it is.
+	*/
+	pub fn bubble_intrinsic_inline_size(&self) {
+		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
+		for node in node_iter {
+			node.size().intrinsic_width = match node.as_ref() {
+				VisualBox::InlineBox(inline)
+					if inline.formatting_context_type()
+						== FormattingContextType::InlineFormattingContext =>
+				{
+					if inline.children().len() > 0 {
+						let mut total_children_width = 0.0;
+						for child in inline.children() {
+							total_children_width += child.size().intrinsic_width;
+						}
+						total_children_width
+					} else if inline.dom_node().node_type_id().is_character_data_text() {
+						let dom_node = inline.dom_node();
+						let content = dom_node.0.downcast::<CharacterData>().data();
+						let computed_values = GlobalScope::get_or_init_computed_values(
+							dom_node.parent_node().unwrap().id(),
+						);
+						let family_names = computed_values.get_font_families();
+						TextUI::new()
+							.measure_size(content.as_str(), family_names, 14.0)
+							.0
+					} else {
+						0.0
+					}
+				},
+				_ => {
+					let mut total_children_width = 0.0;
+					for child in node.children() {
+						total_children_width += child.size().intrinsic_width;
+					}
+					total_children_width
+				},
+			}
+		}
+	}
+
+	/*
+	if box is block-level -> its width + layout box = width of its containing block (https://www.w3.org/TR/CSS22/visudet.html#blockwidth),
+	and if element has no parent (it is root), it belongs to the initial containing block which is a viewport.
+	*/
 	pub fn compute_used_width(&self) {
-		todo!()
+		let node_iter = PreOrderBoxTreeIterator::new(self.root.clone());
+		for node in node_iter {
+			let containing_block = if let Some(containing_block) = node.containing_block() {
+				containing_block
+			} else {
+				continue;
+			};
+			match node.as_ref() {
+				VisualBox::BlockBox(block) => {
+					block.size().width = containing_block.size().width;
+					let used_values = GlobalScope::get_or_init_used_values(block.dom_node().id());
+					used_values.set_width(block.size().width);
+				},
+				VisualBox::InlineBox(inline) => match inline.formatting_context_type() {
+					FormattingContextType::BlockFormattingContext => {
+						let computed_values =
+							GlobalScope::get_or_init_computed_values(inline.dom_node().id());
+						match computed_values.get_width() {
+							Size::Auto => {
+								let mut total_children_width = 0.0;
+								for child in inline.children() {
+									total_children_width += child.size().intrinsic_width;
+								}
+								// TODO: include border, padding, margin
+								inline.size().width = f32::min(
+									total_children_width,
+									inline.containing_block().unwrap().size().width,
+								);
+							},
+							Size::LengthPercentage(value) => match value.0.clone() {
+								LengthPercentage::AbsoluteLength(length) => {
+									inline.size().width = length;
+								},
+								LengthPercentage::Percentage(percentage) => {
+									let width = containing_block.size().width
+										* percentage.to_value(&(0.0..1.0));
+									inline.size().width = width;
+								},
+							},
+							_ => not_supported!(),
+						}
+					},
+					FormattingContextType::InlineFormattingContext => {
+						inline.size().width =
+							f32::min(inline.size().intrinsic_width, containing_block.size().width);
+					},
+				},
+				_ => (),
+			}
+		}
 	}
 
 	pub fn bubble_height(&self) {
@@ -553,27 +791,31 @@ impl BoxTree {
 	}
 
 	fn get_display(dom_node: &NodeRef) -> (DisplayOutside, DisplayInside) {
-		let computed_values = GlobalScope::get_or_init_computed_values(dom_node.id());
-		match computed_values.get_display() {
-			longhands::display::Display::Basic(DisplayBasic { outside, inside }) => (
-				outside
-					.as_ref()
-					.map_or(DisplayOutside::Block, |v| v.clone()),
-				inside
-					.as_ref()
-					.clone()
-					.map_or(DisplayInside::Flow, |v| v.clone()),
-			),
-			longhands::display::Display::Box(value) => match value {
-				longhands::display::DisplayBox::Contents => not_supported!(),
-				longhands::display::DisplayBox::None => not_reached!(),
-			},
-			longhands::display::Display::Legacy(legacy)
-				if *legacy == longhands::display::DisplayLegacy::InlineBlock =>
-			{
-				(DisplayOutside::Inline, DisplayInside::FlowRoot)
-			},
-			_ => not_supported!(),
+		if dom_node.node_type_id().is_element() {
+			let computed_values = GlobalScope::get_or_init_computed_values(dom_node.id());
+			match computed_values.get_display() {
+				longhands::display::Display::Basic(DisplayBasic { outside, inside }) => (
+					outside
+						.as_ref()
+						.map_or(DisplayOutside::Block, |v| v.clone()),
+					inside
+						.as_ref()
+						.clone()
+						.map_or(DisplayInside::Flow, |v| v.clone()),
+				),
+				longhands::display::Display::Box(value) => match value {
+					longhands::display::DisplayBox::Contents => not_supported!(),
+					longhands::display::DisplayBox::None => not_reached!(),
+				},
+				longhands::display::Display::Legacy(legacy)
+					if *legacy == longhands::display::DisplayLegacy::InlineBlock =>
+				{
+					(DisplayOutside::Inline, DisplayInside::FlowRoot)
+				},
+				_ => not_supported!(),
+			}
+		} else {
+			(DisplayOutside::Inline, DisplayInside::Flow)
 		}
 	}
 }

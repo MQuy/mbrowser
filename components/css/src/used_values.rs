@@ -40,6 +40,12 @@ pub struct UsedValues {
 	padding: Padding,
 }
 
+impl UsedValues {
+	pub fn set_width(&mut self, width: f32) {
+		self.box_.width = Pixel::new(width);
+	}
+}
+
 impl Default for UsedValues {
 	fn default() -> Self {
 		todo!()
