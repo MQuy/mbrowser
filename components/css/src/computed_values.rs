@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
+use crate::properties::longhands;
 use crate::properties::longhands::display::Display;
-use crate::properties::longhands::font_family::SingleFontFamily;
 use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
 use crate::values::specified::color::RGBA;
 
@@ -16,12 +16,35 @@ pub struct Box {
 	pub min_height: Size,
 }
 
+impl Default for Box {
+	fn default() -> Self {
+		Self {
+			display: longhands::display::initial_value(),
+			height: Size::Auto,
+			min_height: Size::Auto,
+			min_width: Size::Auto,
+			width: Size::Auto,
+		}
+	}
+}
+
 #[derive(Debug)]
 pub struct Margin {
 	pub margin_top: LengthPercentageOrAuto,
 	pub margin_right: LengthPercentageOrAuto,
 	pub margin_bottom: LengthPercentageOrAuto,
 	pub margin_left: LengthPercentageOrAuto,
+}
+
+impl Default for Margin {
+	fn default() -> Self {
+		Self {
+			margin_bottom: LengthPercentageOrAuto::zero(),
+			margin_left: LengthPercentageOrAuto::zero(),
+			margin_right: LengthPercentageOrAuto::zero(),
+			margin_top: LengthPercentageOrAuto::zero(),
+		}
+	}
 }
 
 #[derive(Debug)]
@@ -32,15 +55,43 @@ pub struct Padding {
 	pub padding_left: NonNegativeLengthPercentage,
 }
 
+impl Default for Padding {
+	fn default() -> Self {
+		Self {
+			padding_bottom: NonNegativeLengthPercentage::zero(),
+			padding_left: NonNegativeLengthPercentage::zero(),
+			padding_right: NonNegativeLengthPercentage::zero(),
+			padding_top: NonNegativeLengthPercentage::zero(),
+		}
+	}
+}
+
 #[derive(Debug)]
 pub struct Text {
 	pub color: RGBA,
 	pub font_families: Vec<String>,
 }
 
+impl Default for Text {
+	fn default() -> Self {
+		Self {
+			color: RGBA::transparent(),
+			font_families: vec![],
+		}
+	}
+}
+
 #[derive(Debug)]
 pub struct Background {
 	pub background_color: RGBA,
+}
+
+impl Default for Background {
+	fn default() -> Self {
+		Self {
+			background_color: RGBA::transparent(),
+		}
+	}
 }
 
 #[derive(Debug)]
@@ -54,7 +105,13 @@ pub struct ComputedValues {
 
 impl Default for ComputedValues {
 	fn default() -> Self {
-		todo!()
+		Self {
+			background: Default::default(),
+			box_: Default::default(),
+			text: Default::default(),
+			margin: Default::default(),
+			padding: Default::default(),
+		}
 	}
 }
 

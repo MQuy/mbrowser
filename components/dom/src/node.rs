@@ -18,7 +18,7 @@ pub struct Node {
 	parent_node: RefCell<Option<Weak<Node>>>,
 	first_child: RefCell<Option<Rc<Node>>>,
 	last_child: RefCell<Option<Rc<Node>>>,
-	next_sibling: RefCell<Option<Weak<Node>>>,
+	next_sibling: RefCell<Option<Rc<Node>>>,
 	prev_sibling: RefCell<Option<Weak<Node>>>,
 	children_count: u32,
 	owner_doc: RefCell<Option<Weak<Document>>>,
@@ -76,7 +76,7 @@ impl Node {
 
 	pub fn next_sibling(&self) -> Option<Rc<Node>> {
 		match self.next_sibling.borrow().deref() {
-			Some(node) => node.upgrade(),
+			Some(node) => Some(node.clone()),
 			_ => None,
 		}
 	}
@@ -111,9 +111,7 @@ impl Node {
 			Some(ref before) => {
 				match before.prev_sibling() {
 					Some(ref prev_sibling) => {
-						prev_sibling
-							.next_sibling
-							.replace(Some(Rc::downgrade(&new_child)));
+						prev_sibling.next_sibling.replace(Some(new_child.clone()));
 						new_child
 							.prev_sibling
 							.replace(Some(Rc::downgrade(prev_sibling)));
@@ -123,14 +121,12 @@ impl Node {
 					},
 				}
 				before.prev_sibling.replace(Some(Rc::downgrade(&new_child)));
-				new_child.next_sibling.replace(Some(Rc::downgrade(before)));
+				new_child.next_sibling.replace(Some(before.clone()));
 			},
 			None => {
 				match self.last_child() {
 					Some(ref last_child) => {
-						last_child
-							.next_sibling
-							.replace(Some(Rc::downgrade(&new_child)));
+						last_child.next_sibling.replace(Some(new_child.clone()));
 						new_child
 							.prev_sibling
 							.replace(Some(Rc::downgrade(last_child)));
@@ -436,9 +432,7 @@ impl Node {
 		// Step 9-11
 		match child.prev_sibling() {
 			Some(prev_sibling) => {
-				prev_sibling
-					.next_sibling
-					.replace(Some(Rc::downgrade(&child.next_sibling().unwrap())));
+				prev_sibling.next_sibling.replace(child.next_sibling());
 			},
 			None => {
 				self.first_child.replace(child.next_sibling());

@@ -82,7 +82,7 @@ impl<L: ToCss> ToCss for GenericLengthOrNone<L> {
 }
 
 /// Generic for Length/Percentage/Auto
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GenericLengthPercentageOrAuto<LengthPercent> {
 	LengthPercentage(LengthPercent),
 	Auto,

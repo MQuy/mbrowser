@@ -72,7 +72,7 @@ impl Length {
 		Length::NoCalc(NoCalcLength::Absolute(AbsoluteLength::Px(0.0)))
 	}
 
-	pub fn to_computed_value(&self, context: &StyleContext) -> CSSFloat {
+	pub fn to_computed_value(&self, _context: &StyleContext) -> CSSFloat {
 		match self {
 			Length::NoCalc(value) => match value {
 				NoCalcLength::Absolute(absolute) => absolute.to_px(),

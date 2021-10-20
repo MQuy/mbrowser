@@ -146,10 +146,11 @@ impl<'a> Iterator for PropertyIterator<'a> {
 
 	fn next(&mut self) -> Option<Self::Item> {
 		if let Some(property) = self.source.declarations.get(self.index) {
+			self.index += 1;
 			if let Some(importance) = self.source.declarations_importance.get(self.index) {
 				Some((importance, property))
 			} else {
-				None
+				Some((false, property))
 			}
 		} else {
 			None

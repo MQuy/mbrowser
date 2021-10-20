@@ -5,11 +5,12 @@ use std::rc::{Rc, Weak};
 use common::{not_reached, not_supported};
 use css::properties::longhands;
 use css::properties::longhands::display::{DisplayBasic, DisplayInside, DisplayOutside};
-use css::values::computed::length::{LengthPercentage, Size};
+use css::values::computed::length::{LengthPercentage, LengthPercentageOrAuto, Size};
 use dom::characterdata::CharacterData;
 use dom::global_scope::{GlobalScope, NodeRef};
 use dom::inheritance::Castable;
-use dom::node::SimpleNodeIterator;
+use dom::node::{Node, SimpleNodeIterator};
+use dom::nodetype::NodeTypeId;
 
 use crate::style_tree::{StyleTree, StyleTreeNode};
 use crate::text::TextUI;
@@ -244,6 +245,7 @@ impl InlineLevelBox {
 pub struct AnonymousBox {
 	boxes: RefCell<Vec<Rc<VisualBox>>>,
 	parent: RefCell<Option<Rc<VisualBox>>>,
+	containing_block: RefCell<Option<Weak<VisualBox>>>,
 	formatting_context: RefCell<Rc<FormattingContext>>,
 	size: RefCell<BoxSize>,
 }
@@ -253,6 +255,7 @@ impl AnonymousBox {
 		AnonymousBox {
 			parent: RefCell::new(Default::default()),
 			boxes: RefCell::new(vec![]),
+			containing_block: RefCell::new(Default::default()),
 			formatting_context: RefCell::new(formatting_context),
 			size: RefCell::new(Default::default()),
 		}
@@ -292,6 +295,18 @@ impl AnonymousBox {
 
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		self.parent.replace(value);
+	}
+
+	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+		match self.containing_block.borrow().as_ref() {
+			Some(value) => value.upgrade(),
+			None => None,
+		}
+	}
+
+	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+		self.containing_block
+			.replace(value.map(|f| Rc::downgrade(&f)));
 	}
 
 	pub fn size(&self) -> RefMut<'_, BoxSize> {
@@ -362,6 +377,7 @@ impl VisualBox {
 						)))
 					},
 				);
+				child.set_formatting_context(anonymous_box.formatting_context());
 				VisualBox::add_child(anonymous_box.clone(), child);
 				anonymous_box
 			},
@@ -414,6 +430,10 @@ impl VisualBox {
 		}
 	}
 
+	pub fn ancestors(&self) -> impl Iterator<Item = Rc<VisualBox>> {
+		SimpleNodeIterator::new(self.parent(), |n: &Rc<VisualBox>| n.parent())
+	}
+
 	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
 		match self {
 			VisualBox::BlockBox(block) => block.set_parent(value),
@@ -426,7 +446,7 @@ impl VisualBox {
 		match self {
 			VisualBox::BlockBox(block) => block.containing_block(),
 			VisualBox::InlineBox(inline) => inline.containing_block(),
-			VisualBox::AnonymousBox(_) => not_reached!(),
+			VisualBox::AnonymousBox(anonymous) => anonymous.containing_block(),
 		}
 	}
 
@@ -490,7 +510,7 @@ impl VisualBox {
 	}
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum FormattingContextType {
 	BlockFormattingContext,
 	InlineFormattingContext,
@@ -516,6 +536,7 @@ impl FormattingContext {
 
 pub struct BoxTree {
 	pub root: Rc<VisualBox>,
+	pub initial_containing_block: Rc<VisualBox>,
 }
 
 impl BoxTree {
@@ -530,13 +551,30 @@ impl BoxTree {
 				)))
 			},
 		);
-		root.size().width = style_node.dom_node.window().unwrap().viewport().width();
+		let initial_containing_block = VisualBox::new_with_formatting_context(
+			FormattingContextType::BlockFormattingContext,
+			|formatting_context| {
+				Rc::new(VisualBox::BlockBox(BlockLevelBox::new(
+					NodeRef(Rc::new(Node::new(NodeTypeId::Document, None))),
+					formatting_context,
+				)))
+			},
+		);
+		initial_containing_block.size().width = style_node
+			.dom_node
+			.window()
+			.expect("dom has to belong to a window")
+			.viewport()
+			.width();
+		root.set_containing_block(Some(initial_containing_block.clone()));
 		let children_iter = BoxTree::get_children_iter(style_node);
 		for child in children_iter {
-			let child_box = BoxTree::construct_node(child, root.clone());
-			VisualBox::append_child(root.clone(), child_box);
+			BoxTree::construct_node(child, root.clone());
 		}
-		BoxTree { root }
+		BoxTree {
+			root,
+			initial_containing_block,
+		}
 	}
 
 	/// https://drafts.csswg.org/css-display/#outer-role
@@ -561,7 +599,7 @@ impl BoxTree {
 		  reuse its parent context and wrap its children inline level box into annonymous block level box
 		| else establish a inline formatting context
 	*/
-	fn construct_node(style_node: Rc<StyleTreeNode>, parent_box: Rc<VisualBox>) -> Rc<VisualBox> {
+	fn construct_node(style_node: Rc<StyleTreeNode>, parent_box: Rc<VisualBox>) {
 		let (outside, inside) = BoxTree::get_display(&style_node.dom_node);
 		let visual_box = match outside {
 			DisplayOutside::Inline => match inside {
@@ -617,23 +655,86 @@ impl BoxTree {
 
 		let children_iter = BoxTree::get_children_iter(style_node);
 		for child in children_iter {
-			let child_box = BoxTree::construct_node(child, visual_box.clone());
-			VisualBox::append_child(visual_box.clone(), child_box);
+			BoxTree::construct_node(child, visual_box.clone());
 		}
-		visual_box
 	}
 
 	pub fn set_containing_box(src: Rc<VisualBox>) {
-		let mut parent = src.parent();
-		while let Some(ref inner) = parent {
+		let mut containing_block = None;
+		for ancestor in src.ancestors() {
 			// TODO: include box which establishes a new formatting context
 			// https://www.w3.org/TR/CSS22/visudet.html#containing-block-details
-			if inner.is_block_container() {
-				src.set_containing_block(parent);
+			if ancestor.is_block_container() {
+				containing_block = Some(ancestor);
 				break;
 			}
-			parent = inner.parent();
 		}
+		if let Some(containing_block) = containing_block {
+			src.set_containing_block(Some(containing_block.clone()));
+			// during constructing box tree, there might be anonymous boxes which are added (as its parent) to ensure https://www.w3.org/TR/CSS22/visuren.html#anonymous-block-level
+			for ancestor in src.ancestors() {
+				match ancestor.as_ref() {
+					VisualBox::AnonymousBox(anonymous)
+						if anonymous.containing_block().is_none() =>
+					{
+						anonymous.set_containing_block(Some(containing_block.clone()))
+					},
+					_ => break,
+				}
+			}
+		} else {
+			panic!("one of box's ancestors must be its containing box");
+		}
+	}
+
+	pub fn log(&self) {
+		self.log_node(self.root.clone(), 0);
+	}
+
+	fn log_node(&self, node: Rc<VisualBox>, depth: usize) {
+		let indent: String = std::iter::repeat("  ").take(depth).collect();
+		match node.as_ref() {
+			VisualBox::BlockBox(block) => {
+				println!(
+					"{}block-{:?}-{:?}",
+					indent,
+					block.dom_node().node_type_id(),
+					block.formatting_context_type()
+				)
+			},
+			VisualBox::InlineBox(inline) => {
+				println!(
+					"{}inline-{:?}-{:?}",
+					indent,
+					inline.dom_node().node_type_id(),
+					inline.formatting_context_type()
+				)
+			},
+			VisualBox::AnonymousBox(anonymous) => println!(
+				"{}anonymous-{:?}",
+				indent,
+				anonymous.formatting_context_type()
+			),
+		};
+		for child in node.children() {
+			self.log_node(child, depth + 1);
+		}
+	}
+
+	pub fn get_total_children_intrinsic_width(src: Rc<VisualBox>) -> f32 {
+		let mut total_children_width = 0.0;
+		for child in src.children() {
+			match src.formatting_context_type() {
+				FormattingContextType::BlockFormattingContext => {
+					total_children_width =
+						f32::max(total_children_width, child.size().intrinsic_width);
+				},
+				FormattingContextType::InlineFormattingContext => {
+					total_children_width += child.size().intrinsic_width;
+				},
+			}
+		}
+		total_children_width
 	}
 
 	/*
@@ -649,20 +750,18 @@ impl BoxTree {
 	}
 
 	/*
-	if box is inline-level and its formatting context is:
-		- inline formatting context (ignore css width):
-			- if box has children, its width = sum of all children's width.
-			- If box has no children and is text node, width = text's width.
-			- otherwise, box's width = 0.
-		- block formatting context:
-			- if width = auto, https://www.w3.org/TR/CSS22/visudet.html#shrink-to-fit-float.
-			- if width in px, box's width = css width.
-			- if width in percentage, keep as it is.
+	if box is inline-level box and its formatting context is inline formatting context (ignore css width):
+		- if box has children, its intrinsic width = sum of all children's width.
+		- If box has no children and is text node, width = text's width.
+		- otherwise, box's width = 0.
+	otherwise
+		- if box is inline-level box (block formatting context) -> its intrinsic width = total children's width
+		- if box is block-level box -> its intrinsic width = maximum from each child's width
 	*/
 	pub fn bubble_intrinsic_inline_size(&self) {
 		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
 		for node in node_iter {
-			node.size().intrinsic_width = match node.as_ref() {
+			let width = match node.as_ref() {
 				VisualBox::InlineBox(inline)
 					if inline.formatting_context_type()
 						== FormattingContextType::InlineFormattingContext =>
@@ -677,7 +776,10 @@ impl BoxTree {
 						let dom_node = inline.dom_node();
 						let content = dom_node.0.downcast::<CharacterData>().data();
 						let computed_values = GlobalScope::get_or_init_computed_values(
-							dom_node.parent_node().unwrap().id(),
+							dom_node
+								.parent_node()
+								.expect("dom has to have a parent")
+								.id(),
 						);
 						let family_names = computed_values.get_font_families();
 						TextUI::new()
@@ -687,70 +789,81 @@ impl BoxTree {
 						0.0
 					}
 				},
-				_ => {
-					let mut total_children_width = 0.0;
-					for child in node.children() {
-						total_children_width += child.size().intrinsic_width;
-					}
-					total_children_width
-				},
-			}
+				_ => BoxTree::get_total_children_intrinsic_width(node.clone()),
+			};
+			node.size().intrinsic_width = width;
 		}
 	}
 
 	/*
-	if box is block-level -> its width + layout box = width of its containing block (https://www.w3.org/TR/CSS22/visudet.html#blockwidth),
-	and if element has no parent (it is root), it belongs to the initial containing block which is a viewport.
+	if box is block-level box
+		- its width + layout box = width of its containing block (https://www.w3.org/TR/CSS22/visudet.html#blockwidth),
+		- if element has no parent (it is root), it belongs to the initial containing block which is a viewport.
+	if box is inline-level box and its formatting context:
+		- block formatting context:
+			- if width = auto, its width = min(total children intrinsic width, containing block width) (https://www.w3.org/TR/CSS22/visudet.html#shrink-to-fit-float.)
+			- if width in px, its width = its intrinsic width.
+			- if width in percentage, its width = its containing block width * percentage.
+		- inline formatting context, its width = its intrinsic width
+	skip anonymous box (since it doesn't have width, only intrinsic width which is calculated in the previous step)
 	*/
 	pub fn compute_used_width(&self) {
 		let node_iter = PreOrderBoxTreeIterator::new(self.root.clone());
 		for node in node_iter {
-			let containing_block = if let Some(containing_block) = node.containing_block() {
-				containing_block
-			} else {
-				continue;
-			};
+			let containing_block = node
+				.containing_block()
+				.expect("box has to have a containing block");
 			match node.as_ref() {
 				VisualBox::BlockBox(block) => {
 					block.size().width = containing_block.size().width;
 					let used_values = GlobalScope::get_or_init_used_values(block.dom_node().id());
+					// TODO: include border, padding, margin
 					used_values.set_width(block.size().width);
 				},
-				VisualBox::InlineBox(inline) => match inline.formatting_context_type() {
-					FormattingContextType::BlockFormattingContext => {
-						let computed_values =
-							GlobalScope::get_or_init_computed_values(inline.dom_node().id());
-						match computed_values.get_width() {
-							Size::Auto => {
-								let mut total_children_width = 0.0;
-								for child in inline.children() {
-									total_children_width += child.size().intrinsic_width;
-								}
-								// TODO: include border, padding, margin
-								inline.size().width = f32::min(
-									total_children_width,
-									inline.containing_block().unwrap().size().width,
-								);
-							},
-							Size::LengthPercentage(value) => match value.0.clone() {
-								LengthPercentage::AbsoluteLength(length) => {
-									inline.size().width = length;
+				VisualBox::InlineBox(inline) => {
+					let computed_values =
+						GlobalScope::get_or_init_computed_values(inline.dom_node().id());
+					let used_values = GlobalScope::get_or_init_used_values(inline.dom_node().id());
+					let width = match inline.formatting_context_type() {
+						FormattingContextType::BlockFormattingContext => {
+							match computed_values.get_width() {
+								Size::Auto => {
+									// TODO: include border, padding, margin
+									f32::min(
+										BoxTree::get_total_children_intrinsic_width(node.clone()),
+										inline
+											.containing_block()
+											.expect("box has to have a containing block")
+											.size()
+											.width,
+									)
 								},
-								LengthPercentage::Percentage(percentage) => {
-									let width = containing_block.size().width
-										* percentage.to_value(&(0.0..1.0));
-									inline.size().width = width;
+								Size::LengthPercentage(value) => match value.0.clone() {
+									LengthPercentage::AbsoluteLength(length) => length,
+									LengthPercentage::Percentage(percentage) => {
+										containing_block.size().width
+											* percentage.to_value(&(0.0..1.0))
+									},
 								},
-							},
-							_ => not_supported!(),
-						}
-					},
-					FormattingContextType::InlineFormattingContext => {
-						inline.size().width =
-							f32::min(inline.size().intrinsic_width, containing_block.size().width);
-					},
+								_ => not_supported!(),
+							}
+						},
+						FormattingContextType::InlineFormattingContext => {
+							if *computed_values.get_margin_left() == LengthPercentageOrAuto::Auto {
+								used_values.set_margin_left(0.0);
+							}
+							if *computed_values.get_margin_right() == LengthPercentageOrAuto::Auto {
+								used_values.set_margin_right(0.0);
+							}
+							f32::min(inline.size().intrinsic_width, containing_block.size().width)
+						},
+					};
+					inline.size().width = width;
+					used_values.set_width(width);
 				},
-				_ => (),
+				VisualBox::AnonymousBox(anonymous) => {
+					anonymous.size().width = containing_block.size().width;
+				},
 			}
 		}
 	}
@@ -760,23 +873,27 @@ impl BoxTree {
 	}
 
 	fn get_children_iter(style_node: Rc<StyleTreeNode>) -> impl Iterator<Item = Rc<StyleTreeNode>> {
-		SimpleNodeIterator::new(style_node.first_child(), |n: &Rc<StyleTreeNode>| {
-			let mut next_sibling = n.next_sibling();
-			while let Some(ref style_node) = next_sibling {
+		fn adjust_current_node(node: Option<Rc<StyleTreeNode>>) -> Option<Rc<StyleTreeNode>> {
+			let mut current = node;
+			while let Some(ref style_node) = current {
 				let computed_values =
 					GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
 				match computed_values.get_display() {
 					longhands::display::Display::Box(value)
 						if *value == longhands::display::DisplayBox::None =>
 					{
-						next_sibling = style_node.next_sibling();
+						current = style_node.next_sibling();
 						continue;
 					}
-					_ => (),
+					_ => break,
 				}
 			}
-			next_sibling
-		})
+			current
+		}
+		SimpleNodeIterator::new(
+			adjust_current_node(style_node.first_child()),
+			|n: &Rc<StyleTreeNode>| adjust_current_node(n.next_sibling()),
+		)
 	}
 
 	fn is_contain_all_inline_children(style_node: Rc<StyleTreeNode>) -> bool {
@@ -877,7 +994,7 @@ impl Iterator for PostOrderBoxTreeIterator {
 		if self.state == TraversalState::Down {
 			self.build_left_branch(index, current);
 		};
-		let (index, value) = self.stack.pop_front()?;
+		let (index, value) = self.stack.pop_back()?;
 		self.move_next(index, value.clone());
 		Some(value)
 	}
