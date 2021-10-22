@@ -4,7 +4,6 @@ use std::rc::Rc;
 use common::not_supported;
 use html5ever::tree_builder::{ElementFlags, NodeOrText, QuirksMode as MarkupQuirksMode, TreeSink};
 use html5ever::{Attribute, LocalName, QualName};
-use log::debug;
 use selectors::context::QuirksMode;
 
 use crate::characterdata::CharacterData;
@@ -13,7 +12,7 @@ use crate::document::Document;
 use crate::documenttype::DocumentType;
 use crate::element::Element;
 use crate::global_scope::GlobalScope;
-use crate::inheritance::{downcast, upcast, Castable};
+use crate::inheritance::{upcast, Castable};
 use crate::node::Node;
 use crate::text::Text;
 use crate::virtualmethods::vtable_for;
@@ -52,7 +51,7 @@ impl TreeSink for DomParser {
 	}
 
 	fn parse_error(&mut self, msg: std::borrow::Cow<'static, str>) {
-		debug!("Parse error: {}", msg);
+		panic!("Parse error: {}", msg);
 	}
 
 	fn get_document(&mut self) -> Self::Handle {
@@ -209,17 +208,19 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 		},
 		NodeOrText::AppendText(t) => {
 			// https://html.spec.whatwg.org/multipage/#insert-a-character
-			let text = reference_child
+			let node = reference_child
 				.clone()
 				.and_then(|node| node.prev_sibling())
-				.or_else(|| parent.last_child())
-				.and_then(|node| Some(downcast::<Node, Text>(node)));
+				.or_else(|| parent.last_child());
 
-			if let Some(ref text) = text {
-				text.upcast::<CharacterData>().append_data(&t);
-			} else {
-				let text = Text::create(String::from(t), parent.owner_doc().unwrap());
-				parent.insert_before(upcast(text), reference_child).unwrap();
+			match node {
+				Some(node) if node.node_type_id().is_character_data_text() => {
+					node.downcast::<CharacterData>().append_data(&t)
+				},
+				_ => {
+					let text = Text::create(String::from(t), parent.owner_doc().unwrap());
+					parent.insert_before(upcast(text), reference_child).unwrap();
+				},
 			}
 		},
 	}

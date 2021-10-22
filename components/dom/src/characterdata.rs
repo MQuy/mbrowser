@@ -6,7 +6,7 @@ use crate::inheritance::{Castable, DerivedFrom};
 use crate::node::Node;
 use crate::nodetype::NodeTypeId;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct CharacterData {
 	node: Node,

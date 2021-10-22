@@ -7,7 +7,7 @@ use crate::inheritance::{upcast, Castable, DerivedFrom};
 use crate::node::Node;
 use crate::nodetype::{CharacterDataTypeId, NodeTypeId, TextTypeId};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct Text {
 	character_data: CharacterData,

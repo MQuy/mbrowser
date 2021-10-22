@@ -65,7 +65,14 @@ fn block_box_contains_inline_block_box() {
 
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(
-		r#"<div style="color: red;">Hello world!<div id="hello" style="display: inline-block"><div>Echo from the past</div></div><p><span>Totoland</span></p></div>"#,
+		r#"
+<div style="color: red;">
+    Hello world!
+    <div id="hello" style="display: inline-block">
+        <div>Echo from the past</div>
+    </div>
+    <p><span>Totoland</span></p>
+</div>"#,
 	));
 
 	let output = parser.finish();

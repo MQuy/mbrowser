@@ -4,10 +4,11 @@ use std::rc::{Rc, Weak};
 use css::error_reporting::{ContextualParseError, ParseErrorReporter};
 use css::values::CSSPixel;
 use cssparser::SourceLocation;
-use euclid::{Point2D, Rect, Scale, Size2D};
-use webrender::api::units::DevicePixel;
+use euclid::{Length, Point2D, Rect, Scale, Size2D};
 
 use crate::document::Document;
+
+type Pixel = Length<f32, CSSPixel>;
 
 const DEFAULT_WIDTH: f32 = 1200.0;
 const DEFAULT_HEIGHT: f32 = 800.0;
@@ -18,7 +19,7 @@ pub struct Window {
 	error_reporter: CSSErrorReporter,
 	document: Weak<Document>,
 	window_size: WindowSize,
-	viewport: Rect<f32, DevicePixel>,
+	viewport: Rect<f32, Pixel>,
 }
 
 impl Window {
@@ -38,7 +39,7 @@ impl Window {
 		&self.error_reporter
 	}
 
-	pub fn viewport(&self) -> &Rect<f32, DevicePixel> {
+	pub fn viewport(&self) -> &Rect<f32, Pixel> {
 		&self.viewport
 	}
 }
@@ -47,7 +48,7 @@ impl Window {
 #[derive(Debug)]
 pub struct WindowSize {
 	pub initial_viewport: Size2D<f32, CSSPixel>,
-	pub device_pixel_ratio: Scale<f32, CSSPixel, DevicePixel>,
+	pub device_pixel_ratio: Scale<f32, CSSPixel, Pixel>,
 }
 
 impl WindowSize {

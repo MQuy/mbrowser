@@ -106,10 +106,6 @@ impl NodeRef {
 		}
 	}
 
-	pub fn computed_values(&self) -> Option<Rc<ComputedValues>> {
-		self.0.computed_values()
-	}
-
 	pub fn id(&self) -> u64 {
 		self.0.id()
 	}
