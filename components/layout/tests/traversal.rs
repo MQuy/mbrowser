@@ -6,13 +6,12 @@ use css::media_queries::media_list::MediaList;
 use css::stylesheets::origin::Origin;
 use css::stylesheets::stylesheet::Stylesheet;
 use cssparser::SourceLocation;
-use dom::global_scope::{GlobalScope, NodeRef};
+use dom::global_scope::NodeRef;
 use dom::inheritance::Castable;
-use dom::node::Node;
 use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
-use layout::flow_tree::BoxTree;
+use layout::flow::tree::BoxTree;
 use layout::style_tree::StyleTree;
 use selectors::context::QuirksMode;
 
@@ -42,20 +41,6 @@ impl ParseErrorReporter for TestingErrorReporter {
 			column: location.column,
 			message: error.to_string(),
 		})
-	}
-}
-
-fn log(node: Rc<Node>, depth: usize) {
-	let indent: String = std::iter::repeat("  ").take(depth).collect();
-	let used_values = GlobalScope::get_or_init_used_values(node.id());
-	println!(
-		"{}{:?} {:?}",
-		indent,
-		node.node_type_id(),
-		used_values.get_width()
-	);
-	for child in node.children() {
-		log(child, depth + 1);
 	}
 }
 
@@ -99,5 +84,5 @@ fn block_box_contains_inline_block_box() {
 	style_tree.cascade();
 	let box_tree = BoxTree::construct(style_tree);
 	box_tree.compute_layout();
-	log(root, 0);
+	box_tree.log();
 }

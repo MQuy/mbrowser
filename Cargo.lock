@@ -783,6 +783,7 @@ dependencies = [
  "css",
  "cssparser",
  "dom",
+ "euclid",
  "font-kit",
  "glyph_brush",
  "html5ever",

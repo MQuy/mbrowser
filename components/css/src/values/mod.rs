@@ -6,6 +6,7 @@ use cssparser::{
 	CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase,
 	match_ignore_ascii_case,
 };
+use euclid::Length;
 use html5ever::LocalName;
 use murmur3::murmur3_32;
 use precomputed_hash::PrecomputedHash;
@@ -44,6 +45,10 @@ pub type CSSFloat = f32;
 
 #[derive(Clone, Copy, Debug)]
 pub enum CSSPixel {}
+
+pub type Pixel = Length<f32, CSSPixel>;
+
+pub const PIXEL_ZERO: Pixel = Pixel::new(0.0);
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Ident(pub String);

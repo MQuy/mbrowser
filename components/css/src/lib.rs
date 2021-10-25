@@ -12,7 +12,6 @@ pub mod selectors;
 pub mod str;
 pub mod stylesheets;
 pub mod stylist;
-pub mod used_values;
 pub mod values;
 
 pub type LocalName = values::GenericAtomIdent<html5ever::LocalNameStaticSet>;

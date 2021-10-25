@@ -6,7 +6,6 @@ use std::rc::Rc;
 use css::computed_values::ComputedValues;
 use css::element_state::ElementState;
 use css::properties::declaration_block::PropertyDeclarationBlock;
-use css::used_values::UsedValues;
 use html5ever::{LocalName, Namespace};
 use selectors::matching::ElementSelectorFlags;
 
@@ -115,7 +114,6 @@ pub struct GlobalScope {
 	counted: u64,
 	nodes: Option<HashMap<u64, Rc<Node>>>,
 	computed_values: Option<HashMap<u64, ComputedValues>>,
-	used_values: Option<HashMap<u64, UsedValues>>,
 }
 
 impl GlobalScope {
@@ -139,33 +137,6 @@ impl GlobalScope {
 					value
 				} else {
 					GlobalScope::init_computed_values(id)
-				}
-			} else {
-				unreachable!()
-			}
-		}
-	}
-
-	fn init_used_values<'a>(id: u64) -> &'a mut UsedValues {
-		unsafe {
-			if let Some(values) = &mut SCOPE.used_values {
-				values.insert(id, UsedValues::default());
-				return values.get_mut(&id).unwrap();
-			}
-			unreachable!()
-		}
-	}
-
-	pub fn get_or_init_used_values<'a>(id: u64) -> &'a mut UsedValues {
-		unsafe {
-			if SCOPE.used_values.is_none() {
-				SCOPE.used_values = Some(HashMap::new());
-			}
-			if let Some(values) = &mut SCOPE.used_values {
-				if let Some(value) = values.get_mut(&id) {
-					value
-				} else {
-					GlobalScope::init_used_values(id)
 				}
 			} else {
 				unreachable!()
@@ -206,5 +177,4 @@ static mut SCOPE: GlobalScope = GlobalScope {
 	counted: 0,
 	nodes: None,
 	computed_values: None,
-	used_values: None,
 };

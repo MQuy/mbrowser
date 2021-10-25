@@ -51,7 +51,8 @@ impl TreeSink for DomParser {
 	}
 
 	fn parse_error(&mut self, msg: std::borrow::Cow<'static, str>) {
-		panic!("Parse error: {}", msg);
+		println!("Parse error: {}", msg);
+		// panic!();
 	}
 
 	fn get_document(&mut self) -> Self::Handle {

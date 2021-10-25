@@ -170,7 +170,7 @@ impl<LP: ToCss, N: ToCss> ToCss for GenericLengthPercentageNumberOrAuto<LP, N> {
 	}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ExtremumLength<LengthPercent> {
 	MaxContent,
 	MinContent,
@@ -192,7 +192,7 @@ impl<LP: ToCss> ToCss for ExtremumLength<LP> {
 	}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum GenericSize<LengthPercent> {
 	Auto,
 	LengthPercentage(LengthPercent),
