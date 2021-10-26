@@ -1,22 +1,60 @@
+use std::any::Any;
 use std::cell::{RefCell, RefMut};
-use std::fmt::format;
 use std::rc::{Rc, Weak};
 
-use common::{not_reached, not_supported};
-use css::values::computed::length::{LengthPercentage, LengthPercentageOrAuto, Size};
+use common::not_reached;
 use css::values::{Pixel, PIXEL_ZERO};
-use dom::global_scope::{GlobalScope, NodeRef};
-use dom::node::SimpleNodeIterator;
 
 use super::dimension::BoxDimension;
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use crate::flow::tree::BoxTree;
+
+pub trait Box {
+	fn add_child(&self, child: Rc<dyn Box>);
+
+	fn formatting_context(&self) -> Rc<FormattingContext>;
+
+	fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>);
+
+	fn formatting_context_type(&self) -> FormattingContextType;
+
+	fn get_first_child(&self) -> Option<Rc<dyn Box>>;
+
+	fn get_last_child(&self) -> Option<Rc<dyn Box>>;
+
+	fn children(&self) -> Vec<Rc<dyn Box>>;
+
+	fn parent(&self) -> Option<Rc<dyn Box>>;
+
+	fn set_parent(&self, value: Option<Rc<dyn Box>>);
+
+	fn ancestors(&self) -> SimpleBoxIterator;
+
+	fn containing_block(&self) -> Option<Rc<dyn Box>>;
+
+	fn set_containing_block(&self, value: Option<Rc<dyn Box>>);
+
+	fn size(&self) -> RefMut<'_, BoxDimension>;
+
+	fn get_total_width(&self) -> Pixel;
+
+	fn get_total_height(&self) -> Pixel;
+
+	fn is_block_container(&self) -> bool;
+
+	fn compute_horizontal_used_value(&self);
+
+	fn compute_vertical_used_value(&self);
+
+	fn class(&self) -> BoxClass;
+
+	fn as_any(&self) -> &dyn Any;
+}
 
 pub struct BaseBox {
 	pub formatting_context: RefCell<Rc<FormattingContext>>,
-	pub children: RefCell<Vec<Rc<VisualBox>>>,
-	pub parent: RefCell<Option<Weak<VisualBox>>>,
-	pub containing_block: RefCell<Option<Weak<VisualBox>>>,
+	pub children: RefCell<Vec<Rc<dyn Box>>>,
+	pub parent: RefCell<Option<Weak<dyn Box>>>,
+	pub containing_block: RefCell<Option<Weak<dyn Box>>>,
 	pub size: RefCell<BoxDimension>,
 }
 
@@ -31,299 +69,72 @@ impl BaseBox {
 		}
 	}
 
-	pub fn add_child(&self, child: Rc<VisualBox>) {
+	#[inline]
+	pub fn add_child(&self, child: Rc<dyn Box>) {
 		self.children.borrow_mut().push(child)
 	}
 
+	#[inline]
 	pub fn formatting_context(&self) -> Rc<FormattingContext> {
 		self.formatting_context.borrow().clone()
 	}
 
+	#[inline]
 	pub fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
 		self.formatting_context.replace(formatting_context);
 	}
 
+	#[inline]
 	pub fn formatting_context_type(&self) -> FormattingContextType {
 		self.formatting_context.borrow().formatting_context_type
 	}
 
-	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+	#[inline]
+	pub fn get_first_child(&self) -> Option<Rc<dyn Box>> {
 		self.children.borrow().first().map(|value| value.clone())
 	}
 
-	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
+	#[inline]
+	pub fn get_last_child(&self) -> Option<Rc<dyn Box>> {
 		self.children.borrow().last().map(|value| value.clone())
 	}
 
-	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+	#[inline]
+	pub fn children(&self) -> Vec<Rc<dyn Box>> {
 		self.children.borrow().clone()
 	}
 
-	pub fn parent(&self) -> Option<Rc<VisualBox>> {
+	#[inline]
+	pub fn parent(&self) -> Option<Rc<dyn Box>> {
 		match self.parent.borrow().as_ref() {
 			Some(value) => value.upgrade(),
 			None => None,
 		}
 	}
 
-	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+	#[inline]
+	pub fn set_parent(&self, value: Option<Rc<dyn Box>>) {
+		self.parent
+			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
+	}
+
+	#[inline]
+	pub fn containing_block(&self) -> Option<Rc<dyn Box>> {
 		match self.containing_block.borrow().as_ref() {
 			Some(value) => value.upgrade(),
 			None => None,
 		}
 	}
 
-	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+	#[inline]
+	pub fn set_containing_block(&self, value: Option<Rc<dyn Box>>) {
 		self.containing_block
 			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
 	}
 
-	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
-		self.parent
-			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
-	}
-
+	#[inline]
 	pub fn size(&self) -> RefMut<'_, BoxDimension> {
 		self.size.borrow_mut()
-	}
-}
-
-/// https://www.w3.org/TR/CSS22/visuren.html#block-boxes
-pub struct BlockLevelBox {
-	dom_node: NodeRef,
-	base: BaseBox,
-}
-
-impl BlockLevelBox {
-	pub fn new(dom_node: NodeRef, formatting_context: Rc<FormattingContext>) -> Self {
-		BlockLevelBox {
-			base: BaseBox::new(formatting_context),
-			dom_node,
-		}
-	}
-
-	pub fn add_child(&self, child: Rc<VisualBox>) {
-		self.base.add_child(child)
-	}
-
-	pub fn dom_node(&self) -> NodeRef {
-		self.dom_node.clone()
-	}
-
-	pub fn formatting_context(&self) -> Rc<FormattingContext> {
-		self.base.formatting_context()
-	}
-
-	pub fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
-		self.base.set_formatting_context(formatting_context);
-	}
-
-	pub fn formatting_context_type(&self) -> FormattingContextType {
-		self.base.formatting_context_type()
-	}
-
-	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
-		self.base.get_first_child()
-	}
-
-	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
-		self.base.get_last_child()
-	}
-
-	pub fn children(&self) -> Vec<Rc<VisualBox>> {
-		self.base.children()
-	}
-
-	pub fn parent(&self) -> Option<Rc<VisualBox>> {
-		self.base.parent()
-	}
-
-	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
-		self.base.set_parent(value);
-	}
-
-	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
-		self.base.containing_block()
-	}
-
-	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
-		self.base.set_containing_block(value);
-	}
-
-	pub fn size(&self) -> RefMut<'_, BoxDimension> {
-		self.base.size()
-	}
-
-	pub fn compute_used_value(&self, containing_block: Rc<VisualBox>) {
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
-		let containing_width = containing_block.size().width;
-		let padding_left = computed_values
-			.get_padding_left()
-			.to_used_value(containing_width);
-		let padding_right = computed_values
-			.get_padding_right()
-			.to_used_value(containing_width);
-		let mut margin_left = PIXEL_ZERO;
-		let mut margin_right = PIXEL_ZERO;
-		let width = match computed_values.get_width() {
-			Size::Auto => {
-				margin_left = computed_values
-					.get_margin_left()
-					.to_used_value(containing_width, PIXEL_ZERO);
-				margin_right = computed_values
-					.get_margin_left()
-					.to_used_value(containing_width, PIXEL_ZERO);
-				PIXEL_ZERO.max(
-					containing_width - margin_left - padding_left - padding_right - margin_right,
-				)
-			},
-			Size::LengthPercentage(length_percentage) => {
-				let width = length_percentage.to_used_value(containing_width);
-				let margin = containing_width - width - padding_left - padding_right;
-				if margin < PIXEL_ZERO {
-					if *computed_values.get_margin_left() == LengthPercentageOrAuto::Auto {
-						margin_left = PIXEL_ZERO;
-					}
-					if *computed_values.get_margin_right() == LengthPercentageOrAuto::Auto {
-						margin_right = PIXEL_ZERO;
-					}
-				} else {
-					if *computed_values.get_margin_left() == LengthPercentageOrAuto::Auto
-						&& *computed_values.get_margin_right() == LengthPercentageOrAuto::Auto
-					{
-						margin_left = margin / 2.0;
-						margin_right = margin / 2.0;
-					} else if *computed_values.get_margin_left() == LengthPercentageOrAuto::Auto {
-						margin_right = computed_values
-							.get_margin_right()
-							.to_used_value(containing_width, PIXEL_ZERO);
-						margin_left = margin - margin_right;
-					} else if *computed_values.get_margin_right() == LengthPercentageOrAuto::Auto {
-						margin_left = computed_values
-							.get_margin_left()
-							.to_used_value(containing_width, PIXEL_ZERO);
-						margin_right = margin - margin_left;
-					}
-				};
-				width
-			},
-			css::values::generics::length::GenericSize::ExtremumLength(_) => {
-				not_supported!()
-			},
-		};
-		let mut dimentions = self.size();
-		dimentions.set_padding_left(padding_left);
-		dimentions.set_padding_right(padding_right);
-		dimentions.set_margin_left(margin_left);
-		dimentions.set_margin_right(margin_right);
-		dimentions.set_width(width);
-	}
-}
-
-/// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
-pub struct InlineLevelBox {
-	dom_node: NodeRef,
-	base: BaseBox,
-}
-
-impl InlineLevelBox {
-	pub fn new(dom_node: NodeRef, formatting_context: Rc<FormattingContext>) -> Self {
-		InlineLevelBox {
-			base: BaseBox::new(formatting_context),
-			dom_node,
-		}
-	}
-
-	pub fn dom_node(&self) -> NodeRef {
-		self.dom_node.clone()
-	}
-
-	pub fn add_child(&self, child: Rc<VisualBox>) {
-		self.base.add_child(child)
-	}
-
-	pub fn formatting_context(&self) -> Rc<FormattingContext> {
-		self.base.formatting_context()
-	}
-
-	pub fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
-		self.base.set_formatting_context(formatting_context);
-	}
-
-	pub fn formatting_context_type(&self) -> FormattingContextType {
-		self.base.formatting_context_type()
-	}
-
-	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
-		self.base.get_first_child()
-	}
-
-	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
-		self.base.get_last_child()
-	}
-
-	pub fn children(&self) -> Vec<Rc<VisualBox>> {
-		self.base.children()
-	}
-
-	pub fn parent(&self) -> Option<Rc<VisualBox>> {
-		self.base.parent()
-	}
-
-	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
-		self.base.set_parent(value);
-	}
-
-	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
-		self.base.containing_block()
-	}
-
-	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
-		self.base.set_containing_block(value);
-	}
-
-	pub fn size(&self) -> RefMut<'_, BoxDimension> {
-		self.base.size()
-	}
-
-	pub fn compute_used_value(&self, containing_block: Rc<VisualBox>, src: Rc<VisualBox>) {
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
-		let containing_width = containing_block.size().width;
-		let padding_left = computed_values
-			.get_padding_left()
-			.to_used_value(containing_width);
-		let padding_right = computed_values
-			.get_padding_right()
-			.to_used_value(containing_width);
-		let margin_left = computed_values
-			.get_margin_left()
-			.to_used_value(containing_width, PIXEL_ZERO);
-		let margin_right = computed_values
-			.get_margin_right()
-			.to_used_value(containing_width, PIXEL_ZERO);
-		let width = match self.formatting_context_type() {
-			FormattingContextType::BlockFormattingContext => match computed_values.get_width() {
-				Size::Auto => BoxTree::get_total_children_intrinsic_width(src).min(
-					containing_width - margin_left - padding_left - padding_right - margin_right,
-				),
-				Size::LengthPercentage(value) => match value.0.clone() {
-					LengthPercentage::AbsoluteLength(length) => Pixel::new(length),
-					LengthPercentage::Percentage(percentage) => {
-						containing_width * percentage.to_value(&(0.0..1.0))
-					},
-				},
-				_ => not_supported!(),
-			},
-			FormattingContextType::InlineFormattingContext => {
-				self.size().intrinsic_width.min(containing_width)
-			},
-		};
-		let mut dimentions = self.size();
-		dimentions.set_padding_left(padding_left);
-		dimentions.set_padding_right(padding_right);
-		dimentions.set_margin_left(margin_left);
-		dimentions.set_margin_right(margin_right);
-		dimentions.set_width(width);
 	}
 }
 
@@ -338,69 +149,110 @@ impl AnonymousBox {
 			base: BaseBox::new(formatting_context),
 		}
 	}
+}
 
-	pub fn add_child(&self, child: Rc<VisualBox>) {
+impl Box for AnonymousBox {
+	fn add_child(&self, child: Rc<dyn Box>) {
 		self.base.add_child(child)
 	}
 
-	pub fn formatting_context(&self) -> Rc<FormattingContext> {
+	fn formatting_context(&self) -> Rc<FormattingContext> {
 		self.base.formatting_context()
 	}
 
-	pub fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
+	fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
 		self.base.set_formatting_context(formatting_context);
 	}
 
-	pub fn formatting_context_type(&self) -> FormattingContextType {
+	fn formatting_context_type(&self) -> FormattingContextType {
 		self.base.formatting_context_type()
 	}
 
-	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
+	fn get_first_child(&self) -> Option<Rc<dyn Box>> {
 		self.base.get_first_child()
 	}
 
-	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
+	fn get_last_child(&self) -> Option<Rc<dyn Box>> {
 		self.base.get_last_child()
 	}
 
-	pub fn children(&self) -> Vec<Rc<VisualBox>> {
+	fn children(&self) -> Vec<Rc<dyn Box>> {
 		self.base.children()
 	}
 
-	pub fn parent(&self) -> Option<Rc<VisualBox>> {
+	fn parent(&self) -> Option<Rc<dyn Box>> {
 		self.base.parent()
 	}
 
-	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
+	fn set_parent(&self, value: Option<Rc<dyn Box>>) {
 		self.base.set_parent(value);
 	}
 
-	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
+	fn ancestors(&self) -> SimpleBoxIterator {
+		SimpleBoxIterator::new(self.parent(), &|n: &Rc<dyn Box>| n.parent())
+	}
+
+	fn containing_block(&self) -> Option<Rc<dyn Box>> {
 		self.base.containing_block()
 	}
 
-	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
+	fn set_containing_block(&self, value: Option<Rc<dyn Box>>) {
 		self.base.set_containing_block(value)
 	}
 
-	pub fn size(&self) -> RefMut<'_, BoxDimension> {
+	fn size(&self) -> RefMut<'_, BoxDimension> {
 		self.base.size()
+	}
+
+	fn get_total_width(&self) -> Pixel {
+		self.base.size.borrow().width
+	}
+
+	fn get_total_height(&self) -> Pixel {
+		self.base.size.borrow().height
+	}
+
+	fn is_block_container(&self) -> bool {
+		false
+	}
+
+	fn compute_horizontal_used_value(&self) {
+		let containing_width = self
+			.containing_block()
+			.expect("has to have a containing block")
+			.size()
+			.width;
+		self.size().set_width(containing_width)
+	}
+
+	fn compute_vertical_used_value(&self) {
+		let height = BoxClass::get_total_children_height(self);
+		self.size().set_height(height);
+	}
+
+	fn class(&self) -> BoxClass {
+		BoxClass::Anonymous
+	}
+
+	fn as_any(&self) -> &dyn Any {
+		self
 	}
 }
 
-pub enum VisualBox {
-	BlockBox(BlockLevelBox),
-	InlineBox(InlineLevelBox),
-	AnonymousBox(AnonymousBox),
+#[derive(Debug, PartialEq)]
+pub enum BoxClass {
+	Inline,
+	Block,
+	Anonymous,
 }
 
-impl VisualBox {
+impl BoxClass {
 	pub fn new_with_formatting_context<F>(
 		formatting_context_type: FormattingContextType,
 		setup: F,
-	) -> Rc<VisualBox>
+	) -> Rc<dyn Box>
 	where
-		F: FnOnce(Rc<FormattingContext>) -> Rc<VisualBox>,
+		F: FnOnce(Rc<FormattingContext>) -> Rc<dyn Box>,
 	{
 		let formatting_context = Rc::new(FormattingContext::new(formatting_context_type));
 		let level_box = setup(formatting_context.clone());
@@ -408,178 +260,125 @@ impl VisualBox {
 		level_box
 	}
 
-	pub fn formatting_context(&self) -> Rc<FormattingContext> {
-		match self {
-			VisualBox::BlockBox(block) => block.formatting_context(),
-			VisualBox::InlineBox(inline) => inline.formatting_context(),
-			VisualBox::AnonymousBox(value) => value.formatting_context(),
-		}
-	}
-
-	pub fn set_formatting_context(&self, formatting_context: Rc<FormattingContext>) {
-		match self {
-			VisualBox::BlockBox(block) => block.set_formatting_context(formatting_context),
-			VisualBox::InlineBox(inline) => inline.set_formatting_context(formatting_context),
-			VisualBox::AnonymousBox(value) => value.set_formatting_context(formatting_context),
-		}
-	}
-
-	pub fn formatting_context_type(&self) -> FormattingContextType {
-		match self {
-			VisualBox::BlockBox(block) => block.formatting_context_type(),
-			VisualBox::InlineBox(inline) => inline.formatting_context_type(),
-			VisualBox::AnonymousBox(value) => value.formatting_context_type(),
-		}
-	}
-
-	pub fn append_child(source: Rc<VisualBox>, child: Rc<VisualBox>) {
+	pub fn append_child(source: Rc<dyn Box>, child: Rc<dyn Box>) {
 		let child = match source.formatting_context_type() {
-			FormattingContextType::BlockFormattingContext if child.is_inline_level() => {
+			FormattingContextType::BlockFormattingContext if child.class() == BoxClass::Inline => {
 				let last_child = source.get_last_child();
 				if let Some(last_child) = last_child {
-					if last_child.is_anonymous() {
-						VisualBox::add_child(last_child, child);
+					if last_child.class() == BoxClass::Anonymous {
+						BoxClass::add_child(last_child, child);
 						return;
 					}
 				}
 
-				let anonymous_box = VisualBox::new_with_formatting_context(
+				let anonymous_box = BoxClass::new_with_formatting_context(
 					FormattingContextType::InlineFormattingContext,
 					|formatting_context: Rc<FormattingContext>| {
-						Rc::new(VisualBox::AnonymousBox(AnonymousBox::new(
-							formatting_context,
-						)))
+						Rc::new(AnonymousBox::new(formatting_context))
 					},
 				);
 				child.set_formatting_context(anonymous_box.formatting_context());
-				VisualBox::add_child(anonymous_box.clone(), child);
+				BoxClass::add_child(anonymous_box.clone(), child);
 				anonymous_box
 			},
-			FormattingContextType::InlineFormattingContext if child.is_block_level() => {
+			FormattingContextType::InlineFormattingContext if child.class() == BoxClass::Block => {
 				not_reached!()
 			},
 			_ => child,
 		};
-		VisualBox::add_child(source, child);
+		BoxClass::add_child(source, child);
 	}
 
-	pub fn add_child(source: Rc<VisualBox>, child: Rc<VisualBox>) {
-		match source.as_ref() {
-			VisualBox::BlockBox(block) => block.add_child(child.clone()),
-			VisualBox::InlineBox(inline) => inline.add_child(child.clone()),
-			VisualBox::AnonymousBox(value) => value.add_child(child.clone()),
-		}
+	pub fn add_child(source: Rc<dyn Box>, child: Rc<dyn Box>) {
+		source.add_child(child.clone());
 		child.set_parent(Some(source));
 	}
 
-	pub fn get_first_child(&self) -> Option<Rc<VisualBox>> {
-		match self {
-			VisualBox::BlockBox(block) => block.get_first_child(),
-			VisualBox::InlineBox(inline) => inline.get_first_child(),
-			VisualBox::AnonymousBox(anonymous) => anonymous.get_first_child(),
-		}
-	}
-
-	pub fn get_last_child(&self) -> Option<Rc<VisualBox>> {
-		match self {
-			VisualBox::BlockBox(block) => block.get_last_child(),
-			VisualBox::InlineBox(inline) => inline.get_last_child(),
-			VisualBox::AnonymousBox(value) => value.get_last_child(),
-		}
-	}
-
-	pub fn children(&self) -> Vec<Rc<VisualBox>> {
-		match self {
-			VisualBox::BlockBox(block) => block.children(),
-			VisualBox::InlineBox(inline) => inline.children(),
-			VisualBox::AnonymousBox(anonymous) => anonymous.children(),
-		}
-	}
-
-	pub fn parent(&self) -> Option<Rc<VisualBox>> {
-		match self {
-			VisualBox::BlockBox(block) => block.parent(),
-			VisualBox::InlineBox(inline) => inline.parent(),
-			VisualBox::AnonymousBox(value) => value.parent(),
-		}
-	}
-
-	pub fn ancestors(&self) -> impl Iterator<Item = Rc<VisualBox>> {
-		SimpleNodeIterator::new(self.parent(), |n: &Rc<VisualBox>| n.parent())
-	}
-
-	pub fn set_parent(&self, value: Option<Rc<VisualBox>>) {
-		match self {
-			VisualBox::BlockBox(block) => block.set_parent(value),
-			VisualBox::InlineBox(inline) => inline.set_parent(value),
-			VisualBox::AnonymousBox(anonymous) => anonymous.set_parent(value),
-		}
-	}
-
-	pub fn containing_block(&self) -> Option<Rc<VisualBox>> {
-		match self {
-			VisualBox::BlockBox(block) => block.containing_block(),
-			VisualBox::InlineBox(inline) => inline.containing_block(),
-			VisualBox::AnonymousBox(anonymous) => anonymous.containing_block(),
-		}
-	}
-
-	pub fn set_containing_block(&self, value: Option<Rc<VisualBox>>) {
-		match self {
-			VisualBox::BlockBox(block) => block.set_containing_block(value),
-			VisualBox::InlineBox(inline) => inline.set_containing_block(value),
-			VisualBox::AnonymousBox(_) => not_reached!(),
-		}
-	}
-
-	pub fn is_block_level(&self) -> bool {
-		match self {
-			VisualBox::BlockBox(_) => true,
-			_ => false,
-		}
-	}
-
-	pub fn is_inline_level(&self) -> bool {
-		match self {
-			VisualBox::InlineBox(_) => true,
-			_ => false,
-		}
-	}
-
-	pub fn is_anonymous(&self) -> bool {
-		match self {
-			VisualBox::AnonymousBox(_) => true,
-			_ => false,
-		}
-	}
-
-	pub fn is_inline_block(&self) -> bool {
-		match self {
-			VisualBox::InlineBox(inline) => {
-				inline.formatting_context_type() == FormattingContextType::BlockFormattingContext
+	pub fn get_total_children_intrinsic_width(source: &dyn Box) -> Pixel {
+		let mut total_children_width = PIXEL_ZERO;
+		match source.formatting_context_type() {
+			FormattingContextType::BlockFormattingContext => {
+				for child in source.children() {
+					total_children_width = child.size().intrinsic_width.max(total_children_width);
+				}
 			},
-			_ => false,
-		}
-	}
-
-	pub fn size(&self) -> RefMut<'_, BoxDimension> {
-		match self {
-			VisualBox::BlockBox(block) => block.size(),
-			VisualBox::InlineBox(inline) => inline.size(),
-			VisualBox::AnonymousBox(anonymous) => anonymous.size(),
-		}
-	}
-
-	pub fn is_block_container(&self) -> bool {
-		match self {
-			VisualBox::BlockBox(_) => true,
-			VisualBox::InlineBox(inline)
-				if inline.formatting_context_type()
-					== FormattingContextType::BlockFormattingContext =>
-			{
-				true
+			FormattingContextType::InlineFormattingContext => {
+				for child in source.children() {
+					total_children_width += child.size().intrinsic_width;
+				}
 			},
-			_ => false,
 		}
+		total_children_width
+	}
+
+	pub fn get_total_children_height(source: &dyn Box) -> Pixel {
+		assert!(source.size().width != PIXEL_ZERO);
+
+		let mut total_children_height = PIXEL_ZERO;
+		match source.formatting_context_type() {
+			FormattingContextType::BlockFormattingContext => {
+				// TODO: Support margin collapse
+				for child in source.children() {
+					total_children_height += child.get_total_height();
+				}
+			},
+			FormattingContextType::InlineFormattingContext => {
+				// TODO: Support multilines
+				for child in source.children() {
+					total_children_height = total_children_height.max(child.get_total_height());
+				}
+			},
+		};
+		total_children_height
+	}
+
+	pub fn set_containing_box(source: Rc<dyn Box>) {
+		let mut containing_block = None;
+		for ancestor in source.ancestors() {
+			// TODO: include box which establishes a new formatting context
+			// https://www.w3.org/TR/CSS22/visudet.html#containing-block-details
+			if ancestor.is_block_container() {
+				containing_block = Some(ancestor);
+				break;
+			}
+		}
+		if let Some(containing_block) = containing_block {
+			source.set_containing_block(Some(containing_block.clone()));
+			// during constructing box tree, there might be anonymous boxes which are added (as its parent) to ensure https://www.w3.org/TR/CSS22/visuren.html#anonymous-block-level
+			for ancestor in source.ancestors() {
+				match ancestor.class() {
+					BoxClass::Anonymous if ancestor.containing_block().is_none() => {
+						ancestor.set_containing_block(Some(containing_block.clone()))
+					},
+					_ => break,
+				}
+			}
+		} else {
+			panic!("one of box's ancestors must be its containing box");
+		}
+	}
+}
+
+pub struct SimpleBoxIterator<'a> {
+	current: Option<Rc<dyn Box>>,
+	next_node: &'a dyn Fn(&Rc<dyn Box>) -> Option<Rc<dyn Box>>,
+}
+
+impl<'a> SimpleBoxIterator<'a> {
+	pub fn new(
+		current: Option<Rc<dyn Box>>,
+		next_node: &'a dyn Fn(&Rc<dyn Box>) -> Option<Rc<dyn Box>>,
+	) -> Self {
+		SimpleBoxIterator { current, next_node }
+	}
+}
+
+impl<'a> Iterator for SimpleBoxIterator<'a> {
+	type Item = Rc<dyn Box>;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		let current = self.current.take();
+		self.current = current.as_ref().and_then(|c| (self.next_node)(c));
+		current
 	}
 }

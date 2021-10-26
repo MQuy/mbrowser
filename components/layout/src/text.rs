@@ -32,6 +32,16 @@ impl TextUI {
 		family_names: &[T],
 		font_size: f32,
 	) -> (f32, f32) {
+		self.measure_size_in_bounded(content, family_names, font_size, (f32::MAX, f32::MAX))
+	}
+
+	pub fn measure_size_in_bounded<T: AsRef<str>>(
+		&self,
+		content: &str,
+		family_names: &[T],
+		font_size: f32,
+		bounds: (f32, f32),
+	) -> (f32, f32) {
 		let groups = self.matching_fonts(content, family_names);
 		let section = wgpu_glyph::Section {
 			text: groups
@@ -43,6 +53,7 @@ impl TextUI {
 					extra: wgpu_glyph::Extra::default(),
 				})
 				.collect(),
+			bounds,
 			..Default::default()
 		};
 		if let Some(rect) = self.brush.borrow_mut().glyph_bounds(section) {

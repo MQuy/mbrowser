@@ -10,6 +10,7 @@ common = { path = "../common" }
 css = { path = "../css" }
 html5ever = "0.25.1"
 mime = "0.3.16"
+regex = "1.5.4"
 encoding_rs = "0.8.28"
 cssparser = "0.28.1"
 num-traits = "0.2.14"

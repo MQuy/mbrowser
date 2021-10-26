@@ -4,10 +4,13 @@ use std::path::Path;
 use std::rc::{Rc, Weak};
 use std::{env, fs};
 
+use common::{not_reached, not_supported};
 use css::computed_values::{ComputedValues, PropertyCascade, StyleContext};
 use css::media_queries::media_list::MediaList;
 use css::properties::declaration::{PropertyDeclaration, WideKeywordDeclaration};
 use css::properties::longhand_id::{LonghandId, LonghandIdPhaseIterator, PhaseOrder};
+use css::properties::longhands;
+use css::properties::longhands::display::{DisplayBasic, DisplayInside, DisplayOutside};
 use css::properties::property_id::CSSWideKeyword;
 use css::stylesheets::origin::Origin;
 use css::stylesheets::stylesheet::Stylesheet;
@@ -211,6 +214,70 @@ impl StyleTreeNode {
 		match self.next_sibling.borrow().as_ref() {
 			Some(node) => Some(node.clone()),
 			_ => None,
+		}
+	}
+
+	pub fn get_visible_children_iter(&self) -> impl Iterator<Item = Rc<StyleTreeNode>> {
+		fn adjust_current_node(node: Option<Rc<StyleTreeNode>>) -> Option<Rc<StyleTreeNode>> {
+			let mut current = node;
+			while let Some(ref style_node) = current {
+				let computed_values =
+					GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
+				match computed_values.get_display() {
+					longhands::display::Display::Box(value)
+						if *value == longhands::display::DisplayBox::None =>
+					{
+						current = style_node.next_sibling();
+						continue;
+					}
+					_ => break,
+				}
+			}
+			current
+		}
+		SimpleNodeIterator::new(
+			adjust_current_node(self.first_child()),
+			|n: &Rc<StyleTreeNode>| adjust_current_node(n.next_sibling()),
+		)
+	}
+
+	pub fn is_contain_all_inline_children(&self) -> bool {
+		let children_iter = self.get_visible_children_iter();
+		for child in children_iter {
+			let (outside, _) = child.get_display();
+			if outside != DisplayOutside::Inline {
+				return false;
+			}
+		}
+		true
+	}
+
+	pub fn get_display(&self) -> (DisplayOutside, DisplayInside) {
+		if self.dom_node.node_type_id().is_element() {
+			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
+			match computed_values.get_display() {
+				longhands::display::Display::Basic(DisplayBasic { outside, inside }) => (
+					outside
+						.as_ref()
+						.map_or(DisplayOutside::Block, |v| v.clone()),
+					inside
+						.as_ref()
+						.clone()
+						.map_or(DisplayInside::Flow, |v| v.clone()),
+				),
+				longhands::display::Display::Box(value) => match value {
+					longhands::display::DisplayBox::Contents => not_supported!(),
+					longhands::display::DisplayBox::None => not_reached!(),
+				},
+				longhands::display::Display::Legacy(legacy)
+					if *legacy == longhands::display::DisplayLegacy::InlineBlock =>
+				{
+					(DisplayOutside::Inline, DisplayInside::FlowRoot)
+				},
+				_ => not_supported!(),
+			}
+		} else {
+			(DisplayOutside::Inline, DisplayInside::Flow)
 		}
 	}
 }

@@ -64,19 +64,39 @@ impl BoxDimension {
 		self.width = value;
 	}
 
-	pub fn set_padding_left(&mut self, value: Pixel) {
-		self.padding.padding_left = value;
+	pub fn set_height(&mut self, value: Pixel) {
+		self.height = value;
 	}
 
-	pub fn set_padding_right(&mut self, value: Pixel) {
-		self.padding.padding_right = value;
+	pub fn set_margin_top(&mut self, value: Pixel) {
+		self.margin.margin_top = value;
+	}
+
+	pub fn set_margin_right(&mut self, value: Pixel) {
+		self.margin.margin_right = value;
+	}
+
+	pub fn set_margin_botom(&mut self, value: Pixel) {
+		self.margin.margin_bottom = value;
 	}
 
 	pub fn set_margin_left(&mut self, value: Pixel) {
 		self.margin.margin_left = value;
 	}
 
-	pub fn set_margin_right(&mut self, value: Pixel) {
-		self.margin.margin_right = value;
+	pub fn set_padding_top(&mut self, value: Pixel) {
+		self.padding.padding_top = value;
+	}
+
+	pub fn set_padding_right(&mut self, value: Pixel) {
+		self.padding.padding_right = value;
+	}
+
+	pub fn set_padding_bottom(&mut self, value: Pixel) {
+		self.padding.padding_bottom = value;
+	}
+
+	pub fn set_padding_left(&mut self, value: Pixel) {
+		self.padding.padding_left = value;
 	}
 }

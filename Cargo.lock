@@ -389,6 +389,7 @@ dependencies = [
  "html5ever",
  "mime",
  "num-traits",
+ "regex",
  "selectors",
 ]
 

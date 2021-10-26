@@ -208,6 +208,16 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 			parent.insert_before(n, reference_child).unwrap();
 		},
 		NodeOrText::AppendText(t) => {
+			let text = t.trim_matches(|c| c == ' ' || c == '\t' || c == '\n');
+			// skip segment which only contains space, tab and newline
+			// since we don't want something like below (newline and spaces before span and newline after span)
+			// is created as text node
+			// <div>
+			//   <span>hello world</span>
+			// <div>
+			if text.len() == 0 {
+				return;
+			}
 			// https://html.spec.whatwg.org/multipage/#insert-a-character
 			let node = reference_child
 				.clone()

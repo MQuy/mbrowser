@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
-use super::boxes::VisualBox;
+use super::boxes::Box;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum FormattingContextType {
@@ -11,7 +11,7 @@ pub enum FormattingContextType {
 
 pub struct FormattingContext {
 	pub formatting_context_type: FormattingContextType,
-	pub established_by: RefCell<Option<Weak<VisualBox>>>,
+	pub established_by: RefCell<Option<Weak<dyn Box>>>,
 }
 
 impl FormattingContext {
@@ -22,7 +22,7 @@ impl FormattingContext {
 		}
 	}
 
-	pub fn set_established_by(&self, owner: Rc<VisualBox>) {
+	pub fn set_established_by(&self, owner: Rc<dyn Box>) {
 		self.established_by.replace(Some(Rc::downgrade(&owner)));
 	}
 }
