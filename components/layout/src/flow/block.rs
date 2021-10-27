@@ -126,7 +126,7 @@ impl Box for BlockLevelBox {
 					.get_margin_left()
 					.to_used_value(containing_width, PIXEL_ZERO);
 				margin_right = computed_values
-					.get_margin_left()
+					.get_margin_right()
 					.to_used_value(containing_width, PIXEL_ZERO);
 				PIXEL_ZERO.max(
 					containing_width - margin_left - padding_left - padding_right - margin_right,
@@ -135,7 +135,7 @@ impl Box for BlockLevelBox {
 			Size::LengthPercentage(length_percentage) => {
 				let width = length_percentage.to_used_value(containing_width);
 				let margin = containing_width - width - padding_left - padding_right;
-				if margin < PIXEL_ZERO {
+				if margin <= PIXEL_ZERO {
 					if *computed_values.get_margin_left() == LengthPercentageOrAuto::Auto {
 						margin_left = PIXEL_ZERO;
 					}

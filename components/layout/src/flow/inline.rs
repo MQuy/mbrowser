@@ -148,24 +148,6 @@ impl Box for InlineLevelBox {
 	}
 
 	fn compute_vertical_used_value(&self) {
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
-		let containing_width = self
-			.containing_block()
-			.expect("has to have a containing block")
-			.size()
-			.width;
-		let padding_top = computed_values
-			.get_padding_top()
-			.to_used_value(containing_width);
-		let padding_bottom = computed_values
-			.get_padding_bottom()
-			.to_used_value(containing_width);
-		let margin_top = computed_values
-			.get_margin_top()
-			.to_used_value(containing_width, PIXEL_ZERO);
-		let margin_bottom = computed_values
-			.get_margin_bottom()
-			.to_used_value(containing_width, PIXEL_ZERO);
 		let height = if self.dom_node.node_type_id().is_character_data_text() {
 			let content = self.dom_node.0.downcast::<CharacterData>().data();
 			let computed_values = GlobalScope::get_or_init_computed_values(
@@ -190,10 +172,6 @@ impl Box for InlineLevelBox {
 		};
 		let mut dimentions = self.size();
 		dimentions.set_height(height);
-		dimentions.set_margin_top(margin_top);
-		dimentions.set_margin_botom(margin_bottom);
-		dimentions.set_padding_top(padding_top);
-		dimentions.set_padding_bottom(padding_bottom);
 	}
 
 	fn class(&self) -> BoxClass {

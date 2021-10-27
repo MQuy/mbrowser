@@ -171,6 +171,18 @@ impl GlobalScope {
 			SCOPE.counted
 		}
 	}
+
+	pub fn clear() {
+		unsafe {
+			SCOPE.counted = 0;
+			if let Some(nodes) = &mut SCOPE.nodes {
+				nodes.clear();
+			}
+			if let Some(computed_values) = &mut SCOPE.computed_values {
+				computed_values.clear();
+			}
+		}
+	}
 }
 
 static mut SCOPE: GlobalScope = GlobalScope {

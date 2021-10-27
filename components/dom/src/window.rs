@@ -10,9 +10,9 @@ use crate::document::Document;
 
 type Pixel = Length<f32, CSSPixel>;
 
-const DEFAULT_WIDTH: f32 = 1200.0;
-const DEFAULT_HEIGHT: f32 = 800.0;
-const DEFAULT_RATIO: f32 = 1.0;
+pub const DEFAULT_WIDTH: f32 = 1200.0;
+pub const DEFAULT_HEIGHT: f32 = 800.0;
+pub const DEFAULT_RATIO: f32 = 1.0;
 
 #[derive(Debug)]
 pub struct Window {

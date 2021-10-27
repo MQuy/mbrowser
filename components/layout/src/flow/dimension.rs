@@ -1,6 +1,6 @@
 use css::values::Pixel;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Margin {
 	pub margin_top: Pixel,
 	pub margin_right: Pixel,
@@ -19,7 +19,7 @@ impl Default for Margin {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Padding {
 	pub padding_top: Pixel,
 	pub padding_right: Pixel,
@@ -38,7 +38,7 @@ impl Default for Padding {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BoxDimension {
 	pub intrinsic_width: Pixel,
 	pub width: Pixel,
