@@ -45,6 +45,10 @@ pub struct BoxDimension {
 	pub height: Pixel,
 	pub margin: Margin,
 	pub padding: Padding,
+	pub x: Pixel,
+	pub y: Pixel,
+	pub constructing_height: Pixel,
+	pub constructing_width: Pixel,
 }
 
 impl Default for BoxDimension {
@@ -55,6 +59,10 @@ impl Default for BoxDimension {
 			height: Default::default(),
 			margin: Default::default(),
 			padding: Default::default(),
+			x: Default::default(),
+			y: Default::default(),
+			constructing_height: Default::default(),
+			constructing_width: Default::default(),
 		}
 	}
 }
@@ -98,5 +106,21 @@ impl BoxDimension {
 
 	pub fn set_padding_left(&mut self, value: Pixel) {
 		self.padding.padding_left = value;
+	}
+
+	pub fn set_x(&mut self, value: Pixel) {
+		self.x = value;
+	}
+
+	pub fn set_y(&mut self, value: Pixel) {
+		self.y = value;
+	}
+
+	pub fn set_constructing_height(&mut self, value: Pixel) {
+		self.constructing_height = value;
+	}
+
+	pub fn set_constructing_width(&mut self, value: Pixel) {
+		self.constructing_width = value;
 	}
 }

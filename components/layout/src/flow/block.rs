@@ -192,6 +192,7 @@ impl Box for BlockLevelBox {
 			.expect("has to have a containing block");
 		let containing_width = containing_block.size().width;
 		let containing_height = containing_block.size().height;
+		let containing_constructing_height = containing_block.size().constructing_height;
 		let padding_top = computed_values
 			.get_padding_top()
 			.to_used_value(containing_width);
@@ -221,6 +222,13 @@ impl Box for BlockLevelBox {
 		dimentions.set_margin_top(margin_top);
 		dimentions.set_margin_botom(margin_bottom);
 		dimentions.set_height(height);
+		dimentions.set_y(containing_constructing_height);
+		containing_block.size().set_constructing_height(
+			containing_constructing_height
+				+ margin_top + padding_top
+				+ height + padding_bottom
+				+ margin_bottom,
+		);
 	}
 
 	fn class(&self) -> BoxClass {

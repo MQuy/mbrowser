@@ -222,12 +222,19 @@ impl Box for AnonymousBox {
 			.expect("has to have a containing block")
 			.size()
 			.width;
-		self.size().set_width(containing_width)
+		self.size().set_width(containing_width);
 	}
 
 	fn compute_vertical_used_value(&self) {
 		let height = BoxClass::get_total_children_height(self);
+		let containing_block = self
+			.containing_block()
+			.expect("has to have a containing block");
+		let containing_constructing_height = containing_block.size().constructing_height;
 		self.size().set_height(height);
+		containing_block
+			.size()
+			.set_constructing_height(containing_constructing_height + height);
 	}
 
 	fn class(&self) -> BoxClass {
@@ -312,8 +319,6 @@ impl BoxClass {
 	}
 
 	pub fn get_total_children_height(source: &dyn Box) -> Pixel {
-		assert!(source.size().width != PIXEL_ZERO);
-
 		let mut total_children_height = PIXEL_ZERO;
 		match source.formatting_context_type() {
 			FormattingContextType::BlockFormattingContext => {

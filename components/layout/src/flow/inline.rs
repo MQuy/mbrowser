@@ -105,11 +105,10 @@ impl Box for InlineLevelBox {
 
 	fn compute_horizontal_used_value(&self) {
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
-		let containing_width = self
+		let containing_block = self
 			.containing_block()
-			.expect("has to have a containing block")
-			.size()
-			.width;
+			.expect("has to have a containing block");
+		let containing_width = containing_block.size().width;
 		let padding_left = computed_values
 			.get_padding_left()
 			.to_used_value(containing_width);
@@ -145,6 +144,16 @@ impl Box for InlineLevelBox {
 		dimentions.set_margin_left(margin_left);
 		dimentions.set_margin_right(margin_right);
 		dimentions.set_width(width);
+
+		let parent = self.parent().expect("has to have a parent");
+		let parent_constructing_width = parent.size().constructing_width;
+		dimentions.set_x(parent_constructing_width);
+		parent.size().set_constructing_width(
+			parent_constructing_width
+				+ margin_left + padding_left
+				+ width + padding_right
+				+ margin_right,
+		);
 	}
 
 	fn compute_vertical_used_value(&self) {

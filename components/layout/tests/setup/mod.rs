@@ -91,10 +91,11 @@ pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
 					.downcast_ref::<InlineLevelBox>()
 					.unwrap()
 					.dom_node();
-				if inline.has_id(
-					&Ident(id.to_string()),
-					CaseSensitivity::AsciiCaseInsensitive,
-				) {
+				if inline.node_type_id().is_element()
+					&& inline.has_id(
+						&Ident(id.to_string()),
+						CaseSensitivity::AsciiCaseInsensitive,
+					) {
 					return Some(child.size().clone());
 				}
 			},
@@ -111,7 +112,7 @@ pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
 					return Some(child.size().clone());
 				}
 			},
-			BoxClass::Anonymous => todo!(),
+			BoxClass::Anonymous => (),
 		}
 	}
 

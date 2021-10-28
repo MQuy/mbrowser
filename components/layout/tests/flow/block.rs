@@ -238,3 +238,29 @@ fn block_level_with_percentage_margin_padding() {
 		Pixel::new(window::DEFAULT_WIDTH * 0.14)
 	);
 }
+
+#[test]
+#[serial]
+fn block_level_as_first_child_top_left_position() {
+	let tree = construct_tree(r#"<div id="test">hello world</div>"#, r#""#);
+	let dimension = get_box_dimension(&tree, "test").unwrap();
+	assert_eq!(dimension.x, Pixel::new(0.0));
+	assert_eq!(dimension.y, Pixel::new(0.0));
+}
+
+#[test]
+#[serial]
+fn block_level_as_second_child_position() {
+	let tree = construct_tree(
+		r#"
+<div id="test1">hello world</div>
+<div id="test2">hello world</div>
+        "#,
+		r#"
+#test1 { height: 40px; padding: 10px; margin: 15px }
+        "#,
+	);
+	let dimension = get_box_dimension(&tree, "test2").unwrap();
+	assert_eq!(dimension.x, Pixel::new(0.0));
+	assert_eq!(dimension.y, Pixel::new(90.0));
+}
