@@ -8,10 +8,13 @@ use css::values::{Pixel, PIXEL_ZERO};
 use dom::characterdata::CharacterData;
 use dom::global_scope::{GlobalScope, NodeRef};
 use dom::inheritance::Castable;
+use euclid::{Point2D, Size2D};
 
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::dimension::BoxDimension;
 use super::formatting_context::{FormattingContext, FormattingContextType};
+use crate::display_list::builder::DisplayListBuilder;
+use crate::display_list::display_item::LayoutRect;
 use crate::text::TextUI;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
@@ -189,5 +192,37 @@ impl Box for InlineLevelBox {
 
 	fn as_any(&self) -> &dyn Any {
 		self
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
+		let dimension = self.base.size();
+		if self.dom_node().node_type_id().is_character_data_text() {
+			let parent_node = self.dom_node.0.parent_node().unwrap();
+			let parent_computed_values = GlobalScope::get_or_init_computed_values(parent_node.id());
+			let content = self.dom_node.0.downcast::<CharacterData>().data();
+			builder.push_text(
+				LayoutRect::new(
+					Point2D::new(
+						dimension.x + dimension.margin.margin_left + dimension.padding.padding_left,
+						dimension.y + dimension.margin.margin_top + dimension.padding.padding_top,
+					),
+					Size2D::new(dimension.width, dimension.height),
+				),
+				content.as_str(),
+				parent_computed_values.get_color().clone(),
+			)
+		} else {
+			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
+			builder.push_rect(
+				LayoutRect::new(
+					Point2D::new(
+						dimension.x + dimension.margin.margin_left + dimension.padding.padding_left,
+						dimension.y + dimension.margin.margin_top + dimension.padding.padding_top,
+					),
+					Size2D::new(dimension.width, dimension.height),
+				),
+				computed_values.get_color().clone(),
+			)
+		}
 	}
 }

@@ -12,8 +12,14 @@ dom = { path = "../dom" }
 cssparser = "0.28.1"
 html5ever = "0.25.1"
 selectors = "0.23.0"
+wgpu = "0.11.0"
 wgpu_glyph = "0.15.1"
 glyph_brush = "0.7"
 font-kit = "0.10.1"
 euclid = "0.22.6"
 serial_test = "0.5.1"
+
+[dev-dependencies]
+winit = "0.24"
+futures = "0.3"
+

@@ -7,6 +7,7 @@ use css::values::{Pixel, PIXEL_ZERO};
 
 use super::dimension::BoxDimension;
 use super::formatting_context::{FormattingContext, FormattingContextType};
+use crate::display_list::builder::DisplayListBuilder;
 
 pub trait Box {
 	fn add_child(&self, child: Rc<dyn Box>);
@@ -48,6 +49,8 @@ pub trait Box {
 	fn class(&self) -> BoxClass;
 
 	fn as_any(&self) -> &dyn Any;
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder);
 }
 
 pub struct BaseBox {
@@ -244,6 +247,8 @@ impl Box for AnonymousBox {
 	fn as_any(&self) -> &dyn Any {
 		self
 	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder) {}
 }
 
 #[derive(Debug, PartialEq)]

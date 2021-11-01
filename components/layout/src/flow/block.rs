@@ -6,10 +6,13 @@ use common::not_supported;
 use css::values::computed::length::{LengthPercentage, LengthPercentageOrAuto, Size};
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::global_scope::{GlobalScope, NodeRef};
+use euclid::{Point2D, Size2D};
 
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::dimension::BoxDimension;
 use super::formatting_context::{FormattingContext, FormattingContextType};
+use crate::display_list::builder::DisplayListBuilder;
+use crate::display_list::display_item::LayoutRect;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#block-boxes
 pub struct BlockLevelBox {
@@ -237,5 +240,28 @@ impl Box for BlockLevelBox {
 
 	fn as_any(&self) -> &dyn Any {
 		self
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
+		let dimension = self.base.size();
+		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
+		// background
+		builder.push_rect(
+			LayoutRect::new(
+				Point2D::new(
+					dimension.x + dimension.margin.margin_left,
+					dimension.y + dimension.margin.margin_top,
+				),
+				Size2D::new(
+					dimension.width
+						+ dimension.padding.padding_left
+						+ dimension.padding.padding_right,
+					dimension.height
+						+ dimension.padding.padding_top
+						+ dimension.padding.padding_bottom,
+				),
+			),
+			computed_values.get_background_color().clone(),
+		)
 	}
 }
