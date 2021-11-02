@@ -9,6 +9,7 @@ use cssparser::SourceLocation;
 use dom::global_scope::{GlobalScope, NodeRef};
 use dom::inheritance::Castable;
 use dom::parser::DomParser;
+use dom::window::{DEFAULT_HEIGHT, DEFAULT_WIDTH};
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
 use iced_wgpu::{wgpu, Backend, Color, Primitive, Renderer, Settings, Viewport};
@@ -66,13 +67,28 @@ fn main() {
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(
 		r#"
-<div style="color: red; background-color: white">
-    Hello world!
-    <div id="hello" style="display: inline-block; height: 40px">
-        <div>Echo from the past</div>
+<div class="a">
+  <div class="b">
+    <div class="c">
+      <div class="d">
+        <div class="e">
+          <div class="f">
+            <div class="g">
+                <div style="color: black; background-color: white">
+                    Hello
+                    <div id="hello" style="display: inline-block; height: 40px; padding-left: 4px">
+                        <div>world!</div>
+                    </div>
+                    <p><span>mBrowser here</span></p>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <p><span>Totoland</span></p>
-</div>"#,
+  </div>
+</div>
+"#,
 	));
 
 	let output = parser.finish();
@@ -80,7 +96,16 @@ fn main() {
 	let error_reporter = TestingErrorReporter::new();
 	let media = Rc::new(MediaList::empty());
 	let stylesheet = Stylesheet::from_str(
-		r#""#,
+		r#"
+.a, .b, .c, .d, .e, .f, .g { padding: 12px; }
+.a { background-color: #ff0000; }
+.b { background-color: #ffa500; }
+.c { background-color: #ffff00; }
+.d { background-color: #008000; }
+.e { background-color: #0000ff; }
+.f { background-color: #4b0082; }
+.g { background-color: #800080; }
+        "#,
 		Origin::UserAgent,
 		media,
 		Some(&error_reporter),
@@ -102,7 +127,7 @@ fn main() {
 
 	let event_loop = EventLoop::new();
 	let window = winit::window::Window::new(&event_loop).unwrap();
-	window.set_inner_size(LogicalSize::new(1024, 800));
+	window.set_inner_size(LogicalSize::new(DEFAULT_WIDTH, DEFAULT_HEIGHT));
 
 	let physical_size = window.inner_size();
 	let viewport = Viewport::with_physical_size(

@@ -861,7 +861,7 @@ impl Image {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		let id = match token {
-			Token::IDHash(value) => Ident(value.to_string()),
+			Token::IDHash(value) | Token::Hash(value) => Ident(value.to_string()),
 			_ => {
 				return Err(
 					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))

@@ -570,7 +570,9 @@ impl Color {
 						Token::Ident(ident) => {
 							NamedColor::search(ident).map_or(error, |value| Ok(value.color.clone()))
 						},
-						Token::Hash(value) => RGBA::from_hex(value).map_or(error, |v| Ok(v)),
+						Token::Hash(value) | Token::IDHash(value) => {
+							RGBA::from_hex(value).map_or(error, |v| Ok(v))
+						},
 						_ => {
 							return Err(location.new_custom_error(
 								StyleParseErrorKind::UnexpectedToken(token.clone()),
