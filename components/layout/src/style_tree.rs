@@ -1,8 +1,6 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::path::Path;
 use std::rc::{Rc, Weak};
-use std::{env, fs};
 
 use common::{not_reached, not_supported};
 use css::computed_values::{ComputedValues, PropertyCascade, StyleContext};
@@ -51,9 +49,7 @@ impl StyleTree {
 	}
 
 	pub fn import_user_agent(&self) {
-		let component_path = env::current_dir().unwrap();
-		let user_agent_path = Path::join(&component_path, "./src/html.css");
-		let content = fs::read_to_string(user_agent_path).unwrap();
+		let content = include_str!("./html.css");
 		let stylesheet = Stylesheet::from_str(
 			&content,
 			Origin::UserAgent,

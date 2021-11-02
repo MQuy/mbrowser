@@ -6,7 +6,7 @@ use super::display_item::{DisplayItem, LayoutRect, RectangleDisplayItem, TextDis
 use crate::flow::tree::{BoxTree, PreOrderBoxTreeIterator};
 
 pub struct DisplayListBuilder {
-	items: Vec<DisplayItem>,
+	pub items: Vec<DisplayItem>,
 }
 
 impl DisplayListBuilder {

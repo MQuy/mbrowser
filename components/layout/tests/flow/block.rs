@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::window;
 use serial_test::serial;
@@ -263,4 +265,23 @@ fn block_level_as_second_child_position() {
 	let dimension = get_box_dimension(&tree, "test2").unwrap();
 	assert_eq!(dimension.x, Pixel::new(0.0));
 	assert_eq!(dimension.y, Pixel::new(90.0));
+}
+
+#[test]
+#[serial]
+fn block_box_contains_inline_block_box() {
+	let tree = Rc::new(construct_tree(
+		r#"
+<div style="color: red;">
+    Hello world!
+    <div id="hello" style="display: inline-block; height: 40px">
+        <div>Echo from the past</div>
+    </div>
+    <p id="test"><span>Totoland</span></p>
+</div>"#,
+		r#""#,
+	));
+	let dimension = get_box_dimension(&tree, "test").unwrap();
+	assert_eq!(dimension.x, Pixel::new(0.0));
+	assert_eq!(dimension.y, Pixel::new(40.0));
 }

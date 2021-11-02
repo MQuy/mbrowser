@@ -208,14 +208,14 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 			parent.insert_before(n, reference_child).unwrap();
 		},
 		NodeOrText::AppendText(t) => {
-			let text = t.trim_matches(|c| c == ' ' || c == '\t' || c == '\n');
+			let content = t.trim_matches(|c| c == ' ' || c == '\t' || c == '\n');
 			// skip segment which only contains space, tab and newline
 			// since we don't want something like below (newline and spaces before span and newline after span)
 			// is created as text node
 			// <div>
 			//   <span>hello world</span>
 			// <div>
-			if text.len() == 0 {
+			if content.len() == 0 {
 				return;
 			}
 			// https://html.spec.whatwg.org/multipage/#insert-a-character
@@ -226,10 +226,10 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 
 			match node {
 				Some(node) if node.node_type_id().is_character_data_text() => {
-					node.downcast::<CharacterData>().append_data(&t)
+					node.downcast::<CharacterData>().append_data(&content)
 				},
 				_ => {
-					let text = Text::create(String::from(t), parent.owner_doc().unwrap());
+					let text = Text::create(content.to_string(), parent.owner_doc().unwrap());
 					parent.insert_before(upcast(text), reference_child).unwrap();
 				},
 			}

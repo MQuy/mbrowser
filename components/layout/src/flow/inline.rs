@@ -160,6 +160,10 @@ impl Box for InlineLevelBox {
 	}
 
 	fn compute_vertical_used_value(&self) {
+		let containing_block = self
+			.containing_block()
+			.expect("has to have a containing block");
+		let containing_width = containing_block.size().width;
 		let height = if self.dom_node.node_type_id().is_character_data_text() {
 			let content = self.dom_node.0.downcast::<CharacterData>().data();
 			let computed_values = GlobalScope::get_or_init_computed_values(
@@ -180,7 +184,23 @@ impl Box for InlineLevelBox {
 					.1,
 			)
 		} else {
-			BoxClass::get_total_children_height(self)
+			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
+			match self.formatting_context_type() {
+				FormattingContextType::BlockFormattingContext => match computed_values.get_height()
+				{
+					Size::Auto => BoxClass::get_total_children_height(self),
+					Size::LengthPercentage(length_percentage) => match &length_percentage.0 {
+						LengthPercentage::AbsoluteLength(length) => Pixel::new(*length),
+						LengthPercentage::Percentage(percentage) => {
+							containing_width * percentage.to_value(&(0.0..1.0))
+						},
+					},
+					Size::ExtremumLength(_) => not_supported!(),
+				},
+				FormattingContextType::InlineFormattingContext => {
+					BoxClass::get_total_children_height(self)
+				},
+			}
 		};
 		let mut dimentions = self.size();
 		dimentions.set_height(height);
@@ -195,6 +215,9 @@ impl Box for InlineLevelBox {
 	}
 
 	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
+		let containing_block = self.containing_block().unwrap();
+		let (px, py) = BoxClass::get_absolute_axis(containing_block.clone());
+		let containing_dimension = containing_block.size();
 		let dimension = self.base.size();
 		if self.dom_node().node_type_id().is_character_data_text() {
 			let parent_node = self.dom_node.0.parent_node().unwrap();
@@ -203,8 +226,14 @@ impl Box for InlineLevelBox {
 			builder.push_text(
 				LayoutRect::new(
 					Point2D::new(
-						dimension.x + dimension.margin.margin_left + dimension.padding.padding_left,
-						dimension.y + dimension.margin.margin_top + dimension.padding.padding_top,
+						px + containing_dimension.margin.margin_left
+							+ containing_dimension.padding.padding_left
+							+ dimension.x + dimension.margin.margin_left
+							+ dimension.padding.padding_left,
+						py + containing_dimension.margin.margin_top
+							+ containing_dimension.padding.padding_top
+							+ dimension.y + dimension.margin.margin_top
+							+ dimension.padding.padding_top,
 					),
 					Size2D::new(dimension.width, dimension.height),
 				),
@@ -216,12 +245,18 @@ impl Box for InlineLevelBox {
 			builder.push_rect(
 				LayoutRect::new(
 					Point2D::new(
-						dimension.x + dimension.margin.margin_left + dimension.padding.padding_left,
-						dimension.y + dimension.margin.margin_top + dimension.padding.padding_top,
+						px + containing_dimension.margin.margin_left
+							+ containing_dimension.padding.padding_left
+							+ dimension.x + dimension.margin.margin_left
+							+ dimension.padding.padding_left,
+						py + containing_dimension.margin.margin_top
+							+ containing_dimension.padding.padding_top
+							+ dimension.y + dimension.margin.margin_top
+							+ dimension.padding.padding_top,
 					),
 					Size2D::new(dimension.width, dimension.height),
 				),
-				computed_values.get_color().clone(),
+				computed_values.get_background_color().clone(),
 			)
 		}
 	}

@@ -243,14 +243,21 @@ impl Box for BlockLevelBox {
 	}
 
 	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
+		let containing_block = self.containing_block().unwrap();
+		let (px, py) = BoxClass::get_absolute_axis(containing_block.clone());
+		let containing_dimension = containing_block.size();
 		let dimension = self.base.size();
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
 		// background
 		builder.push_rect(
 			LayoutRect::new(
 				Point2D::new(
-					dimension.x + dimension.margin.margin_left,
-					dimension.y + dimension.margin.margin_top,
+					px + containing_dimension.margin.margin_left
+						+ containing_dimension.padding.padding_left
+						+ dimension.x + dimension.margin.margin_left,
+					py + containing_dimension.margin.margin_top
+						+ containing_dimension.padding.padding_top
+						+ dimension.y + dimension.margin.margin_top,
 				),
 				Size2D::new(
 					dimension.width

@@ -373,7 +373,7 @@ macro_rules! named_color {
 				red: $red,
 				green: $green,
 				blue: $blue,
-				alpha: 1,
+				alpha: 255,
 			},
 		}
 	};

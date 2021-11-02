@@ -367,6 +367,18 @@ impl BoxClass {
 			panic!("one of box's ancestors must be its containing box");
 		}
 	}
+
+	pub fn get_absolute_axis(source: Rc<dyn Box>) -> (Pixel, Pixel) {
+		let dimension = source.size();
+		let mut x = dimension.x;
+		let mut y = dimension.y;
+		for ancestor in source.ancestors() {
+			let dimension = ancestor.size();
+			x += dimension.x + dimension.margin.margin_left + dimension.padding.padding_left;
+			y += dimension.y + dimension.margin.margin_top + dimension.padding.padding_top;
+		}
+		(x, y)
+	}
 }
 
 pub struct SimpleBoxIterator<'a> {

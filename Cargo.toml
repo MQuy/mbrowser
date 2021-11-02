@@ -6,6 +6,20 @@ resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[dependencies]
+common = { path = "components/common" }
+dom = { path = "components/dom" }
+css = { path = "components/css" }
+layout = { path = "components/layout" }
+cssparser = "0.28.1"
+html5ever = "0.25.1"
+selectors = "0.23.0"
+wgpu = "0.11.0"
+wgpu_glyph = "0.15.1"
+glyph_brush = "0.7"
+iced_wgpu = { git = "https://github.com/iced-rs/iced" }
+iced_winit = { git = "https://github.com/iced-rs/iced" }
+
 [workspace]
 members = [
 	"components/common",
