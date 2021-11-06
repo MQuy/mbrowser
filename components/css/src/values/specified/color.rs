@@ -19,7 +19,7 @@ pub struct RGBA {
 	pub red: u8,
 	pub green: u8,
 	pub blue: u8,
-	pub alpha: u8,
+	pub alpha: f32,
 }
 
 impl RGBA {
@@ -29,9 +29,9 @@ impl RGBA {
 		}
 
 		let (chunk_size, default_alpha) = match hex.len() {
-			6 => (2, Some(255)),
+			6 => (2, Some(1.0)),
 			8 => (2, None),
-			3 => (1, Some(255)),
+			3 => (1, Some(1.0)),
 			4 => (1, None),
 			_ => return None,
 		};
@@ -47,13 +47,13 @@ impl RGBA {
 	fn convert_hex_to_rgba(
 		hex: &str,
 		chunk_size: usize,
-		default_alpha: Option<u8>,
-	) -> (u8, u8, u8, u8) {
+		default_alpha: Option<f32>,
+	) -> (u8, u8, u8, f32) {
 		let decimals = RGBA::convert_hex_to_array_of_decimal(hex, chunk_size);
 		let alpha = if let Some(alpha) = default_alpha {
 			alpha
 		} else {
-			decimals[3]
+			decimals[3] as f32 / 255.0
 		};
 		(decimals[0], decimals[1], decimals[2], alpha)
 	}
@@ -98,12 +98,12 @@ impl RGBA {
 			red,
 			green,
 			blue,
-			alpha: 1,
+			alpha: 1.0,
 		}
 	}
 
 	// https://drafts.csswg.org/css-color/#hsl-to-rgb
-	pub fn from_hsla(hue: CSSFloat, sat: CSSFloat, light: CSSFloat, alpha: u8) -> Self {
+	pub fn from_hsla(hue: CSSFloat, sat: CSSFloat, light: CSSFloat, alpha: f32) -> Self {
 		let t2;
 		if light <= 0.5 {
 			t2 = light * (sat + 1.0);
@@ -124,7 +124,7 @@ impl RGBA {
 
 	// https://en.wikipedia.org/wiki/HWB_color_model
 	// https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_HSL
-	pub fn from_hwb(hue: CSSFloat, black: CSSFloat, white: CSSFloat, alpha: u8) -> Self {
+	pub fn from_hwb(hue: CSSFloat, black: CSSFloat, white: CSSFloat, alpha: f32) -> Self {
 		let mut black = black;
 		let mut white = white;
 		if black + white > 1.0 {
@@ -169,7 +169,7 @@ impl RGBA {
 			red: 0,
 			green: 0,
 			blue: 0,
-			alpha: 0,
+			alpha: 0.0,
 		}
 	}
 }
@@ -232,7 +232,7 @@ impl CMYK {
 			red: red as u8,
 			green: green as u8,
 			blue: blue as u8,
-			alpha: 1,
+			alpha: 1.0,
 		}
 	}
 }
@@ -373,7 +373,7 @@ macro_rules! named_color {
 				red: $red,
 				green: $green,
 				blue: $blue,
-				alpha: 255,
+				alpha: 1.0,
 			},
 		}
 	};
@@ -536,12 +536,12 @@ pub enum Color {
 	CurrentColor,
 	Transparent,
 	RGB(RGBA),
-	HSL(Hue, Percentage, Percentage, u8),
-	HWB(Hue, Percentage, Percentage, u8),
-	LAB(Percentage, Number, Number, u8),
-	LCH(Percentage, Number, Hue, u8),
-	Color(Ident, Vec<NumberOrPercentage>, u8),
-	DeviceCMYK(CMYK, u8, Box<Color>),
+	HSL(Hue, Percentage, Percentage, f32),
+	HWB(Hue, Percentage, Percentage, f32),
+	LAB(Percentage, Number, Number, f32),
+	LCH(Percentage, Number, Hue, f32),
+	Color(Ident, Vec<NumberOrPercentage>, f32),
+	DeviceCMYK(CMYK, f32, Box<Color>),
 	System(SystemColor),
 }
 
@@ -728,7 +728,7 @@ impl Color {
 	fn parse_alpha_value_with_delimitor<'i, 't>(
 		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
-	) -> u8 {
+	) -> f32 {
 		input
 			.try_parse(|input| -> Result<f32, ParseError<'i>> {
 				let delimitor = input.next()?.clone();
@@ -743,17 +743,17 @@ impl Color {
 				};
 				input
 					.try_parse(|input| -> Result<f32, ParseError<'i>> {
-						let number = Number::parse_in_range(context, input, 0.0, 255.0)?;
+						let number = Number::parse_in_range(context, input, 0.0, 1.0)?;
 						Ok(number.get())
 					})
 					.or_else(|_err: ParseError<'i>| -> Result<f32, ParseError<'i>> {
 						input.try_parse(|input| {
 							let value = Percentage::parse(context, input)?;
-							Ok(value.to_value(&(0.0..255.0)))
+							Ok(value.to_value(&(0.0..1.0)))
 						})
 					})
 			})
-			.map_or(255, |v| v as u8)
+			.map_or(1.0, |v| v)
 	}
 
 	pub fn to_computed_value(&self, context: &StyleContext) -> RGBA {

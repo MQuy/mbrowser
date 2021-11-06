@@ -66,7 +66,7 @@ pub fn keyword_data_color() -> Vec<(String, String)> {
 
 pub fn hue_6digits_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for (input, output) in [("#00ff00", "rgb(0 255 0 / 255)")].iter() {
+	for (input, output) in [("#00ff00", "rgb(0 255 0 / 1)")].iter() {
 		data.push((input.to_string(), output.to_string()));
 	}
 	data
@@ -74,7 +74,7 @@ pub fn hue_6digits_data() -> Vec<(String, String)> {
 
 pub fn hue_8digits_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for (input, output) in [("#0000ffcc", "rgb(0 0 255 / 204)")].iter() {
+	for (input, output) in [("#0000ffcc", "rgb(0 0 255 / 0.8)")].iter() {
 		data.push((input.to_string(), output.to_string()));
 	}
 	data
@@ -82,7 +82,7 @@ pub fn hue_8digits_data() -> Vec<(String, String)> {
 
 pub fn hue_3digits_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for (input, output) in [("#123", "rgb(17 34 51 / 255)")].iter() {
+	for (input, output) in [("#123", "rgb(17 34 51 / 1)")].iter() {
 		data.push((input.to_string(), output.to_string()));
 	}
 	data
@@ -90,7 +90,7 @@ pub fn hue_3digits_data() -> Vec<(String, String)> {
 
 pub fn hue_4digits_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for (input, output) in [("#8925", "rgb(136 153 34 / 85)")].iter() {
+	for (input, output) in [("#892f", "rgb(136 153 34 / 1)")].iter() {
 		data.push((input.to_string(), output.to_string()));
 	}
 	data
@@ -102,7 +102,7 @@ pub fn rgb_data() -> Vec<(String, String)> {
 		permutate(
 			permutate(
 				[("10%", "70%", "0.5%"), ("25.5", "178.5", "1.275")].iter(),
-				["25%", "63.75", ""].iter(),
+				["25%", "0.25", ""].iter(),
 			)
 			.iter(),
 			[[" ", " ", " / "], [", ", ", ", ", "]].iter(),
@@ -126,7 +126,7 @@ pub fn rgb_data() -> Vec<(String, String)> {
 		);
 		let output = std::format!(
 			"rgb(25 178 1 / {})",
-			if alpha.len() > 0 { "63" } else { "255" }
+			if alpha.len() > 0 { "0.25" } else { "1" }
 		);
 		data.push((input, output));
 	}
@@ -142,7 +142,7 @@ pub fn hsl_or_hwb_data() -> Vec<(String, String)> {
 			.collect::<Vec<String>>();
 		let hues = [&angles[..], &["5".to_string(), "0.25".to_string()][..]].concat();
 		for ((hue, alpha), fname) in permutate(
-			permutate(hues.iter(), ["25%", "63.75", ""].iter()).iter(),
+			permutate(hues.iter(), ["25%", "0.25", ""].iter()).iter(),
 			iter.clone(),
 		)
 		.iter()
@@ -161,7 +161,7 @@ pub fn hsl_or_hwb_data() -> Vec<(String, String)> {
 				"{}({} 12% 0.25% / {})",
 				name,
 				hue,
-				if alpha.len() > 0 { "63" } else { "255" },
+				if alpha.len() > 0 { "0.25" } else { "1" },
 			);
 			data.push((input, output));
 		}
@@ -173,7 +173,7 @@ pub fn lab_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for ((percentage, number), alpha) in permutate(
 		permutate(["10%", "0.25%"].iter(), ["5", "1.5"].iter()).iter(),
-		["25%", "63.75", ""].iter(),
+		["25%", "0.25", ""].iter(),
 	)
 	.iter()
 	{
@@ -193,7 +193,7 @@ pub fn lab_data() -> Vec<(String, String)> {
 			percentage,
 			number,
 			number,
-			if alpha.len() > 0 { "63" } else { "255" },
+			if alpha.len() > 0 { "0.25" } else { "1" },
 		);
 		data.push((input, output));
 	}
@@ -213,7 +213,7 @@ pub fn lch_data() -> Vec<(String, String)> {
 			hues.iter(),
 		)
 		.iter(),
-		["25%", "63.75", ""].iter(),
+		["25%", "0.25", ""].iter(),
 	)
 	.iter()
 	{
@@ -233,7 +233,7 @@ pub fn lch_data() -> Vec<(String, String)> {
 			percentage,
 			number,
 			hue,
-			if alpha.len() > 0 { "63" } else { "255" },
+			if alpha.len() > 0 { "0.25" } else { "1" },
 		);
 		data.push((input, output));
 	}
@@ -248,7 +248,7 @@ pub fn color_data() -> Vec<(String, String)> {
 			["5", "0.25", "25%", "5.5%", "1 5%", "0.25 5 10%"].iter(),
 		)
 		.iter(),
-		["25%", "63.75", ""].iter(),
+		["25%", "0.25", ""].iter(),
 	)
 	.iter()
 	{
@@ -266,7 +266,7 @@ pub fn color_data() -> Vec<(String, String)> {
 			"color({} {} / {})",
 			ident,
 			value,
-			if alpha.len() > 0 { "63" } else { "255" },
+			if alpha.len() > 0 { "0.25" } else { "1" },
 		);
 		data.push((input, output));
 	}
@@ -278,7 +278,7 @@ pub fn device_cmyk_data() -> Vec<(String, String)> {
 	for (((v1, v2), alpha), color) in permutate(
 		permutate(
 			permutate(["1", "25%"].iter(), ["0.5", "12.5%"].iter()).iter(),
-			["25%", "63.75", ""].iter(),
+			["25%", "0.25", ""].iter(),
 		)
 		.iter(),
 		["currentcolor", ""].iter(),
@@ -313,11 +313,11 @@ pub fn device_cmyk_data() -> Vec<(String, String)> {
 					"{}",
 					match Into::<NumberOrPercentage>::into(**alpha) {
 						NumberOrPercentage::Number(value) => value.get(),
-						NumberOrPercentage::Percentage(value) => value.to_value(&(0.0..255.0)),
-					} as u8
+						NumberOrPercentage::Percentage(value) => value.to_value(&(0.0..1.0)),
+					}
 				)
 			} else {
-				"255".to_string()
+				"1".to_string()
 			},
 			std::format!(
 				", {}",
