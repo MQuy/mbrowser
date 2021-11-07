@@ -15,6 +15,7 @@ pub struct TextDisplayItem {
 	pub bounds: LayoutRect,
 	pub content: String,
 	pub color: RGBA,
+	pub font_families: Vec<String>,
 }
 
 #[derive(Debug)]

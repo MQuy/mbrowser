@@ -19,9 +19,9 @@ pub const FALLBACK: &[u8] = include_bytes!("../fonts/Lato-Regular.ttf");
 impl TextUI {
 	pub fn new() -> Self {
 		let font = FontArc::try_from_slice(FALLBACK).expect("default font doesn't exist");
-		let brush = glyph_brush::GlyphBrushBuilder::using_font(font).build();
+		let measure_brush = glyph_brush::GlyphBrushBuilder::using_font(font).build();
 		Self {
-			brush: RefCell::new(brush),
+			brush: RefCell::new(measure_brush),
 			font_map: RefCell::new(Default::default()),
 		}
 	}
@@ -99,7 +99,8 @@ impl TextUI {
 		for family_name in family_names {
 			if let Some(font) = self.font_map.borrow().get(family_name.as_ref()) {
 				return font.clone();
-			} else if let Some(font) = self.load_system_font(family_name.as_ref()) {
+			}
+			if let Some(font) = self.load_system_font(family_name.as_ref()) {
 				return font;
 			}
 		}

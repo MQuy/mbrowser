@@ -13,7 +13,7 @@ use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
 use layout::flow::block::BlockLevelBox;
-use layout::flow::boxes::BoxClass;
+use layout::flow::boxes::{Box, BoxClass};
 use layout::flow::dimension::BoxDimension;
 use layout::flow::inline::InlineLevelBox;
 use layout::flow::tree::{BoxTree, PreOrderBoxTreeIterator};
@@ -81,7 +81,7 @@ pub fn construct_tree(html: &str, css: &str) -> BoxTree {
 	box_tree
 }
 
-pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
+pub fn find_box(tree: &BoxTree, id: &str) -> Option<Rc<dyn Box>> {
 	let iter = PreOrderBoxTreeIterator::new(tree.root.clone());
 	for child in iter {
 		match child.class() {
@@ -96,7 +96,7 @@ pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
 						&Ident(id.to_string()),
 						CaseSensitivity::AsciiCaseInsensitive,
 					) {
-					return Some(child.size().clone());
+					return Some(child.clone());
 				}
 			},
 			BoxClass::Block => {
@@ -109,7 +109,7 @@ pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
 					&Ident(id.to_string()),
 					CaseSensitivity::AsciiCaseInsensitive,
 				) {
-					return Some(child.size().clone());
+					return Some(child.clone());
 				}
 			},
 			BoxClass::Anonymous => (),
@@ -117,4 +117,34 @@ pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
 	}
 
 	None
+}
+
+pub fn find_dom(tree: &BoxTree, id: &str) -> Option<NodeRef> {
+	if let Some(node) = find_box(tree, id) {
+		match node.class() {
+			BoxClass::Inline => Some(
+				node.as_any()
+					.downcast_ref::<InlineLevelBox>()
+					.unwrap()
+					.dom_node(),
+			),
+			BoxClass::Block => Some(
+				node.as_any()
+					.downcast_ref::<BlockLevelBox>()
+					.unwrap()
+					.dom_node(),
+			),
+			BoxClass::Anonymous => None,
+		}
+	} else {
+		None
+	}
+}
+
+pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
+	if let Some(node) = find_box(tree, id) {
+		Some(node.size().clone())
+	} else {
+		None
+	}
 }

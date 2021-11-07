@@ -17,10 +17,11 @@ use iced_winit::futures::task::SpawnExt;
 use iced_winit::winit::dpi::LogicalSize;
 use iced_winit::winit::event::Event;
 use iced_winit::winit::event_loop::{ControlFlow, EventLoop};
-use iced_winit::{futures, mouse, winit, Background, Debug, Point, Rectangle, Size};
+use iced_winit::{futures, mouse, winit, Background, Debug, Font, Point, Rectangle, Size};
 use layout::display_list::builder::DisplayListBuilder;
 use layout::display_list::display_item::{DisplayItem, LayoutRect};
 use layout::flow::tree::BoxTree;
+use layout::fonts;
 use layout::style_tree::StyleTree;
 use selectors::context::QuirksMode;
 
@@ -105,6 +106,7 @@ fn main() {
 .e { background-color: #0000ff; }
 .f { background-color: #4b0082; }
 .g { background-color: #800080; }
+#hello { font-family: fantasy; }
         "#,
 		Origin::UserAgent,
 		media,
@@ -243,25 +245,33 @@ fn main() {
 										rectangle.color.red,
 										rectangle.color.green,
 										rectangle.color.blue,
-										rectangle.color.alpha as f32 / 255.0,
+										rectangle.color.alpha,
 									)),
 									border_radius: 0.0,
 									border_width: 0.0,
 									border_color: Color::TRANSPARENT,
 								},
-								DisplayItem::Text(text) => Primitive::Text {
-									content: text.content.clone(),
-									bounds: to_rectangle(&text.bounds),
-									color: Color::from_rgba8(
-										text.color.red,
-										text.color.green,
-										text.color.blue,
-										text.color.alpha as f32 / 255.0,
-									),
-									font: iced_winit::Font::Default,
-									horizontal_alignment: iced_winit::alignment::Horizontal::Left,
-									size: 14.0,
-									vertical_alignment: iced_winit::alignment::Vertical::Top,
+								DisplayItem::Text(text) => {
+									let (font_name, font_bytes) =
+										fonts::load_cached_font(&text.font_families);
+									Primitive::Text {
+										content: text.content.clone(),
+										bounds: to_rectangle(&text.bounds),
+										color: Color::from_rgba8(
+											text.color.red,
+											text.color.green,
+											text.color.blue,
+											text.color.alpha,
+										),
+										font: Font::External {
+											name: font_name,
+											bytes: font_bytes,
+										},
+										horizontal_alignment:
+											iced_winit::alignment::Horizontal::Left,
+										size: 14.0,
+										vertical_alignment: iced_winit::alignment::Vertical::Top,
+									}
 								},
 							};
 							backend.draw(

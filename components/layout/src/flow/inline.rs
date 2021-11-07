@@ -239,6 +239,7 @@ impl Box for InlineLevelBox {
 				),
 				content.as_str(),
 				parent_computed_values.get_color().clone(),
+				parent_computed_values.get_font_families(),
 			)
 		} else {
 			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());

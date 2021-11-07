@@ -33,11 +33,18 @@ impl DisplayListBuilder {
 			}))
 	}
 
-	pub fn push_text(&mut self, bounds: LayoutRect, content: &str, color: RGBA) {
+	pub fn push_text(
+		&mut self,
+		bounds: LayoutRect,
+		content: &str,
+		color: RGBA,
+		font_families: &Vec<String>,
+	) {
 		self.items.push(DisplayItem::Text(TextDisplayItem {
 			bounds,
 			content: content.to_string(),
 			color,
+			font_families: font_families.clone(),
 		}))
 	}
 }
