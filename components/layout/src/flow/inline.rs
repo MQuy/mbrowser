@@ -172,13 +172,12 @@ impl Box for InlineLevelBox {
 					.expect("dom has to have a parent")
 					.id(),
 			);
-			let family_names = computed_values.get_font_families();
 			Pixel::new(
 				TextUI::new()
 					.measure_size_in_bounded(
 						content.as_str(),
-						family_names,
-						14.0,
+						computed_values.get_font_families(),
+						computed_values.get_font_size(),
 						(self.size().width.0, f32::MAX),
 					)
 					.1,
@@ -240,6 +239,7 @@ impl Box for InlineLevelBox {
 				content.as_str(),
 				parent_computed_values.get_color().clone(),
 				parent_computed_values.get_font_families(),
+				parent_computed_values.get_font_size(),
 			)
 		} else {
 			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());

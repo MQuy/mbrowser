@@ -244,7 +244,11 @@ impl BoxTree {
 						let family_names = computed_values.get_font_families();
 						Pixel::new(
 							TextUI::new()
-								.measure_size(content.as_str(), family_names, 14.0)
+								.measure_size(
+									content.as_str(),
+									family_names,
+									computed_values.get_font_size(),
+								)
 								.0,
 						)
 					} else {

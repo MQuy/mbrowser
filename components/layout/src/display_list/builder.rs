@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use css::values::specified::color::RGBA;
+use css::values::CSSFloat;
 
 use super::display_item::{DisplayItem, LayoutRect, RectangleDisplayItem, TextDisplayItem};
 use crate::flow::tree::{BoxTree, PreOrderBoxTreeIterator};
@@ -39,11 +40,13 @@ impl DisplayListBuilder {
 		content: &str,
 		color: RGBA,
 		font_families: &Vec<String>,
+		font_size: CSSFloat,
 	) {
 		self.items.push(DisplayItem::Text(TextDisplayItem {
 			bounds,
 			content: content.to_string(),
 			color,
+			font_size,
 			font_families: font_families.clone(),
 		}))
 	}

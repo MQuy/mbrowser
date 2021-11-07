@@ -106,7 +106,7 @@ fn main() {
 .e { background-color: #0000ff; }
 .f { background-color: #4b0082; }
 .g { background-color: #800080; }
-#hello { font-family: fantasy; }
+#hello { font-family: fantasy; font-size: 32px; }
         "#,
 		Origin::UserAgent,
 		media,
@@ -269,7 +269,7 @@ fn main() {
 										},
 										horizontal_alignment:
 											iced_winit::alignment::Horizontal::Left,
-										size: 14.0,
+										size: text.font_size,
 										vertical_alignment: iced_winit::alignment::Vertical::Top,
 									}
 								},

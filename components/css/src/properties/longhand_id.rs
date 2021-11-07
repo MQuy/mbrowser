@@ -1190,6 +1190,7 @@ impl LonghandId {
 			LonghandId::Color => longhands::color::cascade_property,
 			LonghandId::Display => longhands::display::cascade_property,
 			LonghandId::FontFamily => longhands::font_family::cascade_property,
+			LonghandId::FontSize => longhands::font_size::cascade_property,
 			LonghandId::Height => longhands::height::cascade_property,
 			LonghandId::MarginBottom => longhands::margin_bottom::cascade_property,
 			LonghandId::MarginLeft => longhands::margin_left::cascade_property,

@@ -1,3 +1,4 @@
+use css::properties::longhands::font_size::DEFAULT_FONT_SIZE;
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::window;
 use layout::text::TextUI;
@@ -12,7 +13,8 @@ mod setup;
 #[serial]
 fn inline_level_with_auto_width_ignored() {
 	let tree = construct_tree(r#"<span id="test">hello world</span>"#, r#""#);
-	let (width, _) = TextUI::new().measure_size("hello world", &vec!["system-ui"], 14.0);
+	let (width, _) =
+		TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
 	let dimension = get_box_dimension(&tree, "test").unwrap();
 	assert_eq!(dimension.width, Pixel::new(width));
 }
@@ -24,7 +26,8 @@ fn inline_level_with_fixed_width_ignored() {
 		r#"<span id="test">hello world</span>"#,
 		r#"#test { width: 400px; }"#,
 	);
-	let (width, _) = TextUI::new().measure_size("hello world", &vec!["system-ui"], 14.0);
+	let (width, _) =
+		TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
 	let dimension = get_box_dimension(&tree, "test").unwrap();
 	assert_eq!(dimension.width, Pixel::new(width));
 }
@@ -38,7 +41,8 @@ fn inline_level_with_percentage_width_ignored() {
 #test { width: 400px; }
         "#,
 	);
-	let (width, _) = TextUI::new().measure_size("hello world", &vec!["system-ui"], 14.0);
+	let (width, _) =
+		TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
 	let dimension = get_box_dimension(&tree, "test").unwrap();
 	assert_eq!(dimension.width, Pixel::new(width));
 }
@@ -184,7 +188,8 @@ fn inline_level_as_second_child_position() {
 #test1 { padding: 10px; margin: 15px }
         "#,
 	);
-	let (width, _) = TextUI::new().measure_size("hello world", &vec!["system-ui"], 14.0);
+	let (width, _) =
+		TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
 	let dimension = get_box_dimension(&tree, "test2").unwrap();
 	assert_eq!(dimension.x, Pixel::new(width + 50.0));
 	assert_eq!(dimension.y, Pixel::new(0.0));

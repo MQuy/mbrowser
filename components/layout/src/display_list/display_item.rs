@@ -1,5 +1,5 @@
 use css::values::specified::color::RGBA;
-use css::values::{CSSPixel, Pixel};
+use css::values::{CSSFloat, CSSPixel, Pixel};
 use euclid::Rect;
 
 pub type LayoutRect = Rect<Pixel, CSSPixel>;
@@ -16,6 +16,7 @@ pub struct TextDisplayItem {
 	pub content: String,
 	pub color: RGBA,
 	pub font_families: Vec<String>,
+	pub font_size: CSSFloat,
 }
 
 #[derive(Debug)]

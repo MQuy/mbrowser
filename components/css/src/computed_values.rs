@@ -4,8 +4,12 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands;
 use crate::properties::longhands::display::Display;
-use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
+use crate::properties::longhands::font_size::DEFAULT_FONT_SIZE;
+use crate::values::computed::length::{
+	LengthPercentage, LengthPercentageOrAuto, NonNegativeLengthPercentage, Size,
+};
 use crate::values::specified::color::RGBA;
+use crate::values::CSSFloat;
 
 #[derive(Debug)]
 pub struct Box {
@@ -70,6 +74,7 @@ impl Default for Padding {
 pub struct Text {
 	pub color: RGBA,
 	pub font_families: Vec<String>,
+	pub font_size: CSSFloat,
 }
 
 impl Default for Text {
@@ -77,6 +82,7 @@ impl Default for Text {
 		Self {
 			color: RGBA::transparent(),
 			font_families: vec![],
+			font_size: DEFAULT_FONT_SIZE,
 		}
 	}
 }
@@ -170,6 +176,14 @@ impl ComputedValues {
 
 	pub fn set_font_families(&mut self, font_families: Vec<String>) {
 		self.text.font_families = font_families;
+	}
+
+	pub fn get_font_size(&self) -> CSSFloat {
+		self.text.font_size
+	}
+
+	pub fn set_font_size(&mut self, value: CSSFloat) {
+		self.text.font_size = value;
 	}
 
 	pub fn get_background_color(&self) -> &RGBA {
