@@ -1,3 +1,5 @@
+#![feature(once_cell)]
+
 pub mod applicable_declaration_block;
 pub mod display_list;
 pub mod flow;

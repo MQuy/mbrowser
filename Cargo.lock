@@ -568,6 +568,7 @@ dependencies = [
  "html5ever",
  "mime",
  "num-traits",
+ "once_cell",
  "regex",
  "selectors",
 ]
@@ -1219,6 +1220,7 @@ dependencies = [
  "font-kit",
  "glyph_brush",
  "html5ever",
+ "once_cell",
  "selectors",
  "serial_test",
  "wgpu",
