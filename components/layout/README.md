@@ -76,6 +76,8 @@ Everything when rendering has to be in a box, in the example above there is no H
 
 Anonymous box is also ignored when resolving percentage values, for example child of anonymous block box, which inside div, need to know its containing block height to resolve a percentage height, then it will use the height of div instead.
 
+🙋 Both block-level and inline-level elements can establish block formatting context.
+
 #### Inline
 
 Inline-level elements do not form new block of content, and inline-level elements generate inline-level boxes which participate in an inline formating context. In inline formating context, boxes are laid out horizontally one after other, beginning at the top of a containning block.
@@ -85,6 +87,8 @@ In example below, p generates a block box, two anonymous boxes (for "Hello" and 
 ```html
 <p>Hello <em>darkness</em>, my old friend</p>
 ```
+
+🙋 Only block-level elements can establish inline formatting context (inline-block elements which contain only inline-level elements can establish a BFC and IFC simultaneously <- to simplify our implementation we create a anonymous block for their inline-level elements children).
 
 ### Stacking context
 
@@ -189,43 +193,170 @@ enum StyleSource {
 
 - Traverse style tree to construct flow tree
 
+🙋 Current, we don't take white space (space, tab, newline ...) characters into consideration (which we should support)
+
+```html
+<span>
+  <span>tata</span>
+  <span>hello world</span>
+</span>
+---- vs
+<span><span>tata</span><span>hello world</span></span>
+---- vs
+<span><span>tata </span><span>hello world</span></span>
+```
+
+### [Fragmentation](https://www.w3.org/TR/css-break-4/#fragmentation-model)
+
+#### Visual fragment
+
+![fragment](https://i.imgur.com/OdFpQyU.png)
+
+#### Traverse direction
+
+![traversal](https://i.imgur.com/BDBvFZm.png)
+
+#### Implementation
+
 ```rs
-// flow.rs
-pub struct BaseBox {
-  node: NodeRef,
-  formatting_context: Rc<VisualFormattingContext>,
-  stacking_context: Rc<StackingContext>,
+pub struct LayoutInfo {
+  pub width: Pixel,
+  pub height: Pixel,
+  pub margin: Sides,
+  pub padding: Sides,
+	pub preferred_width: Pixel,
+  pub preferred_minimum_width: Pixel,
 }
 
 pub struct BlockLevelBox {
-  base: BaseBox,
-  children: Vec<LevelBox>,
+  lines: Vec<Line>, // only when establishing InlineFormattingContext, https://www.w3.org/TR/css3-linebox/#line-boxes
+  fragment: BoxFragment,
 }
 
 pub struct InlineLevelBox {
-  base: BaseBox,
-  children: Vec<LevelBox>,
+  // if there is only one fragment -> it can have both sides.
+  // else
+  //  - the first one doesn't account right side for layout.
+  //  - the following ones don't account left side for layout.
+  fragments: Vec<BoxFragment>,
+  max_width: Pixel, // use for inline-level elements with IFC to create next fragments (not first one), including width + sides
 }
 
-pub enum LevelBox {
-  BlockLevelBox(BlockLevelBox),
-  InlineLevelBox(InlineLevelBox),
-  AnonymousBox(LevelBox),
+pub struct TextRun {
+  fragments: Vec<TextFragment>,
 }
 
-pub enum FormattingContextType {
-  BlockFormattingContext,
-  InlineFormattingContext,
+pub struct AnonymousBox {
+  lines: Vec<Line>, // anonymous box can establish a inline formatting context
+  fragment: AnonymousFragment,
 }
 
-pub struct VisualFormattingContext {
-  formatting_context_type: FormattingContextType,
-  established_by: Weak<LevelBox>,
+pub struct Line {
+  fragments: Vec<Rc<Fragment>>,
+  bounds: Rect<Pixel, CSSPixel>,
 }
 
-pub struct StackingContext {
-  z_index: i32,
-  generated_by: Weak<LevelBox>,
-  children: Vec<StackingContext>,
+// content rect position is based on its parent
+pub enum Fragment {
+  BoxFragment,
+  TextFragment,
+  AnonymousFragment,
 }
 ```
+
+✍️ When inline-block with auto width
+
+**Prepare**: post traversal box tree, to compute
+
+- for block-level boxes, inline-level boxes (establish BFC)
+  - update layout info if it has a fixed width/height and fixed margin/padding.
+- intrinsic width for each box (B).
+  - text run:
+    - prefered mimimum width (PMW): split content by white space characters and PMW = max(each words).
+    - prefered width (PW): using TextUI to render and calculate its content bounds.
+  - inline formatting context (IFC):
+    - PMW = max(all of B's children (PMW + fixed sides)) (1).
+    - PW = sum all of B's children (PW + fixed sides) (1).
+  - block formatting context (BFC):
+    - PMW = max(all of B's children (PMW + fixed sides)) (1).
+    - PW = max(all of B's children (PW + fixed sides)) (1).
+
+(1) if child's width is fixed, using it instead of PMW or PW.
+
+**Visit**: for each box B, if it is (after each visit, for block and inline-block elements, their width are known)
+
+- block-level box (BL)
+  - BL's parent (P), P is either block or inline-block -> only one box fragment (PF).
+  - create a box fragment (F).
+  - update layout info (width + horizontal sides) (https://www.w3.org/TR/CSS22/visudet.html#blockwidth).
+  - F's width and horizontal sides = layout info.
+  - F's bounded width = F's width.
+- inline-level box (IL)
+  - traverse IL's ancestors until reaching an ancestor with inline formatting context (A) (either block or anonymous box).
+  - if A's lines empty
+    - create a newline (AL) in A's lines.
+  - else
+    - get the latest A's lines (AL).
+  - get IL's parent (P), P's latest fragment (PF). if P != A -> P has to be inline-level block with IFC.
+  - IL's max_width = P's width.
+  - if P is block or anonymous (P is A), PF's leftover width (PFW)
+    - PFW = P's width - P's latest line width.
+  - else
+    - PFW = P's fragment leftover width.
+  - create a box fragment (F).
+  - if IL's formatting context:
+    - block formatting context
+      - F's width (FW) and sides (horizontal) (https://www.w3.org/TR/CSS22/visudet.html#inlineblock-width).
+        - FW = min(max(IL's PMW, A's width - sides), IL's PW).
+      - F's bounded width = F's width.
+      - if FW + sides <= PFW || AL contains no fragment (1)
+        - if IL is direct child of A -> append F into AL.
+        - traverse [P..A), for each node N (which has to be inline-level elements)
+          - N's latest fragment width += FW + sides.
+      - else
+        - relocate F to newline (simply reset F'x = 0).
+        - create a newline (AL) in A's lines.
+        - if IL is direct child of A -> append F into AL.
+        - traverse [P..A), for each node N (which has to be inline-level elements) (2)
+          - create a new box fragment (NF).
+          - NF's bounded width = IL's max_width - right sides.
+          - NF's width = previous width + right sides (starting at F's width).
+          - if N is direct child of A -> append NF into AL.
+    - inline formatting context
+      - sides (https://www.w3.org/TR/CSS22/visudet.html#inline-width).
+      - F's bounded width = PFW - F's sides.
+- text run (TR)
+  - traverse IL's ancestors until reaching an ancestor with inline formatting context (A) (either block or anonymous box).
+  - if A's lines empty
+    - create a newline (AL) in A's lines.
+  - else
+    - get the latest A's lines (AL).
+  - get IL's parent (P), P's latest fragment (PF). if P != A -> P has to be inline-level block with IFC.
+  - if P is block or anonymous (P is A), PF's leftover width (PFW)
+    - PFW = P's width - P's latest line.
+  - else
+    - PFW = P's fragment leftover width.
+  - create a text fragment (F).
+  - if TR's PW <= PFW:
+    - F's width = TR's PW.
+    - (1).
+  - else
+    - split TR by words.
+    - string S and append words until S's width larger than PFW -> F's width = S's width.
+    - if TR is A's direct child -> append TR into A's lines.
+    - for remaining TR's words
+      - create a new text fragment (F1), F1's width = min(P's bounded width, remaining TR words width).
+      - string S and append words until S's width larger than PFW -> F's width = S's width (1).
+      - same as (2).
+- anonymous box (AB)
+  - create a anonymous fragment (F).
+  - same as block-element box.
+
+**Revisit**
+
+- inline-level elements with IFC have many fragments, only for the first fragment
+  - if it is empty width -> remove it.
+
+#### Notes
+
+- text run should be in its own anonymous block box, https://codesandbox.io/s/reverent-sky-czvn1?file=/index.html
