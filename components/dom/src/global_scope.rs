@@ -1,6 +1,7 @@
 use core::panic;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::ops::Deref;
 use std::rc::Rc;
 
 use css::computed_values::ComputedValues;
@@ -75,18 +76,6 @@ impl NodeRef {
 		downcast::<Node, Element>(self.0.clone()).has_attribute(local_name)
 	}
 
-	pub fn node_type_id(&self) -> NodeTypeId {
-		self.0.node_type_id()
-	}
-
-	pub fn children(&self) -> impl Iterator<Item = Rc<Node>> {
-		self.0.children()
-	}
-
-	pub fn parent_node(&self) -> Option<Rc<Node>> {
-		self.0.parent_node()
-	}
-
 	pub fn insert_selector_flags(&self, flags: ElementSelectorFlags) {
 		assert!(self.0.node_type_id().is_element());
 		downcast::<Node, Element>(self.0.clone()).insert_selector_flags(flags)
@@ -105,9 +94,13 @@ impl NodeRef {
 			None => None,
 		}
 	}
+}
 
-	pub fn id(&self) -> u64 {
-		self.0.id()
+impl Deref for NodeRef {
+	type Target = Node;
+
+	fn deref(&self) -> &Node {
+		self.0.deref()
 	}
 }
 

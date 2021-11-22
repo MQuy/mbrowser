@@ -3,19 +3,17 @@ use std::rc::Rc;
 
 use common::not_supported;
 use css::properties::longhands::display::{DisplayInside, DisplayOutside};
-use css::values::{Pixel, PIXEL_ZERO};
-use dom::characterdata::CharacterData;
-use dom::global_scope::{GlobalScope, NodeRef};
-use dom::inheritance::Castable;
+use css::values::Pixel;
+use dom::global_scope::NodeRef;
 use dom::node::Node;
 use dom::nodetype::NodeTypeId;
+use euclid::{Point2D, Rect, Size2D};
 
 use super::block::BlockLevelBox;
 use super::boxes::{Box, BoxClass};
 use super::formatting_context::FormattingContextType;
 use crate::flow::inline::InlineLevelBox;
 use crate::style_tree::{StyleTree, StyleTreeNode};
-use crate::text::TextUI;
 
 pub struct BoxTree {
 	pub root: Rc<dyn Box>,
@@ -49,8 +47,13 @@ impl BoxTree {
 			.expect("dom has to belong to a window")
 			.viewport()
 			.clone();
-		initial_containing_block.size().width = Pixel::new(viewport.width());
-		initial_containing_block.size().height = Pixel::new(viewport.height());
+		initial_containing_block
+			.as_block_level_box()
+			.fragment_mut()
+			.rect = Rect::new(
+			Point2D::new(Pixel::new(0.0), Pixel::new(0.0)),
+			Size2D::new(Pixel::new(viewport.width()), Pixel::new(viewport.height())),
+		);
 		root.set_containing_block(Some(initial_containing_block.clone()));
 		let children_iter = style_node.get_visible_children_iter();
 		for child in children_iter {
@@ -150,43 +153,31 @@ impl BoxTree {
 
 	fn log_node(&self, node: Rc<dyn Box>, depth: usize) {
 		let indent: String = std::iter::repeat("  ").take(depth).collect();
-		let dimentions = node.size();
 		match node.class() {
 			BoxClass::Block => {
-				let block = node
-					.as_any()
-					.downcast_ref::<BlockLevelBox>()
-					.expect("expect block level box");
+				let block = node.as_block_level_box();
 				println!(
-					"{}block-{:?}-{:?}-{:?}x{:?}",
+					"{}block-{:?}-{:?}",
 					indent,
 					block.dom_node().node_type_id(),
 					node.formatting_context_type(),
-					dimentions.width,
-					dimentions.height,
 				)
 			},
 			BoxClass::Inline => {
-				let inline = node
-					.as_any()
-					.downcast_ref::<InlineLevelBox>()
-					.expect("expect block level box");
+				let inline = node.as_inline_level_box();
 				println!(
-					"{}inline-{:?}-{:?}-{:?}x{:?}",
+					"{}inline-{:?}-{:?}",
 					indent,
 					inline.dom_node().node_type_id(),
 					node.formatting_context_type(),
-					dimentions.width,
-					dimentions.height,
 				)
 			},
-			BoxClass::Anonymous => println!(
-				"{}anonymous-{:?}-{:?}x{:?}",
-				indent,
-				node.formatting_context_type(),
-				dimentions.width,
-				dimentions.height
-			),
+			BoxClass::Anonymous => {
+				println!("{}anonymous-{:?}", indent, node.formatting_context_type())
+			},
+			BoxClass::TextRun => {
+				println!("{}text run-{:?}", indent, node.formatting_context_type())
+			},
 		};
 		for child in node.children() {
 			self.log_node(child, depth + 1);
@@ -200,9 +191,8 @@ impl BoxTree {
 		- post-order traversal to compute height for block elements.
 	 */
 	pub fn compute_layout(&self) {
-		self.bubble_intrinsic_inline_size();
-		self.compute_horizontal_used_value();
-		self.compute_vertical_used_value();
+		self.prepare_layout();
+		self.visit_layout();
 	}
 
 	/*
@@ -214,79 +204,23 @@ impl BoxTree {
 		- if box is inline-level box (block formatting context) -> its intrinsic width = total children's width
 		- if box is block-level box -> its intrinsic width = maximum from each child's width
 	*/
-	pub fn bubble_intrinsic_inline_size(&self) {
+	pub fn prepare_layout(&self) {
 		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
 		for node in node_iter {
-			let width = match node.class() {
-				BoxClass::Inline
-					if node.formatting_context_type()
-						== FormattingContextType::InlineFormattingContext =>
-				{
-					let inline = node
-						.as_any()
-						.downcast_ref::<InlineLevelBox>()
-						.expect("inline level box");
-					if inline.children().len() > 0 {
-						let mut total_children_width = PIXEL_ZERO;
-						for child in inline.children() {
-							total_children_width += child.size().intrinsic_width;
-						}
-						total_children_width
-					} else if inline.dom_node().node_type_id().is_character_data_text() {
-						let dom_node = inline.dom_node();
-						let content = dom_node.0.downcast::<CharacterData>().data();
-						let computed_values = GlobalScope::get_or_init_computed_values(
-							dom_node
-								.parent_node()
-								.expect("dom has to have a parent")
-								.id(),
-						);
-						let family_names = computed_values.get_font_families();
-						Pixel::new(
-							TextUI::new()
-								.measure_size(
-									content.as_str(),
-									family_names,
-									computed_values.get_font_size(),
-								)
-								.0,
-						)
-					} else {
-						PIXEL_ZERO
-					}
-				}
-				_ => BoxClass::get_total_children_intrinsic_width(node.as_ref()),
-			};
-			node.size().intrinsic_width = width;
+			node.prepare_layout();
 		}
 	}
 
-	/*
-	https://www.w3.org/TR/CSS22/visudet.html#Computing_widths_and_margins
-	if box is block-level box
-		- its width + layout box (padding, margin) = width of its containing block (https://www.w3.org/TR/CSS22/visudet.html#blockwidth),
-		- if element has no parent (it is root), it belongs to the initial containing block which is a viewport.
-	if box is inline-level box and its formatting context:
-		- block formatting context:
-			- if width = auto, its width = min(total children intrinsic width, containing block width) (https://www.w3.org/TR/CSS22/visudet.html#shrink-to-fit-float.)
-			- if width in px, its width = its intrinsic width.
-			- if width in percentage, its width = its containing block width * percentage.
-		- inline formatting context, its width = its intrinsic width
-	if anonymous box -> its width = containing block's width
-	*/
-	pub fn compute_horizontal_used_value(&self) {
-		let node_iter = PreOrderBoxTreeIterator::new(self.root.clone());
-		for node in node_iter {
-			node.compute_horizontal_used_value();
-		}
+	pub fn visit_layout(&self) {
+		self.visit_layout_node(self.root.clone());
 	}
 
-	// https://www.w3.org/TR/CSS22/visudet.html#Computing_heights_and_margins
-	pub fn compute_vertical_used_value(&self) {
-		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
-		for node in node_iter {
-			node.compute_vertical_used_value();
+	pub fn visit_layout_node(&self, node: Rc<dyn Box>) {
+		node.visit_layout();
+		for child in node.children() {
+			self.visit_layout_node(child);
 		}
+		node.revisit_layout();
 	}
 }
 

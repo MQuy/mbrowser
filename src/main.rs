@@ -56,7 +56,7 @@ impl ParseErrorReporter for TestingErrorReporter {
 
 fn to_rectangle(bounds: &LayoutRect) -> Rectangle {
 	Rectangle::new(
-		Point::new(bounds.origin.x.get(), bounds.origin.y.get()),
+		Point::new(bounds.min_x().get(), bounds.min_y().get()),
 		Size::new(bounds.size.width.get(), bounds.size.height.get()),
 	)
 }

@@ -264,8 +264,6 @@ pub enum Fragment {
 }
 ```
 
-✍️ When inline-block with auto width
-
 **Prepare**: post traversal box tree, to compute
 
 - for block-level boxes, inline-level boxes (establish BFC)

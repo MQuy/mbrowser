@@ -5,9 +5,7 @@ use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands;
 use crate::properties::longhands::display::Display;
 use crate::properties::longhands::font_size::DEFAULT_FONT_SIZE;
-use crate::values::computed::length::{
-	LengthPercentage, LengthPercentageOrAuto, NonNegativeLengthPercentage, Size,
-};
+use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
 use crate::values::specified::color::RGBA;
 use crate::values::CSSFloat;
 

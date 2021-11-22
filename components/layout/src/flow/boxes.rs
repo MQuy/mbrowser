@@ -1,15 +1,21 @@
-use std::any::Any;
-use std::cell::{RefCell, RefMut};
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::{Rc, Weak};
 
 use common::not_reached;
-use css::values::{Pixel, PIXEL_ZERO};
+use css::values::{CSSPixel, Pixel};
+use euclid::Rect;
+use uuid::Uuid;
 
-use super::dimension::BoxDimension;
+use super::block::BlockLevelBox;
 use super::formatting_context::{FormattingContext, FormattingContextType};
+use super::fragment::{AnonymousFragment, Fragment, LayoutInfo, Line};
+use super::inline::InlineLevelBox;
+use super::text_run::TextRun;
 use crate::display_list::builder::DisplayListBuilder;
 
 pub trait Box {
+	fn id(&self) -> Uuid;
+
 	fn add_child(&self, child: Rc<dyn Box>);
 
 	fn formatting_context(&self) -> Rc<FormattingContext>;
@@ -34,41 +40,63 @@ pub trait Box {
 
 	fn set_containing_block(&self, value: Option<Rc<dyn Box>>);
 
-	fn size(&self) -> RefMut<'_, BoxDimension>;
+	fn content_rect(&self) -> Rect<Pixel, CSSPixel>;
 
 	fn get_total_width(&self) -> Pixel;
 
 	fn get_total_height(&self) -> Pixel;
 
+	fn layout_info(&self) -> Ref<'_, LayoutInfo>;
+
+	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo>;
+
 	fn is_block_container(&self) -> bool;
 
-	fn compute_horizontal_used_value(&self);
+	fn prepare_layout(&self);
 
-	fn compute_vertical_used_value(&self);
+	fn visit_layout(&self);
+
+	fn revisit_layout(&self);
 
 	fn class(&self) -> BoxClass;
 
-	fn as_any(&self) -> &dyn Any;
+	fn as_block_level_box(&self) -> &BlockLevelBox {
+		panic!("called as_block_level_box on a non-block-level box");
+	}
+
+	fn as_inline_level_box(&self) -> &InlineLevelBox {
+		panic!("called as_inline_level_box on a non-inline-level box");
+	}
+
+	fn as_anonymous_box(&self) -> &AnonymousBox {
+		panic!("called as_anonymous_box on a non-anonymous box");
+	}
+
+	fn as_text_run(&self) -> &TextRun {
+		panic!("called as_text_run on a non text run");
+	}
 
 	fn build_display_list(&self, builder: &mut DisplayListBuilder);
 }
 
 pub struct BaseBox {
+	pub id: Uuid,
 	pub formatting_context: RefCell<Rc<FormattingContext>>,
 	pub children: RefCell<Vec<Rc<dyn Box>>>,
 	pub parent: RefCell<Option<Weak<dyn Box>>>,
 	pub containing_block: RefCell<Option<Weak<dyn Box>>>,
-	pub size: RefCell<BoxDimension>,
+	pub layout_info: RefCell<LayoutInfo>,
 }
 
 impl BaseBox {
 	pub fn new(formatting_context: Rc<FormattingContext>) -> Self {
 		BaseBox {
+			id: Uuid::new_v4(),
 			parent: RefCell::new(Default::default()),
 			formatting_context: RefCell::new(formatting_context),
 			children: RefCell::new(Default::default()),
 			containing_block: RefCell::new(Default::default()),
-			size: RefCell::new(Default::default()),
+			layout_info: RefCell::new(Default::default()),
 		}
 	}
 
@@ -134,27 +162,57 @@ impl BaseBox {
 		self.containing_block
 			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
 	}
-
-	#[inline]
-	pub fn size(&self) -> RefMut<'_, BoxDimension> {
-		self.size.borrow_mut()
-	}
 }
 
 // Anonymous box is always anonymous block box
 pub struct AnonymousBox {
 	base: BaseBox,
+	fragment: RefCell<AnonymousFragment>,
+	lines: RefCell<Vec<Line>>,
 }
 
 impl AnonymousBox {
 	pub fn new(formatting_context: Rc<FormattingContext>) -> Self {
 		AnonymousBox {
 			base: BaseBox::new(formatting_context),
+			fragment: RefCell::new(AnonymousFragment::new()),
+			lines: RefCell::new(Default::default()),
 		}
+	}
+
+	pub fn fragment(&self) -> Ref<AnonymousFragment> {
+		self.fragment.borrow()
+	}
+
+	pub fn fragment_mut(&self) -> RefMut<'_, AnonymousFragment> {
+		self.fragment.borrow_mut()
+	}
+
+	pub fn lines(&self) -> Ref<Vec<Line>> {
+		self.lines.borrow()
+	}
+
+	pub fn lines_mut(&self) -> RefMut<'_, Vec<Line>> {
+		self.lines.borrow_mut()
+	}
+
+	pub fn append_fragment(&self, fragment: Rc<Fragment>) {
+		let mut lines = self.lines.borrow_mut();
+		let line = lines.last_mut().unwrap();
+		line.fragments.push(fragment.clone());
+		line.bounds.size.width += fragment.total_width();
+	}
+
+	pub fn create_newline(&self) {
+		self.lines.borrow_mut().push(Line::new());
 	}
 }
 
 impl Box for AnonymousBox {
+	fn id(&self) -> Uuid {
+		self.base.id
+	}
+
 	fn add_child(&self, child: Rc<dyn Box>) {
 		self.base.add_child(child)
 	}
@@ -203,48 +261,48 @@ impl Box for AnonymousBox {
 		self.base.set_containing_block(value)
 	}
 
-	fn size(&self) -> RefMut<'_, BoxDimension> {
-		self.base.size()
+	fn content_rect(&self) -> Rect<Pixel, CSSPixel> {
+		self.fragment().rect
+	}
+
+	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
+		self.base.layout_info.borrow()
+	}
+
+	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo> {
+		self.base.layout_info.borrow_mut()
 	}
 
 	fn get_total_width(&self) -> Pixel {
-		self.base.size.borrow().width
+		self.fragment().rect.width()
 	}
 
 	fn get_total_height(&self) -> Pixel {
-		self.base.size.borrow().height
+		self.fragment().rect.height()
 	}
 
 	fn is_block_container(&self) -> bool {
 		false
 	}
 
-	fn compute_horizontal_used_value(&self) {
-		let containing_width = self
-			.containing_block()
-			.expect("has to have a containing block")
-			.size()
-			.width;
-		self.size().set_width(containing_width);
+	fn prepare_layout(&self) {
+		let mut layout_info = self.layout_info_mut();
+		layout_info.compute_intrinsic(self);
 	}
 
-	fn compute_vertical_used_value(&self) {
-		let height = BoxClass::get_total_children_height(self);
-		let containing_block = self
-			.containing_block()
-			.expect("has to have a containing block");
-		let containing_constructing_height = containing_block.size().constructing_height;
-		self.size().set_height(height);
-		containing_block
-			.size()
-			.set_constructing_height(containing_constructing_height + height);
+	fn visit_layout(&self) {
+		todo!()
+	}
+
+	fn revisit_layout(&self) {
+		todo!()
 	}
 
 	fn class(&self) -> BoxClass {
 		BoxClass::Anonymous
 	}
 
-	fn as_any(&self) -> &dyn Any {
+	fn as_anonymous_box(&self) -> &AnonymousBox {
 		self
 	}
 
@@ -256,6 +314,7 @@ pub enum BoxClass {
 	Inline,
 	Block,
 	Anonymous,
+	TextRun,
 }
 
 impl BoxClass {
@@ -306,42 +365,6 @@ impl BoxClass {
 		child.set_parent(Some(source));
 	}
 
-	pub fn get_total_children_intrinsic_width(source: &dyn Box) -> Pixel {
-		let mut total_children_width = PIXEL_ZERO;
-		match source.formatting_context_type() {
-			FormattingContextType::BlockFormattingContext => {
-				for child in source.children() {
-					total_children_width = child.size().intrinsic_width.max(total_children_width);
-				}
-			},
-			FormattingContextType::InlineFormattingContext => {
-				for child in source.children() {
-					total_children_width += child.size().intrinsic_width;
-				}
-			},
-		}
-		total_children_width
-	}
-
-	pub fn get_total_children_height(source: &dyn Box) -> Pixel {
-		let mut total_children_height = PIXEL_ZERO;
-		match source.formatting_context_type() {
-			FormattingContextType::BlockFormattingContext => {
-				// TODO: Support margin collapse
-				for child in source.children() {
-					total_children_height += child.get_total_height();
-				}
-			},
-			FormattingContextType::InlineFormattingContext => {
-				// TODO: Support multilines
-				for child in source.children() {
-					total_children_height = total_children_height.max(child.get_total_height());
-				}
-			},
-		};
-		total_children_height
-	}
-
 	pub fn set_containing_box(source: Rc<dyn Box>) {
 		let mut containing_block = None;
 		for ancestor in source.ancestors() {
@@ -366,18 +389,6 @@ impl BoxClass {
 		} else {
 			panic!("one of box's ancestors must be its containing box");
 		}
-	}
-
-	pub fn get_absolute_axis(source: Rc<dyn Box>) -> (Pixel, Pixel) {
-		let dimension = source.size();
-		let mut x = dimension.x;
-		let mut y = dimension.y;
-		for ancestor in source.ancestors() {
-			let dimension = ancestor.size();
-			x += dimension.x + dimension.margin.margin_left + dimension.padding.padding_left;
-			y += dimension.y + dimension.margin.margin_top + dimension.padding.padding_top;
-		}
-		(x, y)
 	}
 }
 

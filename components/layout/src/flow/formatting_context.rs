@@ -1,3 +1,4 @@
+use core::panic;
 use std::cell::RefCell;
 use std::rc::{Rc, Weak};
 
@@ -24,5 +25,12 @@ impl FormattingContext {
 
 	pub fn set_established_by(&self, owner: Rc<dyn Box>) {
 		self.established_by.replace(Some(Rc::downgrade(&owner)));
+	}
+
+	pub fn established_by(&self) -> Rc<dyn Box> {
+		match self.established_by.borrow().as_ref() {
+			Some(value) => value.upgrade().unwrap(),
+			None => panic!("a box has to belongs to a formatting context"),
+		}
 	}
 }

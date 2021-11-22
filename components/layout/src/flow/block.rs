@@ -1,39 +1,72 @@
-use std::any::Any;
-use std::cell::RefMut;
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 use common::not_supported;
 use css::values::computed::length::{LengthPercentage, LengthPercentageOrAuto, Size};
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::global_scope::{GlobalScope, NodeRef};
-use euclid::{Point2D, Size2D};
+use euclid::Rect;
 
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
-use super::dimension::BoxDimension;
 use super::formatting_context::{FormattingContext, FormattingContextType};
+use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
 use crate::display_list::builder::DisplayListBuilder;
-use crate::display_list::display_item::LayoutRect;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#block-boxes
 pub struct BlockLevelBox {
 	dom_node: NodeRef,
 	base: BaseBox,
+	fragment: RefCell<BoxFragment>,
+	lines: RefCell<Vec<Line>>,
 }
 
 impl BlockLevelBox {
 	pub fn new(dom_node: NodeRef, formatting_context: Rc<FormattingContext>) -> Self {
 		BlockLevelBox {
+			dom_node: dom_node.clone(),
 			base: BaseBox::new(formatting_context),
-			dom_node,
+			fragment: RefCell::new(BoxFragment::new(dom_node)),
+			lines: RefCell::new(Default::default()),
 		}
 	}
 
 	pub fn dom_node(&self) -> NodeRef {
 		self.dom_node.clone()
 	}
+
+	pub fn fragment(&self) -> Ref<'_, BoxFragment> {
+		self.fragment.borrow()
+	}
+
+	pub fn fragment_mut(&self) -> RefMut<'_, BoxFragment> {
+		self.fragment.borrow_mut()
+	}
+
+	pub fn lines(&self) -> Ref<'_, Vec<Line>> {
+		self.lines.borrow()
+	}
+
+	pub fn lines_mut(&self) -> RefMut<'_, Vec<Line>> {
+		self.lines.borrow_mut()
+	}
+
+	pub fn append_fragment(&self, fragment: Rc<Fragment>) {
+		let mut lines = self.lines.borrow_mut();
+		let line = lines.last_mut().unwrap();
+		line.fragments.push(fragment.clone());
+		line.bounds.size.width += fragment.total_width();
+	}
+
+	pub fn create_newline(&self) {
+		self.lines.borrow_mut().push(Line::new());
+	}
 }
 
 impl Box for BlockLevelBox {
+	fn id(&self) -> uuid::Uuid {
+		self.base.id
+	}
+
 	fn add_child(&self, child: Rc<dyn Box>) {
 		self.base.add_child(child)
 	}
@@ -82,39 +115,55 @@ impl Box for BlockLevelBox {
 		self.base.set_containing_block(value);
 	}
 
-	fn size(&self) -> RefMut<'_, BoxDimension> {
-		self.base.size()
+	fn content_rect(&self) -> Rect<Pixel, css::values::CSSPixel> {
+		self.fragment().rect
+	}
+
+	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
+		self.base.layout_info.borrow()
+	}
+
+	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo> {
+		self.base.layout_info.borrow_mut()
 	}
 
 	fn get_total_width(&self) -> Pixel {
-		let dimensions = self.base.size.borrow();
-		dimensions.margin.margin_left
-			+ dimensions.padding.padding_left
-			+ dimensions.width
-			+ dimensions.padding.padding_right
-			+ dimensions.margin.margin_right
+		let fragment = self.fragment();
+		fragment.margin.left
+			+ fragment.padding.left
+			+ fragment.rect.width()
+			+ fragment.padding.right
+			+ fragment.margin.right
 	}
 
 	fn get_total_height(&self) -> Pixel {
-		let dimensions = self.base.size.borrow();
-		dimensions.margin.margin_top
-			+ dimensions.padding.padding_top
-			+ dimensions.height
-			+ dimensions.padding.padding_bottom
-			+ dimensions.margin.margin_bottom
+		let fragment = self.fragment();
+		fragment.margin.top
+			+ fragment.padding.top
+			+ fragment.rect.height()
+			+ fragment.padding.bottom
+			+ fragment.margin.bottom
 	}
 
 	fn is_block_container(&self) -> bool {
 		true
 	}
 
-	fn compute_horizontal_used_value(&self) {
+	fn prepare_layout(&self) {
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
-		let containing_block = self
-			.containing_block()
-			.expect("has to have a containing block");
-		let containing_width = containing_block.size().width;
-		let containing_height = containing_block.size().height;
+		let mut layout_info = self.layout_info_mut();
+		layout_info.compute_fixed_margin(computed_values);
+		layout_info.compute_fixed_padding(computed_values);
+		layout_info.compute_width_and_height(computed_values);
+		layout_info.compute_intrinsic(self);
+	}
+
+	/// https://www.w3.org/TR/CSS22/visudet.html#blockwidth
+	fn visit_layout(&self) {
+		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
+		let containing_block = self.containing_block().unwrap();
+		let containing_width = containing_block.content_rect().width();
+		let containing_height = containing_block.content_rect().width();
 		let padding_left = computed_values
 			.get_padding_left()
 			.to_used_value(containing_width);
@@ -165,7 +214,7 @@ impl Box for BlockLevelBox {
 				};
 				width
 			},
-			css::values::generics::length::GenericSize::ExtremumLength(_) => {
+			Size::ExtremumLength(_) => {
 				not_supported!()
 			},
 		};
@@ -179,96 +228,30 @@ impl Box for BlockLevelBox {
 			},
 			_ => PIXEL_ZERO,
 		};
-		let mut dimentions = self.size();
-		dimentions.set_padding_left(padding_left);
-		dimentions.set_padding_right(padding_right);
-		dimentions.set_margin_left(margin_left);
-		dimentions.set_margin_right(margin_right);
-		dimentions.set_width(width);
-		dimentions.set_height(height);
+		let mut fragment = self.fragment_mut();
+		fragment.padding.left = padding_left;
+		fragment.padding.right = padding_right;
+		fragment.margin.left = margin_left;
+		fragment.margin.right = margin_right;
+		fragment.rect.origin.x = margin_left + padding_left;
+		fragment.rect.size.width = width;
+		fragment.rect.size.height = height;
 	}
 
-	fn compute_vertical_used_value(&self) {
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
-		let containing_block = self
-			.containing_block()
-			.expect("has to have a containing block");
-		let containing_width = containing_block.size().width;
-		let containing_height = containing_block.size().height;
-		let containing_constructing_height = containing_block.size().constructing_height;
-		let padding_top = computed_values
-			.get_padding_top()
-			.to_used_value(containing_width);
-		let padding_bottom = computed_values
-			.get_padding_bottom()
-			.to_used_value(containing_width);
-		let margin_top = computed_values
-			.get_margin_top()
-			.to_used_value(containing_width, PIXEL_ZERO);
-		let margin_bottom = computed_values
-			.get_margin_bottom()
-			.to_used_value(containing_width, PIXEL_ZERO);
-		let height = match computed_values.get_height() {
-			Size::Auto => BoxClass::get_total_children_height(self),
-			Size::LengthPercentage(length_percentage) => match &length_percentage.0 {
-				LengthPercentage::AbsoluteLength(value) => Pixel::new(*value),
-				LengthPercentage::Percentage(percentage) if containing_height != PIXEL_ZERO => {
-					containing_height * percentage.to_value(&(0.0..1.0))
-				},
-				_ => BoxClass::get_total_children_height(self),
-			},
-			Size::ExtremumLength(_) => not_supported!(),
-		};
-		let mut dimentions = self.size();
-		dimentions.set_padding_top(padding_top);
-		dimentions.set_padding_bottom(padding_bottom);
-		dimentions.set_margin_top(margin_top);
-		dimentions.set_margin_botom(margin_bottom);
-		dimentions.set_height(height);
-		dimentions.set_y(containing_constructing_height);
-		containing_block.size().set_constructing_height(
-			containing_constructing_height
-				+ margin_top + padding_top
-				+ height + padding_bottom
-				+ margin_bottom,
-		);
+	/// https://www.w3.org/TR/CSS22/visudet.html#normal-block
+	fn revisit_layout(&self) {
+		todo!()
 	}
 
 	fn class(&self) -> BoxClass {
 		BoxClass::Block
 	}
 
-	fn as_any(&self) -> &dyn Any {
+	fn as_block_level_box(&self) -> &BlockLevelBox {
 		self
 	}
 
 	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
-		let containing_block = self.containing_block().unwrap();
-		let (px, py) = BoxClass::get_absolute_axis(containing_block.clone());
-		let containing_dimension = containing_block.size();
-		let dimension = self.base.size();
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node().id());
-		// background
-		builder.push_rect(
-			LayoutRect::new(
-				Point2D::new(
-					px + containing_dimension.margin.margin_left
-						+ containing_dimension.padding.padding_left
-						+ dimension.x + dimension.margin.margin_left,
-					py + containing_dimension.margin.margin_top
-						+ containing_dimension.padding.padding_top
-						+ dimension.y + dimension.margin.margin_top,
-				),
-				Size2D::new(
-					dimension.width
-						+ dimension.padding.padding_left
-						+ dimension.padding.padding_right,
-					dimension.height
-						+ dimension.padding.padding_top
-						+ dimension.padding.padding_bottom,
-				),
-			),
-			computed_values.get_background_color().clone(),
-		)
+		todo!()
 	}
 }

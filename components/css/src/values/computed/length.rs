@@ -1,3 +1,5 @@
+use common::not_supported;
+
 use crate::values::generics::length::{GenericLengthPercentageOrAuto, GenericSize};
 use crate::values::generics::number::NonNegative;
 use crate::values::specified::percentage::Percentage;
@@ -31,6 +33,19 @@ impl LengthPercentageOrAuto {
 			LengthPercentageOrAuto::Auto => fallback_value,
 		}
 	}
+
+	#[inline]
+	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
+		match self {
+			GenericLengthPercentageOrAuto::LengthPercentage(length_percentage) => {
+				match length_percentage {
+					LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(*length)),
+					_ => None,
+				}
+			},
+			_ => None,
+		}
+	}
 }
 /// value = <length [0, ∞]> | <percentage>
 pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
@@ -47,9 +62,31 @@ impl NonNegativeLengthPercentage {
 			LengthPercentage::Percentage(value) => base_value * value.to_value(&(0.0..1.0)),
 		}
 	}
+
+	#[inline]
+	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
+		match self.0 {
+			LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(length)),
+			_ => None,
+		}
+	}
 }
 
 /// value = <length [0, ∞]> | <percentage>
 pub type NonNegativeLengthPercentageOrAuto = NonNegative<LengthPercentageOrAuto>;
 
 pub type Size = GenericSize<NonNegativeLengthPercentage>;
+
+impl Size {
+	#[inline]
+	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
+		match self {
+			Size::Auto => None,
+			Size::LengthPercentage(length_percentage) => match length_percentage.0 {
+				LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(length)),
+				_ => None,
+			},
+			Size::ExtremumLength(_) => not_supported!(),
+		}
+	}
+}
