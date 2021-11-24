@@ -12,6 +12,7 @@ use euclid::{Point2D, Rect, Size2D};
 use super::block::BlockLevelBox;
 use super::boxes::{Box, BoxClass};
 use super::formatting_context::FormattingContextType;
+use super::fragment::LayoutInfo;
 use crate::flow::inline::InlineLevelBox;
 use crate::style_tree::{StyleTree, StyleTreeNode};
 
@@ -25,21 +26,7 @@ impl BoxTree {
 		let style_node = style_tree.root();
 		let root = BoxClass::new_with_formatting_context(
 			FormattingContextType::BlockFormattingContext,
-			|formatting_context| {
-				Rc::new(BlockLevelBox::new(
-					style_node.dom_node.clone(),
-					formatting_context,
-				))
-			},
-		);
-		let initial_containing_block = BoxClass::new_with_formatting_context(
-			FormattingContextType::BlockFormattingContext,
-			|formatting_context| {
-				Rc::new(BlockLevelBox::new(
-					NodeRef(Rc::new(Node::new(NodeTypeId::Document, None))),
-					formatting_context,
-				))
-			},
+			|formatting_context| Rc::new(BlockLevelBox::new(style_node.dom_node.clone(), formatting_context)),
 		);
 		let viewport = style_node
 			.dom_node
@@ -47,18 +34,28 @@ impl BoxTree {
 			.expect("dom has to belong to a window")
 			.viewport()
 			.clone();
-		initial_containing_block
-			.as_block_level_box()
-			.fragment_mut()
-			.rect = Rect::new(
-			Point2D::new(Pixel::new(0.0), Pixel::new(0.0)),
-			Size2D::new(Pixel::new(viewport.width()), Pixel::new(viewport.height())),
+		let initial_containing_block = BoxClass::new_with_formatting_context(
+			FormattingContextType::BlockFormattingContext,
+			|formatting_context| {
+				let block = BlockLevelBox::new(
+					NodeRef(Rc::new(Node::new(NodeTypeId::Document, None))),
+					formatting_context,
+				);
+				block.set_layout_info(LayoutInfo {
+					width: Pixel::new(viewport.width()),
+					height: Pixel::new(viewport.height()),
+					..Default::default()
+				});
+				block.set_fragment(block.create_fragment());
+				Rc::new(block)
+			},
 		);
 		root.set_containing_block(Some(initial_containing_block.clone()));
 		let children_iter = style_node.get_visible_children_iter();
 		for child in children_iter {
 			BoxTree::construct_node(child, root.clone());
 		}
+
 		BoxTree {
 			root,
 			initial_containing_block,
@@ -97,12 +94,7 @@ impl BoxTree {
 				)),
 				DisplayInside::FlowRoot => BoxClass::new_with_formatting_context(
 					FormattingContextType::BlockFormattingContext,
-					|formatting_context| {
-						Rc::new(InlineLevelBox::new(
-							style_node.dom_node.clone(),
-							formatting_context,
-						))
-					},
+					|formatting_context| Rc::new(InlineLevelBox::new(style_node.dom_node.clone(), formatting_context)),
 				),
 				_ => not_supported!(),
 			},
@@ -117,22 +109,14 @@ impl BoxTree {
 						BoxClass::new_with_formatting_context(
 							FormattingContextType::InlineFormattingContext,
 							|formatting_context| {
-								Rc::new(BlockLevelBox::new(
-									style_node.dom_node.clone(),
-									formatting_context,
-								))
+								Rc::new(BlockLevelBox::new(style_node.dom_node.clone(), formatting_context))
 							},
 						)
 					}
 				},
 				DisplayInside::FlowRoot => BoxClass::new_with_formatting_context(
 					FormattingContextType::BlockFormattingContext,
-					|formatting_context| {
-						Rc::new(BlockLevelBox::new(
-							style_node.dom_node.clone(),
-							formatting_context,
-						))
-					},
+					|formatting_context| Rc::new(BlockLevelBox::new(style_node.dom_node.clone(), formatting_context)),
 				),
 				_ => not_supported!(),
 			},

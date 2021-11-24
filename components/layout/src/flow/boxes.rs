@@ -2,13 +2,14 @@ use std::cell::{Ref, RefCell, RefMut};
 use std::rc::{Rc, Weak};
 
 use common::not_reached;
-use css::values::{CSSPixel, Pixel};
+use css::computed_values::ComputedValues;
+use css::values::{CSSPixel, Pixel, PIXEL_ZERO};
 use euclid::Rect;
 use uuid::Uuid;
 
 use super::block::BlockLevelBox;
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{AnonymousFragment, Fragment, LayoutInfo, Line};
+use super::fragment::{AnonymousFragment, BoxFragment, Fragment, LayoutInfo, Line, Sides, TextFragment};
 use super::inline::InlineLevelBox;
 use super::text_run::TextRun;
 use crate::display_list::builder::DisplayListBuilder;
@@ -40,15 +41,23 @@ pub trait Box {
 
 	fn set_containing_block(&self, value: Option<Rc<dyn Box>>);
 
-	fn content_rect(&self) -> Rect<Pixel, CSSPixel>;
-
 	fn get_total_width(&self) -> Pixel;
 
 	fn get_total_height(&self) -> Pixel;
 
+	fn lines(&self) -> Ref<Vec<Line>> {
+		panic!("called on an element belongs to non block formatting context");
+	}
+
+	fn add_newline(&self) {
+		panic!("called on an element belongs to non block formatting context");
+	}
+
 	fn layout_info(&self) -> Ref<'_, LayoutInfo>;
 
 	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo>;
+
+	fn add_child_fragment(&self, fragment: Rc<RefCell<dyn Fragment>>);
 
 	fn is_block_container(&self) -> bool;
 
@@ -145,8 +154,7 @@ impl BaseBox {
 
 	#[inline]
 	pub fn set_parent(&self, value: Option<Rc<dyn Box>>) {
-		self.parent
-			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
+		self.parent.replace(value.as_ref().map(|v| Rc::downgrade(v)));
 	}
 
 	#[inline]
@@ -159,15 +167,14 @@ impl BaseBox {
 
 	#[inline]
 	pub fn set_containing_block(&self, value: Option<Rc<dyn Box>>) {
-		self.containing_block
-			.replace(value.as_ref().map(|v| Rc::downgrade(v)));
+		self.containing_block.replace(value.as_ref().map(|v| Rc::downgrade(v)));
 	}
 }
 
 // Anonymous box is always anonymous block box
 pub struct AnonymousBox {
 	base: BaseBox,
-	fragment: RefCell<AnonymousFragment>,
+	fragment: Rc<RefCell<AnonymousFragment>>,
 	lines: RefCell<Vec<Line>>,
 }
 
@@ -175,8 +182,8 @@ impl AnonymousBox {
 	pub fn new(formatting_context: Rc<FormattingContext>) -> Self {
 		AnonymousBox {
 			base: BaseBox::new(formatting_context),
-			fragment: RefCell::new(AnonymousFragment::new()),
-			lines: RefCell::new(Default::default()),
+			fragment: Rc::new(RefCell::new(AnonymousFragment::new())),
+			lines: RefCell::new(vec![Line::new()]),
 		}
 	}
 
@@ -188,23 +195,14 @@ impl AnonymousBox {
 		self.fragment.borrow_mut()
 	}
 
-	pub fn lines(&self) -> Ref<Vec<Line>> {
-		self.lines.borrow()
-	}
-
-	pub fn lines_mut(&self) -> RefMut<'_, Vec<Line>> {
-		self.lines.borrow_mut()
-	}
-
-	pub fn append_fragment(&self, fragment: Rc<Fragment>) {
-		let mut lines = self.lines.borrow_mut();
-		let line = lines.last_mut().unwrap();
-		line.fragments.push(fragment.clone());
-		line.bounds.size.width += fragment.total_width();
-	}
-
-	pub fn create_newline(&self) {
-		self.lines.borrow_mut().push(Line::new());
+	pub fn create_fragment(&self) -> AnonymousFragment {
+		let layout_info = self.layout_info();
+		let mut fragment = AnonymousFragment::new();
+		fragment.set_width(layout_info.width);
+		fragment.set_bounded_width(layout_info.width);
+		fragment.set_height(layout_info.height);
+		fragment.set_bounded_height(layout_info.height);
+		fragment
 	}
 }
 
@@ -261,8 +259,8 @@ impl Box for AnonymousBox {
 		self.base.set_containing_block(value)
 	}
 
-	fn content_rect(&self) -> Rect<Pixel, CSSPixel> {
-		self.fragment().rect
+	fn lines(&self) -> Ref<Vec<Line>> {
+		self.lines.borrow()
 	}
 
 	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
@@ -271,6 +269,10 @@ impl Box for AnonymousBox {
 
 	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo> {
 		self.base.layout_info.borrow_mut()
+	}
+
+	fn add_child_fragment(&self, fragment: Rc<RefCell<dyn Fragment>>) {
+		self.fragment.borrow_mut().children.push(fragment);
 	}
 
 	fn get_total_width(&self) -> Pixel {
@@ -291,7 +293,11 @@ impl Box for AnonymousBox {
 	}
 
 	fn visit_layout(&self) {
-		todo!()
+		let containing_width = self.containing_block().unwrap().layout_info().width;
+		let mut layout_info = self.layout_info_mut();
+		layout_info.width = containing_width;
+
+		self.fragment.replace(self.create_fragment());
 	}
 
 	fn revisit_layout(&self) {
@@ -318,10 +324,7 @@ pub enum BoxClass {
 }
 
 impl BoxClass {
-	pub fn new_with_formatting_context<F>(
-		formatting_context_type: FormattingContextType,
-		setup: F,
-	) -> Rc<dyn Box>
+	pub fn new_with_formatting_context<F>(formatting_context_type: FormattingContextType, setup: F) -> Rc<dyn Box>
 	where
 		F: FnOnce(Rc<FormattingContext>) -> Rc<dyn Box>,
 	{
@@ -344,9 +347,7 @@ impl BoxClass {
 
 				let anonymous_box = BoxClass::new_with_formatting_context(
 					FormattingContextType::InlineFormattingContext,
-					|formatting_context: Rc<FormattingContext>| {
-						Rc::new(AnonymousBox::new(formatting_context))
-					},
+					|formatting_context: Rc<FormattingContext>| Rc::new(AnonymousBox::new(formatting_context)),
 				);
 				child.set_formatting_context(anonymous_box.formatting_context());
 				BoxClass::add_child(anonymous_box.clone(), child);
@@ -390,6 +391,124 @@ impl BoxClass {
 			panic!("one of box's ancestors must be its containing box");
 		}
 	}
+
+	pub fn get_padding_for_non_replaced_elements(
+		computed_values: &mut ComputedValues,
+		containing_width: Pixel,
+	) -> Sides {
+		let padding_top = computed_values.get_padding_top().to_used_value(containing_width);
+		let padding_right = computed_values.get_padding_right().to_used_value(containing_width);
+		let padding_bottom = computed_values.get_padding_bottom().to_used_value(containing_width);
+		let padding_left = computed_values.get_padding_left().to_used_value(containing_width);
+		Sides {
+			top: padding_top,
+			right: padding_right,
+			bottom: padding_bottom,
+			left: padding_left,
+		}
+	}
+
+	pub fn get_margin_for_non_replaced_elements(
+		computed_values: &mut ComputedValues,
+		containing_width: Pixel,
+	) -> Sides {
+		let margin_top = computed_values
+			.get_margin_top()
+			.to_used_value(containing_width, PIXEL_ZERO);
+		let margin_right = computed_values
+			.get_margin_right()
+			.to_used_value(containing_width, PIXEL_ZERO);
+		let margin_bottom = computed_values
+			.get_margin_bottom()
+			.to_used_value(containing_width, PIXEL_ZERO);
+		let margin_left = computed_values
+			.get_margin_left()
+			.to_used_value(containing_width, PIXEL_ZERO);
+		Sides {
+			top: margin_top,
+			right: margin_right,
+			bottom: margin_bottom,
+			left: margin_left,
+		}
+	}
+
+	pub fn parent_widths(parent: Rc<dyn Box>) -> (Pixel, Pixel, Pixel) {
+		match parent.class() {
+			BoxClass::Inline => {
+				let parent = parent.as_inline_level_box();
+				let fragments = parent.as_inline_level_box().fragments();
+				let latest_fragment = fragments.last().unwrap().borrow();
+				let current_width = latest_fragment.width();
+				let leftover_width = latest_fragment.expandable_width();
+				(current_width, leftover_width, parent.max_width())
+			},
+			BoxClass::Block | BoxClass::Anonymous => {
+				let lines = parent.lines();
+				let latest_line = lines.last().unwrap();
+				let layout_info = parent.layout_info();
+				(
+					latest_line.width(),
+					layout_info.width - latest_line.width(),
+					layout_info.width,
+				)
+			},
+			BoxClass::TextRun => not_reached!(),
+		}
+	}
+
+	pub fn update_ancestors_width(
+		parent: Rc<dyn Box>,
+		fragment: Rc<RefCell<dyn Fragment>>,
+		establisher: Rc<dyn Box>,
+		latest_line: &Line,
+		ancestors: SimpleBoxIterator,
+	) {
+		parent.add_child_fragment(fragment.clone());
+		if parent.id() == establisher.id() {
+			latest_line.add_fragment(fragment.clone());
+		}
+
+		for ancestor in ancestors {
+			if ancestor.id() == establisher.id() {
+				break;
+			}
+			let fragments = ancestor.as_inline_level_box().fragments();
+			let latest_fragment = fragments.last().unwrap();
+			let latest_fragment_width = latest_fragment.borrow().width();
+			latest_fragment
+				.borrow_mut()
+				.set_width(latest_fragment_width + fragment.borrow().total_width());
+		}
+	}
+
+	pub fn update_ancestors_newline(
+		parent: Rc<dyn Box>,
+		fragment: Rc<RefCell<dyn Fragment>>,
+		establisher: Rc<dyn Box>,
+		ancestors: SimpleBoxIterator,
+	) {
+		establisher.add_newline();
+		let lines = establisher.lines();
+		let latest_line = lines.last().unwrap();
+		if parent.id() == establisher.id() {
+			latest_line.add_fragment(fragment.clone());
+		}
+		for ancestor in ancestors {
+			if ancestor.id() == establisher.id() {
+				break;
+			}
+			let inline = ancestor.as_inline_level_box();
+			let mut ancestor_fragment = BoxFragment::new(inline.dom_node());
+			ancestor_fragment.set_bounded_width(inline.max_width() - inline.layout_info().right_sides());
+			// move out to create fragment with sides based on layout_info
+			let ancestor_fragment = Rc::new(RefCell::new(ancestor_fragment));
+			inline.fragments_mut().push(ancestor_fragment.clone());
+			inline.parent().unwrap().add_child_fragment(ancestor_fragment.clone());
+			if inline.parent().unwrap().id() == establisher.id() {
+				latest_line.add_fragment(ancestor_fragment.clone());
+			}
+		}
+	}
 }
 
 pub struct SimpleBoxIterator<'a> {
@@ -398,10 +517,7 @@ pub struct SimpleBoxIterator<'a> {
 }
 
 impl<'a> SimpleBoxIterator<'a> {
-	pub fn new(
-		current: Option<Rc<dyn Box>>,
-		next_node: &'a dyn Fn(&Rc<dyn Box>) -> Option<Rc<dyn Box>>,
-	) -> Self {
+	pub fn new(current: Option<Rc<dyn Box>>, next_node: &'a dyn Fn(&Rc<dyn Box>) -> Option<Rc<dyn Box>>) -> Self {
 		SimpleBoxIterator { current, next_node }
 	}
 }

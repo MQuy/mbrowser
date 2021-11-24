@@ -3,3 +3,4 @@ match_block_trailing_comma = true
 group_imports = "StdExternalCrate"
 reorder_impl_items = true
 hard_tabs = true
+max_width = 120

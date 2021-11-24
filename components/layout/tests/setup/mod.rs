@@ -12,10 +12,8 @@ use dom::inheritance::Castable;
 use dom::parser::DomParser;
 use html5ever::driver;
 use html5ever::tendril::{StrTendril, TendrilSink};
-use layout::flow::block::BlockLevelBox;
 use layout::flow::boxes::{Box, BoxClass};
-use layout::flow::dimension::BoxDimension;
-use layout::flow::inline::InlineLevelBox;
+use layout::flow::fragment::LayoutInfo;
 use layout::flow::tree::{BoxTree, PreOrderBoxTreeIterator};
 use layout::style_tree::StyleTree;
 use selectors::attr::CaseSensitivity;
@@ -86,33 +84,20 @@ pub fn find_box(tree: &BoxTree, id: &str) -> Option<Rc<dyn Box>> {
 	for child in iter {
 		match child.class() {
 			BoxClass::Inline => {
-				let inline = child
-					.as_any()
-					.downcast_ref::<InlineLevelBox>()
-					.unwrap()
-					.dom_node();
+				let inline = child.as_inline_level_box().dom_node();
 				if inline.node_type_id().is_element()
-					&& inline.has_id(
-						&Ident(id.to_string()),
-						CaseSensitivity::AsciiCaseInsensitive,
-					) {
+					&& inline.has_id(&Ident(id.to_string()), CaseSensitivity::AsciiCaseInsensitive)
+				{
 					return Some(child.clone());
 				}
 			},
 			BoxClass::Block => {
-				let block = child
-					.as_any()
-					.downcast_ref::<BlockLevelBox>()
-					.unwrap()
-					.dom_node();
-				if block.has_id(
-					&Ident(id.to_string()),
-					CaseSensitivity::AsciiCaseInsensitive,
-				) {
+				let block = child.as_block_level_box().dom_node();
+				if block.has_id(&Ident(id.to_string()), CaseSensitivity::AsciiCaseInsensitive) {
 					return Some(child.clone());
 				}
 			},
-			BoxClass::Anonymous => (),
+			_ => (),
 		}
 	}
 
@@ -122,28 +107,25 @@ pub fn find_box(tree: &BoxTree, id: &str) -> Option<Rc<dyn Box>> {
 pub fn find_dom(tree: &BoxTree, id: &str) -> Option<NodeRef> {
 	if let Some(node) = find_box(tree, id) {
 		match node.class() {
-			BoxClass::Inline => Some(
-				node.as_any()
-					.downcast_ref::<InlineLevelBox>()
-					.unwrap()
-					.dom_node(),
-			),
-			BoxClass::Block => Some(
-				node.as_any()
-					.downcast_ref::<BlockLevelBox>()
-					.unwrap()
-					.dom_node(),
-			),
-			BoxClass::Anonymous => None,
+			BoxClass::Inline => Some(node.as_inline_level_box().dom_node()),
+			BoxClass::Block => Some(node.as_block_level_box().dom_node()),
+			_ => None,
 		}
 	} else {
 		None
 	}
 }
 
-pub fn get_box_dimension(tree: &BoxTree, id: &str) -> Option<BoxDimension> {
+pub fn get_layout_info(tree: &BoxTree, id: &str) -> Option<LayoutInfo> {
 	if let Some(node) = find_box(tree, id) {
-		Some(node.size().clone())
+		let value = node.layout_info();
+		Some(LayoutInfo {
+			width: value.width,
+			height: value.height,
+			margin: value.margin,
+			padding: value.padding,
+			..Default::default()
+		})
 	} else {
 		None
 	}

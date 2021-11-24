@@ -1,3 +1,4 @@
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
 use css::computed_values::ComputedValues;
@@ -9,16 +10,31 @@ use super::boxes::Box;
 use super::formatting_context::FormattingContextType;
 
 pub struct Line {
-	pub fragments: Vec<Rc<Fragment>>,
-	pub bounds: Rect<Pixel, CSSPixel>,
+	pub fragments: RefCell<Vec<Rc<RefCell<dyn Fragment>>>>, // BoxFragment or TextFragment
+	pub bounds: RefCell<Rect<Pixel, CSSPixel>>,
 }
 
 impl Line {
 	pub fn new() -> Self {
-		todo!()
+		Line {
+			fragments: Default::default(),
+			bounds: Default::default(),
+		}
+	}
+
+	pub fn width(&self) -> Pixel {
+		self.bounds.borrow().width()
+	}
+
+	pub fn add_fragment(&self, fragment: Rc<RefCell<dyn Fragment>>) {
+		let height = self.bounds.borrow().size.height;
+		self.fragments.borrow_mut().push(fragment.clone());
+		self.bounds.borrow_mut().size.width += fragment.borrow().total_width();
+		self.bounds.borrow_mut().size.height = height.max(fragment.borrow().total_height());
 	}
 }
 
+#[derive(Clone, Copy)]
 pub struct Sides {
 	pub top: Pixel,
 	pub right: Pixel,
@@ -72,8 +88,26 @@ impl Default for LayoutInfo {
 }
 
 impl LayoutInfo {
+	pub fn set_padding(&mut self, top: Pixel, right: Pixel, bottom: Pixel, left: Pixel) {
+		self.padding.top = top;
+		self.padding.right = right;
+		self.padding.bottom = bottom;
+		self.padding.left = left;
+	}
+
+	pub fn set_margin(&mut self, top: Pixel, right: Pixel, bottom: Pixel, left: Pixel) {
+		self.margin.top = top;
+		self.margin.right = right;
+		self.margin.bottom = bottom;
+		self.margin.left = left;
+	}
+
 	pub fn horizontal_sides(&self) -> Pixel {
 		self.margin.left + self.padding.left + self.padding.right + self.margin.right
+	}
+
+	pub fn right_sides(&self) -> Pixel {
+		self.padding.right + self.margin.right
 	}
 
 	pub fn vertical_sides(&self) -> Pixel {
@@ -129,11 +163,9 @@ impl LayoutInfo {
 				for child in node.children() {
 					let child_layout_info = child.layout_info();
 					preferred_minimum_width = preferred_minimum_width.max(
-						child_layout_info.intrinsic_size.preferred_minimum_width
-							+ child_layout_info.horizontal_sides(),
+						child_layout_info.intrinsic_size.preferred_minimum_width + child_layout_info.horizontal_sides(),
 					);
-					preferred_width = preferred_width
-						.max(child_layout_info.intrinsic_size.preferred_width)
+					preferred_width = preferred_width.max(child_layout_info.intrinsic_size.preferred_width)
 						+ child_layout_info.horizontal_sides();
 				}
 			},
@@ -141,11 +173,10 @@ impl LayoutInfo {
 				for child in node.children() {
 					let child_layout_info = child.layout_info();
 					preferred_minimum_width = preferred_minimum_width.max(
-						child_layout_info.intrinsic_size.preferred_minimum_width
-							+ child_layout_info.horizontal_sides(),
+						child_layout_info.intrinsic_size.preferred_minimum_width + child_layout_info.horizontal_sides(),
 					);
-					preferred_width += child_layout_info.intrinsic_size.preferred_width
-						+ child_layout_info.horizontal_sides();
+					preferred_width +=
+						child_layout_info.intrinsic_size.preferred_width + child_layout_info.horizontal_sides();
 				}
 			},
 		};
@@ -154,49 +185,10 @@ impl LayoutInfo {
 	}
 }
 
-pub enum Fragment {
-	BoxFragment(BoxFragment),
-	TextFragment(TextFragment),
-	AnonymousFragment(AnonymousFragment),
-}
+pub trait Fragment {
+	fn total_width(&self) -> Pixel;
 
-impl Fragment {
-	pub fn rect(&self) -> Rect<Pixel, CSSPixel> {
-		match self {
-			Fragment::BoxFragment(value) => value.rect,
-			Fragment::TextFragment(value) => value.rect,
-			Fragment::AnonymousFragment(value) => value.rect,
-		}
-	}
-
-	/// contect rect + margin + padding
-	pub fn total_width(&self) -> Pixel {
-		match self {
-			Fragment::BoxFragment(value) => {
-				value.margin.left
-					+ value.padding.left + value.rect.width()
-					+ value.padding.right
-					+ value.margin.right
-			},
-
-			Fragment::TextFragment(value) => value.rect.width(),
-			Fragment::AnonymousFragment(value) => value.rect.width(),
-		}
-	}
-
-	pub fn total_height(&self) -> Pixel {
-		match self {
-			Fragment::BoxFragment(value) => {
-				value.margin.top
-					+ value.padding.top + value.rect.height()
-					+ value.padding.bottom
-					+ value.margin.bottom
-			},
-
-			Fragment::TextFragment(value) => value.rect.height(),
-			Fragment::AnonymousFragment(value) => value.rect.height(),
-		}
-	}
+	fn total_height(&self) -> Pixel;
 }
 
 pub struct BoxFragment {
@@ -205,6 +197,17 @@ pub struct BoxFragment {
 	pub margin: Sides,
 	pub rect: Rect<Pixel, CSSPixel>,
 	pub bounds: Size2D<Pixel, CSSPixel>,
+	pub children: Vec<Rc<RefCell<dyn Fragment>>>,
+}
+
+impl Fragment for BoxFragment {
+	fn total_width(&self) -> Pixel {
+		self.margin.left + self.padding.left + self.rect.width() + self.padding.right + self.margin.right
+	}
+
+	fn total_height(&self) -> Pixel {
+		self.margin.top + self.padding.top + self.rect.height() + self.padding.bottom + self.margin.bottom
+	}
 }
 
 impl BoxFragment {
@@ -215,27 +218,47 @@ impl BoxFragment {
 			padding: Default::default(),
 			margin: Default::default(),
 			bounds: Default::default(),
+			children: Default::default(),
 		}
-	}
-
-	pub fn total_width(&self) -> Pixel {
-		self.margin.left
-			+ self.padding.left
-			+ self.rect.width()
-			+ self.padding.right
-			+ self.margin.right
-	}
-
-	pub fn total_height(&self) -> Pixel {
-		self.margin.top
-			+ self.padding.top
-			+ self.rect.height()
-			+ self.padding.bottom
-			+ self.margin.bottom
 	}
 
 	pub fn expandable_width(&self) -> Pixel {
 		(self.bounds.width - self.rect.width()).max(PIXEL_ZERO)
+	}
+
+	#[inline]
+	pub fn set_width(&mut self, value: Pixel) {
+		self.rect.size.width = value;
+	}
+
+	#[inline]
+	pub fn set_height(&mut self, value: Pixel) {
+		self.rect.size.height = value;
+	}
+
+	#[inline]
+	pub fn set_bounded_width(&mut self, value: Pixel) {
+		self.bounds.width = value;
+	}
+
+	#[inline]
+	pub fn set_bounded_height(&mut self, value: Pixel) {
+		self.bounds.height = value;
+	}
+
+	#[inline]
+	pub fn width(&self) -> Pixel {
+		self.rect.width()
+	}
+
+	#[inline]
+	pub fn set_x(&mut self, value: Pixel) {
+		self.rect.origin.x = value;
+	}
+
+	#[inline]
+	pub fn set_y(&mut self, value: Pixel) {
+		self.rect.origin.y = value;
 	}
 }
 
@@ -245,19 +268,92 @@ pub struct TextFragment {
 	pub content: String,
 }
 
+impl Fragment for TextFragment {
+	fn total_width(&self) -> Pixel {
+		self.rect.width()
+	}
+
+	fn total_height(&self) -> Pixel {
+		self.rect.height()
+	}
+}
+
 impl TextFragment {
-	pub fn new() -> Self {
-		todo!()
+	pub fn new(dom_node: NodeRef, content: String) -> Self {
+		Self {
+			dom_node,
+			content,
+			rect: Default::default(),
+		}
+	}
+
+	#[inline]
+	pub fn set_width(&mut self, value: Pixel) {
+		self.rect.size.width = value;
+	}
+
+	#[inline]
+	pub fn set_height(&mut self, value: Pixel) {
+		self.rect.size.height = value;
+	}
+
+	#[inline]
+	pub fn set_x(&mut self, value: Pixel) {
+		self.rect.origin.x = value;
+	}
+
+	#[inline]
+	pub fn set_y(&mut self, value: Pixel) {
+		self.rect.origin.y = value;
 	}
 }
 
 pub struct AnonymousFragment {
 	pub rect: Rect<Pixel, CSSPixel>,
 	pub bounds: Size2D<Pixel, CSSPixel>,
+	pub children: Vec<Rc<RefCell<dyn Fragment>>>,
+}
+
+impl Fragment for AnonymousFragment {
+	fn total_width(&self) -> Pixel {
+		todo!()
+	}
+
+	fn total_height(&self) -> Pixel {
+		todo!()
+	}
 }
 
 impl AnonymousFragment {
 	pub fn new() -> Self {
-		todo!()
+		Self {
+			rect: Default::default(),
+			bounds: Default::default(),
+			children: Default::default(),
+		}
+	}
+
+	pub fn expandable_width(&self) -> Pixel {
+		(self.bounds.width - self.rect.width()).max(PIXEL_ZERO)
+	}
+
+	#[inline]
+	pub fn set_width(&mut self, value: Pixel) {
+		self.rect.size.width = value;
+	}
+
+	#[inline]
+	pub fn set_height(&mut self, value: Pixel) {
+		self.rect.size.height = value;
+	}
+
+	#[inline]
+	pub fn set_bounded_width(&mut self, value: Pixel) {
+		self.bounds.width = value;
+	}
+
+	#[inline]
+	pub fn set_bounded_height(&mut self, value: Pixel) {
+		self.bounds.height = value;
 	}
 }
