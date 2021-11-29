@@ -1,4 +1,4 @@
-use std::cell::{Ref, RefCell, RefMut};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 use css::computed_values::ComputedValues;
@@ -34,7 +34,7 @@ impl Line {
 	}
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Sides {
 	pub top: Pixel,
 	pub right: Pixel,
@@ -55,6 +55,7 @@ impl Default for Sides {
 
 pub struct IntrinsicSize {
 	pub preferred_width: Pixel,
+	pub preferred_height: Pixel,
 	pub preferred_minimum_width: Pixel,
 }
 
@@ -63,6 +64,7 @@ impl Default for IntrinsicSize {
 		Self {
 			preferred_width: PIXEL_ZERO,
 			preferred_minimum_width: PIXEL_ZERO,
+			preferred_height: PIXEL_ZERO,
 		}
 	}
 }
@@ -186,9 +188,13 @@ impl LayoutInfo {
 }
 
 pub trait Fragment {
+	fn width(&self) -> Pixel;
+
 	fn total_width(&self) -> Pixel;
 
 	fn total_height(&self) -> Pixel;
+
+	fn right_sides(&self) -> Pixel;
 }
 
 pub struct BoxFragment {
@@ -207,6 +213,14 @@ impl Fragment for BoxFragment {
 
 	fn total_height(&self) -> Pixel {
 		self.margin.top + self.padding.top + self.rect.height() + self.padding.bottom + self.margin.bottom
+	}
+
+	fn width(&self) -> Pixel {
+		self.rect.width()
+	}
+
+	fn right_sides(&self) -> Pixel {
+		self.padding.right + self.margin.right
 	}
 }
 
@@ -247,11 +261,6 @@ impl BoxFragment {
 	}
 
 	#[inline]
-	pub fn width(&self) -> Pixel {
-		self.rect.width()
-	}
-
-	#[inline]
 	pub fn set_x(&mut self, value: Pixel) {
 		self.rect.origin.x = value;
 	}
@@ -275,6 +284,14 @@ impl Fragment for TextFragment {
 
 	fn total_height(&self) -> Pixel {
 		self.rect.height()
+	}
+
+	fn width(&self) -> Pixel {
+		self.rect.width()
+	}
+
+	fn right_sides(&self) -> Pixel {
+		PIXEL_ZERO
 	}
 }
 
@@ -316,11 +333,19 @@ pub struct AnonymousFragment {
 
 impl Fragment for AnonymousFragment {
 	fn total_width(&self) -> Pixel {
-		todo!()
+		self.rect.width()
 	}
 
 	fn total_height(&self) -> Pixel {
 		todo!()
+	}
+
+	fn width(&self) -> Pixel {
+		self.rect.width()
+	}
+
+	fn right_sides(&self) -> Pixel {
+		PIXEL_ZERO
 	}
 }
 

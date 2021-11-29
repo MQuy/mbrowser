@@ -1,16 +1,14 @@
 use std::cell::{Ref, RefCell, RefMut};
 use std::rc::Rc;
 
-use common::{not_reached, not_supported};
-use css::values::computed::length::{LengthPercentage, LengthPercentageOrAuto, Size};
-use css::values::{CSSPixel, Pixel, PIXEL_ZERO};
+use common::not_supported;
+use css::values::computed::length::{LengthPercentage, Size};
+use css::values::{Pixel, PIXEL_ZERO};
 use dom::global_scope::{GlobalScope, NodeRef};
-use euclid::Rect;
-use selectors::sink::Push;
 
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
+use super::fragment::{BoxFragment, Fragment, LayoutInfo};
 use crate::display_list::builder::DisplayListBuilder;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
@@ -39,11 +37,11 @@ impl InlineLevelBox {
 		self.dom_node.clone()
 	}
 
-	pub fn fragments(&self) -> Ref<'_, Vec<Rc<RefCell<BoxFragment>>>> {
+	pub fn fragments(&self) -> Ref<Vec<Rc<RefCell<BoxFragment>>>> {
 		self.fragments.borrow()
 	}
 
-	pub fn fragments_mut(&self) -> RefMut<'_, Vec<Rc<RefCell<BoxFragment>>>> {
+	pub fn fragments_mut(&self) -> RefMut<Vec<Rc<RefCell<BoxFragment>>>> {
 		self.fragments.borrow_mut()
 	}
 
@@ -51,13 +49,32 @@ impl InlineLevelBox {
 		let layout_info = self.layout_info();
 		let mut fragment = BoxFragment::new(self.dom_node.clone());
 		fragment.padding = layout_info.padding;
-		fragment.margin.left = layout_info.margin.left;
+		if self.fragments.borrow().len() == 0 {
+			fragment.margin.left = layout_info.margin.left;
+		}
 		fragment.margin.right = layout_info.margin.right;
 		fragment
 	}
 
+	pub fn add_fragment(&self, fragment: Rc<RefCell<BoxFragment>>) {
+		self.fragments.borrow_mut().push(fragment.clone());
+		self.recalculate_layout_info();
+	}
+
 	pub fn max_width(&self) -> Pixel {
 		Pixel::new(self.max_width.borrow().get())
+	}
+
+	fn recalculate_layout_info(&self) {
+		let mut width = PIXEL_ZERO;
+		let mut height = PIXEL_ZERO;
+		for fragment in self.fragments.borrow().iter() {
+			width = width.max(fragment.borrow().total_width());
+			height += fragment.borrow().total_height();
+		}
+		let mut layout_info = self.layout_info_mut();
+		layout_info.width = width;
+		layout_info.height = height;
 	}
 }
 
@@ -157,7 +174,8 @@ impl Box for InlineLevelBox {
 
 	fn visit_layout(&self) {
 		let parent = self.parent().unwrap();
-		let (parent_current_width, parent_leftover_width, _) = BoxClass::parent_widths(parent.clone());
+		let establisher = parent.formatting_context().established_by();
+		let (parent_current_width, parent_leftover_width, _) = BoxClass::get_parent_width(parent.clone());
 		self.max_width.replace(parent_current_width + parent_leftover_width);
 
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
@@ -199,31 +217,47 @@ impl Box for InlineLevelBox {
 				fragment.set_height(height);
 				fragment.set_bounded_height(height);
 
-				let establisher = parent.formatting_context().established_by();
-				let lines = establisher.lines();
+				let mut lines = establisher.lines_mut();
 				let latest_line = lines.last().unwrap();
 
-				let fragment = Rc::new(RefCell::new(fragment));
-				if fragment.borrow().total_width() <= parent_leftover_width || latest_line.fragments.borrow().len() == 0
-				{
-					fragment.borrow_mut().set_x(parent_current_width);
-					BoxClass::update_ancestors_width(
-						parent,
+				if fragment.total_width() <= parent_leftover_width || latest_line.fragments.borrow().len() == 0 {
+					fragment.set_x(parent_current_width);
+
+					let fragment = Rc::new(RefCell::new(fragment));
+					self.add_fragment(fragment.clone());
+					parent.add_child_fragment(fragment.clone());
+
+					if parent.id() == establisher.id() {
+						latest_line.add_fragment(fragment.clone());
+					}
+
+					BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
+				} else {
+					let fragment = Rc::new(RefCell::new(fragment));
+					self.add_fragment(fragment.clone());
+					parent.add_child_fragment(fragment.clone());
+					BoxClass::update_ancestors_with_newline(
 						fragment.clone(),
 						establisher.clone(),
-						latest_line,
+						&mut lines,
 						self.ancestors(),
 					);
-				} else {
-					BoxClass::update_ancestors_newline(parent, fragment.clone(), establisher.clone(), self.ancestors());
 				}
-				self.fragments.borrow_mut().push(fragment);
 			},
 			FormattingContextType::InlineFormattingContext => {
 				drop(layout_info);
 				let mut fragment = self.create_fragment();
 				fragment.set_bounded_width(parent_leftover_width);
-				self.fragments.borrow_mut().push(Rc::new(RefCell::new(fragment)));
+
+				let fragment = Rc::new(RefCell::new(fragment));
+				self.add_fragment(fragment.clone());
+				parent.add_child_fragment(fragment.clone());
+
+				let lines = establisher.lines();
+				let latest_line = lines.last().unwrap();
+				if parent.id() == establisher.id() {
+					latest_line.add_fragment(fragment.clone());
+				}
 			},
 		}
 	}

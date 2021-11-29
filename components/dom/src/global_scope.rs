@@ -1,4 +1,3 @@
-use core::panic;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -15,7 +14,6 @@ use crate::attr::Attr;
 use crate::element::Element;
 use crate::inheritance::downcast;
 use crate::node::Node;
-use crate::nodetype::NodeTypeId;
 use crate::window::Window;
 
 #[derive(Clone, Debug)]
@@ -44,16 +42,12 @@ impl NodeRef {
 
 	pub fn namespace(&self) -> Namespace {
 		assert!(self.0.node_type_id().is_element());
-		downcast::<Node, Element>(self.0.clone())
-			.namespace()
-			.clone()
+		downcast::<Node, Element>(self.0.clone()).namespace().clone()
 	}
 
 	pub fn local_name(&self) -> LocalName {
 		assert!(self.0.node_type_id().is_element());
-		downcast::<Node, Element>(self.0.clone())
-			.local_name()
-			.clone()
+		downcast::<Node, Element>(self.0.clone()).local_name().clone()
 	}
 
 	pub fn get_attribute(&self, namespace: &Namespace, local_name: &LocalName) -> Option<Rc<Attr>> {
@@ -83,9 +77,7 @@ impl NodeRef {
 
 	pub fn style_attribute(&self) -> RefCell<Option<PropertyDeclarationBlock>> {
 		assert!(self.0.node_type_id().is_element());
-		downcast::<Node, Element>(self.0.clone())
-			.style_attribute()
-			.clone()
+		downcast::<Node, Element>(self.0.clone()).style_attribute().clone()
 	}
 
 	pub fn window(&self) -> Option<Rc<Window>> {

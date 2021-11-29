@@ -119,6 +119,10 @@ impl Box for BlockLevelBox {
 		self.lines.borrow()
 	}
 
+	fn lines_mut(&self) -> RefMut<Vec<Line>> {
+		self.lines.borrow_mut()
+	}
+
 	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
 		self.base.layout_info.borrow()
 	}
@@ -164,14 +168,16 @@ impl Box for BlockLevelBox {
 
 	/// https://www.w3.org/TR/CSS22/visudet.html#blockwidth
 	fn visit_layout(&self) {
-		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
 		let containing_block = self.containing_block().unwrap();
 		let containing_layout = containing_block.layout_info();
 		let containing_width = containing_layout.width;
 		let containing_height = containing_layout.height;
+
+		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
 		let padding = BoxClass::get_padding_for_non_replaced_elements(computed_values, containing_width);
 		let mut margin = BoxClass::get_margin_for_non_replaced_elements(computed_values, containing_width);
 		let mut layout_info = self.layout_info_mut();
+
 		let width = match computed_values.get_width() {
 			Size::Auto => layout_info
 				.intrinsic_size

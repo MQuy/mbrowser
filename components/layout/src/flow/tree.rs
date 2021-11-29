@@ -7,13 +7,13 @@ use css::values::Pixel;
 use dom::global_scope::NodeRef;
 use dom::node::Node;
 use dom::nodetype::NodeTypeId;
-use euclid::{Point2D, Rect, Size2D};
 
 use super::block::BlockLevelBox;
 use super::boxes::{Box, BoxClass};
 use super::formatting_context::FormattingContextType;
 use super::fragment::LayoutInfo;
 use crate::flow::inline::InlineLevelBox;
+use crate::flow::text_run::TextRun;
 use crate::style_tree::{StyleTree, StyleTreeNode};
 
 pub struct BoxTree {
@@ -88,10 +88,20 @@ impl BoxTree {
 		let (outside, inside) = style_node.get_display();
 		let visual_box = match outside {
 			DisplayOutside::Inline => match inside {
-				DisplayInside::Flow => Rc::new(InlineLevelBox::new(
-					style_node.dom_node.clone(),
-					parent_box.formatting_context(),
-				)),
+				DisplayInside::Flow => {
+					let node: Rc<dyn Box> = if style_node.dom_node.node_type_id().is_element() {
+						Rc::new(InlineLevelBox::new(
+							style_node.dom_node.clone(),
+							parent_box.formatting_context(),
+						))
+					} else {
+						Rc::new(TextRun::new(
+							style_node.dom_node.clone(),
+							parent_box.formatting_context(),
+						))
+					};
+					node
+				},
 				DisplayInside::FlowRoot => BoxClass::new_with_formatting_context(
 					FormattingContextType::BlockFormattingContext,
 					|formatting_context| Rc::new(InlineLevelBox::new(style_node.dom_node.clone(), formatting_context)),
@@ -204,7 +214,7 @@ impl BoxTree {
 		for child in node.children() {
 			self.visit_layout_node(child);
 		}
-		node.revisit_layout();
+		// node.revisit_layout();
 	}
 }
 

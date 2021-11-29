@@ -2,17 +2,16 @@ use std::cell::{Ref, RefCell, RefMut};
 use std::rc::{Rc, Weak};
 
 use common::not_reached;
-use css::values::{CSSPixel, Pixel, PIXEL_ZERO};
+use css::values::{Pixel, PIXEL_ZERO};
 use dom::characterdata::CharacterData;
 use dom::global_scope::{GlobalScope, NodeRef};
 use dom::inheritance::Castable;
-use euclid::Rect;
 use regex::Regex;
 use uuid::Uuid;
 
 use super::boxes::{Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{Fragment, IntrinsicSize, LayoutInfo, TextFragment};
+use super::fragment::{LayoutInfo, TextFragment};
 use crate::display_list::builder::DisplayListBuilder;
 use crate::text::TextUI;
 
@@ -24,7 +23,7 @@ pub struct TextRun {
 	containing_block: RefCell<Option<Weak<dyn Box>>>,
 	formatting_context: RefCell<Rc<FormattingContext>>,
 	fragments: RefCell<Vec<Rc<RefCell<TextFragment>>>>,
-	intrinsic_size: RefCell<IntrinsicSize>,
+	layout_info: RefCell<LayoutInfo>,
 }
 
 impl TextRun {
@@ -36,12 +35,16 @@ impl TextRun {
 			containing_block: RefCell::new(None),
 			formatting_context: RefCell::new(formatting_context),
 			fragments: RefCell::new(Vec::with_capacity(1)),
-			intrinsic_size: RefCell::new(Default::default()),
+			layout_info: RefCell::new(Default::default()),
 		}
 	}
 
 	pub fn dom_node(&self) -> NodeRef {
 		self.dom_node.clone()
+	}
+
+	pub fn add_fragment(&self, fragment: Rc<RefCell<TextFragment>>) {
+		self.fragments.borrow_mut().push(fragment)
 	}
 }
 
@@ -67,15 +70,15 @@ impl Box for TextRun {
 	}
 
 	fn get_first_child(&self) -> Option<Rc<dyn Box>> {
-		not_reached!()
+		None
 	}
 
 	fn get_last_child(&self) -> Option<Rc<dyn Box>> {
-		not_reached!()
+		None
 	}
 
 	fn children(&self) -> Vec<Rc<dyn Box>> {
-		not_reached!()
+		vec![]
 	}
 
 	fn parent(&self) -> Option<Rc<dyn Box>> {
@@ -105,11 +108,11 @@ impl Box for TextRun {
 	}
 
 	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
-		not_reached!()
+		self.layout_info.borrow()
 	}
 
 	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo> {
-		not_reached!()
+		self.layout_info.borrow_mut()
 	}
 
 	fn add_child_fragment(&self, fragment: Rc<RefCell<dyn super::fragment::Fragment>>) {
@@ -134,82 +137,100 @@ impl Box for TextRun {
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.parent_node().unwrap().id());
 		let family_names = computed_values.get_font_families();
 		let font_size = computed_values.get_font_size();
-		let (width, _) = text_ui.measure_size(content.as_str(), family_names, font_size);
-		let mut intrinsic_size = self.intrinsic_size.borrow_mut();
-		intrinsic_size.preferred_width = Pixel::new(width);
+		let (width, height) = text_ui.measure_size(content.as_str(), family_names, font_size);
+		let mut layout_info = self.layout_info.borrow_mut();
+		layout_info.intrinsic_size.preferred_width = Pixel::new(width);
+		layout_info.intrinsic_size.preferred_height = Pixel::new(height);
 
 		let regex = Regex::new(r"\s").unwrap();
 		for word in regex.split(content.as_str()) {
 			let (width, _) = text_ui.measure_size(word, family_names, font_size);
-			intrinsic_size.preferred_minimum_width = intrinsic_size.preferred_minimum_width.max(Pixel::new(width));
+			layout_info.intrinsic_size.preferred_minimum_width = layout_info
+				.intrinsic_size
+				.preferred_minimum_width
+				.max(Pixel::new(width));
 		}
 	}
 
 	fn visit_layout(&self) {
 		let text_ui = TextUI::new();
 		let parent = self.parent().unwrap();
-		let (parent_current_width, parent_leftover_width, parent_max_width) = BoxClass::parent_widths(parent.clone());
-		let intrinsic_size = self.intrinsic_size.borrow();
+		let (parent_current_width, parent_leftover_width, parent_max_width) =
+			BoxClass::get_parent_width(parent.clone());
+		let layout_info = self.layout_info.borrow();
 
 		let establisher = parent.formatting_context().established_by();
-		let lines = establisher.lines();
-		let latest_line = lines.last().unwrap();
 
 		let content = self.dom_node.downcast::<CharacterData>().data();
 		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.parent_node().unwrap().id());
 		let family_names = computed_values.get_font_families();
 		let font_size = computed_values.get_font_size();
-		if intrinsic_size.preferred_width <= parent_leftover_width {
+
+		if layout_info.intrinsic_size.preferred_width <= parent_leftover_width {
 			let mut fragment = TextFragment::new(self.dom_node(), content.to_string());
-			fragment.set_width(intrinsic_size.preferred_width);
+			fragment.set_width(layout_info.intrinsic_size.preferred_width);
+			fragment.set_height(layout_info.intrinsic_size.preferred_height);
 			fragment.set_x(parent_current_width);
 
 			let fragment = Rc::new(RefCell::new(fragment));
-			BoxClass::update_ancestors_width(
-				parent,
-				fragment.clone(),
-				establisher.clone(),
-				latest_line,
-				self.ancestors(),
-			);
-			self.fragments.borrow_mut().push(fragment);
+			self.add_fragment(fragment.clone());
+			parent.add_child_fragment(fragment.clone());
+
+			let lines = establisher.lines();
+			let latest_line = lines.last().unwrap();
+			if parent.id() == establisher.id() {
+				latest_line.add_fragment(fragment.clone());
+			}
+			BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
 		} else {
-			let regex = Regex::new(r"\s").unwrap();
 			let mut max_width = parent_leftover_width;
 			let mut width = PIXEL_ZERO;
+			let mut height = PIXEL_ZERO;
 			let mut parts: Vec<&str> = vec![];
 			let mut in_current_line = true;
+
+			let regex = Regex::new(r"\s").unwrap();
 			for word in split_keep(&regex, content.as_ref()) {
-				let word_width = Pixel::new(text_ui.measure_size(word, family_names, font_size).0);
+				let bounds = text_ui.measure_size(word, family_names, font_size);
+				let word_width = Pixel::new(bounds.0);
+				height = height.max(Pixel::new(bounds.1));
+
 				if width + word_width <= max_width {
 					width += word_width;
 				} else {
-					max_width = parent_max_width;
-					width = word_width;
-					parts.clear();
+					let mut fragment = TextFragment::new(self.dom_node(), parts.join(""));
+					fragment.set_width(width);
+					fragment.set_height(height);
 
 					if in_current_line {
-						let mut fragment = TextFragment::new(self.dom_node(), parts.join(""));
 						fragment.set_x(parent_current_width);
 						let fragment = Rc::new(RefCell::new(fragment));
-						BoxClass::update_ancestors_width(
-							parent.clone(),
-							fragment.clone(),
-							establisher.clone(),
-							latest_line,
-							self.ancestors(),
-						);
-						self.fragments.borrow_mut().push(fragment);
+						self.add_fragment(fragment.clone());
+						parent.add_child_fragment(fragment.clone());
+
+						let lines = establisher.lines();
+						let latest_line = lines.last().unwrap();
+						if parent.id() == establisher.id() {
+							latest_line.add_fragment(fragment.clone());
+						}
+						BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
 					} else {
-						let fragment = Rc::new(RefCell::new(TextFragment::new(self.dom_node(), parts.join(""))));
-						BoxClass::update_ancestors_newline(
-							parent.clone(),
+						let mut lines = establisher.lines_mut();
+						let fragment = Rc::new(RefCell::new(fragment));
+						self.add_fragment(fragment.clone());
+						parent.add_child_fragment(fragment.clone());
+						BoxClass::update_ancestors_with_newline(
 							fragment.clone(),
 							establisher.clone(),
+							&mut lines,
 							self.ancestors(),
 						);
-						self.fragments.borrow_mut().push(fragment);
 					}
+
+					max_width = parent_max_width;
+					width = word_width;
+					height = PIXEL_ZERO;
+					parts.clear();
 					in_current_line = false;
 				}
 				parts.push(word);

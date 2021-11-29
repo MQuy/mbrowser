@@ -3,13 +3,12 @@ use std::rc::{Rc, Weak};
 
 use common::not_reached;
 use css::computed_values::ComputedValues;
-use css::values::{CSSPixel, Pixel, PIXEL_ZERO};
-use euclid::Rect;
+use css::values::{Pixel, PIXEL_ZERO};
 use uuid::Uuid;
 
 use super::block::BlockLevelBox;
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{AnonymousFragment, BoxFragment, Fragment, LayoutInfo, Line, Sides, TextFragment};
+use super::fragment::{AnonymousFragment, Fragment, LayoutInfo, Line, Sides};
 use super::inline::InlineLevelBox;
 use super::text_run::TextRun;
 use crate::display_list::builder::DisplayListBuilder;
@@ -49,13 +48,13 @@ pub trait Box {
 		panic!("called on an element belongs to non block formatting context");
 	}
 
-	fn add_newline(&self) {
+	fn lines_mut(&self) -> RefMut<Vec<Line>> {
 		panic!("called on an element belongs to non block formatting context");
 	}
 
-	fn layout_info(&self) -> Ref<'_, LayoutInfo>;
+	fn layout_info(&self) -> Ref<LayoutInfo>;
 
-	fn layout_info_mut(&self) -> RefMut<'_, LayoutInfo>;
+	fn layout_info_mut(&self) -> RefMut<LayoutInfo>;
 
 	fn add_child_fragment(&self, fragment: Rc<RefCell<dyn Fragment>>);
 
@@ -86,6 +85,12 @@ pub trait Box {
 	}
 
 	fn build_display_list(&self, builder: &mut DisplayListBuilder);
+}
+
+impl PartialEq for dyn Box {
+	fn eq(&self, other: &Self) -> bool {
+		self.id() == other.id()
+	}
 }
 
 pub struct BaseBox {
@@ -263,6 +268,10 @@ impl Box for AnonymousBox {
 		self.lines.borrow()
 	}
 
+	fn lines_mut(&self) -> RefMut<Vec<Line>> {
+		self.lines.borrow_mut()
+	}
+
 	fn layout_info(&self) -> Ref<'_, LayoutInfo> {
 		self.base.layout_info.borrow()
 	}
@@ -432,7 +441,7 @@ impl BoxClass {
 		}
 	}
 
-	pub fn parent_widths(parent: Rc<dyn Box>) -> (Pixel, Pixel, Pixel) {
+	pub fn get_parent_width(parent: Rc<dyn Box>) -> (Pixel, Pixel, Pixel) {
 		match parent.class() {
 			BoxClass::Inline => {
 				let parent = parent.as_inline_level_box();
@@ -457,57 +466,55 @@ impl BoxClass {
 	}
 
 	pub fn update_ancestors_width(
-		parent: Rc<dyn Box>,
 		fragment: Rc<RefCell<dyn Fragment>>,
 		establisher: Rc<dyn Box>,
-		latest_line: &Line,
 		ancestors: SimpleBoxIterator,
 	) {
-		parent.add_child_fragment(fragment.clone());
-		if parent.id() == establisher.id() {
-			latest_line.add_fragment(fragment.clone());
-		}
-
+		let mut child_fragment = fragment;
 		for ancestor in ancestors {
 			if ancestor.id() == establisher.id() {
 				break;
 			}
-			let fragments = ancestor.as_inline_level_box().fragments();
-			let latest_fragment = fragments.last().unwrap();
-			let latest_fragment_width = latest_fragment.borrow().width();
-			latest_fragment
+			let inline_box = ancestor.as_inline_level_box();
+			let fragments = inline_box.fragments();
+			let fragment = fragments.last().unwrap();
+			let fragment_width = fragment.borrow().width();
+			fragment
 				.borrow_mut()
-				.set_width(latest_fragment_width + fragment.borrow().total_width());
+				.set_width(fragment_width + child_fragment.borrow().total_width());
+
+			child_fragment = fragment.clone();
 		}
 	}
 
-	pub fn update_ancestors_newline(
-		parent: Rc<dyn Box>,
+	pub fn update_ancestors_with_newline(
 		fragment: Rc<RefCell<dyn Fragment>>,
 		establisher: Rc<dyn Box>,
+		lines: &mut RefMut<Vec<Line>>,
 		ancestors: SimpleBoxIterator,
 	) {
-		establisher.add_newline();
-		let lines = establisher.lines();
-		let latest_line = lines.last().unwrap();
-		if parent.id() == establisher.id() {
-			latest_line.add_fragment(fragment.clone());
-		}
+		let latest_line = Line::new();
+		let mut child_fragment = fragment;
 		for ancestor in ancestors {
 			if ancestor.id() == establisher.id() {
+				latest_line.add_fragment(child_fragment.clone());
 				break;
 			}
-			let inline = ancestor.as_inline_level_box();
-			let mut ancestor_fragment = BoxFragment::new(inline.dom_node());
-			ancestor_fragment.set_bounded_width(inline.max_width() - inline.layout_info().right_sides());
-			// move out to create fragment with sides based on layout_info
-			let ancestor_fragment = Rc::new(RefCell::new(ancestor_fragment));
-			inline.fragments_mut().push(ancestor_fragment.clone());
-			inline.parent().unwrap().add_child_fragment(ancestor_fragment.clone());
-			if inline.parent().unwrap().id() == establisher.id() {
-				latest_line.add_fragment(ancestor_fragment.clone());
-			}
+
+			let inline_box = ancestor.as_inline_level_box();
+			let parent = inline_box.parent().unwrap();
+
+			let mut fragment = inline_box.create_fragment();
+			fragment.set_width(child_fragment.borrow().width() + child_fragment.borrow().right_sides());
+			fragment.set_bounded_width(inline_box.max_width() - inline_box.layout_info().right_sides());
+
+			let fragment = Rc::new(RefCell::new(fragment));
+			inline_box.add_fragment(fragment.clone());
+			parent.add_child_fragment(fragment.clone());
+
+			child_fragment = fragment;
 		}
+		lines.push(latest_line);
 	}
 }
 
