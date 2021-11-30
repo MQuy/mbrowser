@@ -90,6 +90,14 @@ impl Default for LayoutInfo {
 }
 
 impl LayoutInfo {
+	pub fn total_width(&self) -> Pixel {
+		self.margin.left + self.padding.left + self.width + self.padding.right + self.margin.right
+	}
+
+	pub fn total_height(&self) -> Pixel {
+		self.margin.top + self.padding.top + self.height + self.padding.bottom + self.margin.bottom
+	}
+
 	pub fn set_padding(&mut self, top: Pixel, right: Pixel, bottom: Pixel, left: Pixel) {
 		self.padding.top = top;
 		self.padding.right = right;
@@ -190,6 +198,8 @@ impl LayoutInfo {
 pub trait Fragment {
 	fn width(&self) -> Pixel;
 
+	fn height(&self) -> Pixel;
+
 	fn total_width(&self) -> Pixel;
 
 	fn total_height(&self) -> Pixel;
@@ -217,6 +227,10 @@ impl Fragment for BoxFragment {
 
 	fn width(&self) -> Pixel {
 		self.rect.width()
+	}
+
+	fn height(&self) -> Pixel {
+		self.rect.height()
 	}
 
 	fn right_sides(&self) -> Pixel {
@@ -269,6 +283,16 @@ impl BoxFragment {
 	pub fn set_y(&mut self, value: Pixel) {
 		self.rect.origin.y = value;
 	}
+
+	#[inline]
+	pub fn x(&self) -> Pixel {
+		self.rect.origin.x
+	}
+
+	#[inline]
+	pub fn y(&self) -> Pixel {
+		self.rect.origin.y
+	}
 }
 
 pub struct TextFragment {
@@ -288,6 +312,10 @@ impl Fragment for TextFragment {
 
 	fn width(&self) -> Pixel {
 		self.rect.width()
+	}
+
+	fn height(&self) -> Pixel {
+		self.rect.height()
 	}
 
 	fn right_sides(&self) -> Pixel {
@@ -337,11 +365,15 @@ impl Fragment for AnonymousFragment {
 	}
 
 	fn total_height(&self) -> Pixel {
-		todo!()
+		self.rect.height()
 	}
 
 	fn width(&self) -> Pixel {
 		self.rect.width()
+	}
+
+	fn height(&self) -> Pixel {
+		self.rect.height()
 	}
 
 	fn right_sides(&self) -> Pixel {
@@ -380,5 +412,9 @@ impl AnonymousFragment {
 	#[inline]
 	pub fn set_bounded_height(&mut self, value: Pixel) {
 		self.bounds.height = value;
+	}
+
+	pub fn set_y(&mut self, value: Pixel) {
+		self.rect.origin.y = value;
 	}
 }

@@ -3,10 +3,11 @@ use std::rc::Rc;
 
 use common::not_supported;
 use css::properties::longhands::display::{DisplayInside, DisplayOutside};
-use css::values::Pixel;
+use css::values::{Pixel, PIXEL_ZERO};
 use dom::global_scope::NodeRef;
 use dom::node::Node;
 use dom::nodetype::NodeTypeId;
+use html5ever::{local_name, namespace_url, ns};
 
 use super::block::BlockLevelBox;
 use super::boxes::{Box, BoxClass};
@@ -206,16 +207,22 @@ impl BoxTree {
 	}
 
 	pub fn visit_layout(&self) {
-		self.visit_layout_node(self.root.clone());
+		let mut context = VisitingContext { height: PIXEL_ZERO };
+		self.visit_layout_node(self.root.clone(), &mut context);
 	}
 
-	pub fn visit_layout_node(&self, node: Rc<dyn Box>) {
+	pub fn visit_layout_node(&self, node: Rc<dyn Box>, parent_context: &mut VisitingContext) {
 		node.visit_layout();
+		let mut context = VisitingContext { height: PIXEL_ZERO };
 		for child in node.children() {
-			self.visit_layout_node(child);
+			self.visit_layout_node(child, &mut context);
 		}
-		// node.revisit_layout();
+		node.revisit_layout(parent_context);
 	}
+}
+
+pub struct VisitingContext {
+	pub height: Pixel,
 }
 
 #[derive(PartialEq, Eq)]

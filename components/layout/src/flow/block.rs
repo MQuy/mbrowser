@@ -9,6 +9,7 @@ use dom::global_scope::{GlobalScope, NodeRef};
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
+use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#block-boxes
@@ -240,8 +241,17 @@ impl Box for BlockLevelBox {
 	}
 
 	/// https://www.w3.org/TR/CSS22/visudet.html#normal-block
-	fn revisit_layout(&self) {
-		todo!()
+	fn revisit_layout(&self, context: &mut VisitingContext) {
+		let mut fragment = self.fragment_mut();
+		fragment.set_y(context.height);
+
+		let mut layout_info = self.layout_info_mut();
+		if layout_info.height == PIXEL_ZERO {
+			let height = BoxClass::get_block_height(self);
+			fragment.set_height(height);
+			layout_info.height = height;
+		}
+		context.height += fragment.total_height();
 	}
 
 	fn class(&self) -> BoxClass {

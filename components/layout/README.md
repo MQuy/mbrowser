@@ -350,11 +350,23 @@ pub enum Fragment {
   - create a anonymous fragment (F).
   - same as block-element box.
 
-**Revisit**
+**Revisit**: for each box B, if it is
 
-- inline-level elements with IFC have many fragments, only for the first fragment
-  - if it is empty width -> remove it.
+- context to keep track of current height.
+- block-level box and anonymous box: if B's context type is
+  - block formatting context: (1)
+    - B's height = sum of all B's children height (don't support margin collapse).
+  - inline formatting context:
+    - B's height = sum of all B's lines height.
+- inline-level box (IL): if IL's context type is
+  - block formatting context:
+    - same as (1)
+  - inline formatting context:
+    - IL's height = summ of all IL's fragments height.
+    - only for the first fragment
+      - if it is empty width -> remove it.
 
 #### Notes
 
 - text run should be in its own anonymous block box, https://codesandbox.io/s/reverent-sky-czvn1?file=/index.html
+- https://codesandbox.io/s/lucid-kate-68itj?file=/index.html

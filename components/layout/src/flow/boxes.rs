@@ -4,6 +4,7 @@ use std::rc::{Rc, Weak};
 use common::not_reached;
 use css::computed_values::ComputedValues;
 use css::values::{Pixel, PIXEL_ZERO};
+use html5ever::{local_name, namespace_url, ns};
 use uuid::Uuid;
 
 use super::block::BlockLevelBox;
@@ -11,6 +12,7 @@ use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{AnonymousFragment, Fragment, LayoutInfo, Line, Sides};
 use super::inline::InlineLevelBox;
 use super::text_run::TextRun;
+use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 
 pub trait Box {
@@ -64,7 +66,7 @@ pub trait Box {
 
 	fn visit_layout(&self);
 
-	fn revisit_layout(&self);
+	fn revisit_layout(&self, context: &mut VisitingContext);
 
 	fn class(&self) -> BoxClass;
 
@@ -305,12 +307,22 @@ impl Box for AnonymousBox {
 		let containing_width = self.containing_block().unwrap().layout_info().width;
 		let mut layout_info = self.layout_info_mut();
 		layout_info.width = containing_width;
+		drop(layout_info);
 
 		self.fragment.replace(self.create_fragment());
 	}
 
-	fn revisit_layout(&self) {
-		todo!()
+	fn revisit_layout(&self, context: &mut VisitingContext) {
+		let mut fragment = self.fragment_mut();
+		fragment.set_y(context.height);
+
+		let height = BoxClass::get_block_height(self);
+		fragment.set_height(height);
+		let mut layout_info = self.layout_info_mut();
+		if layout_info.height == PIXEL_ZERO {
+			layout_info.height = height;
+		}
+		context.height += fragment.total_height();
 	}
 
 	fn class(&self) -> BoxClass {
@@ -345,7 +357,9 @@ impl BoxClass {
 
 	pub fn append_child(source: Rc<dyn Box>, child: Rc<dyn Box>) {
 		let child = match source.formatting_context_type() {
-			FormattingContextType::BlockFormattingContext if child.class() == BoxClass::Inline => {
+			FormattingContextType::BlockFormattingContext
+				if child.class() == BoxClass::Inline || child.class() == BoxClass::TextRun =>
+			{
 				let last_child = source.get_last_child();
 				if let Some(last_child) = last_child {
 					if last_child.class() == BoxClass::Anonymous {
@@ -361,7 +375,7 @@ impl BoxClass {
 				child.set_formatting_context(anonymous_box.formatting_context());
 				BoxClass::add_child(anonymous_box.clone(), child);
 				anonymous_box
-			},
+			}
 			FormattingContextType::InlineFormattingContext if child.class() == BoxClass::Block => {
 				not_reached!()
 			},
@@ -515,6 +529,25 @@ impl BoxClass {
 			child_fragment = fragment;
 		}
 		lines.push(latest_line);
+	}
+
+	pub fn get_block_height(source: &dyn Box) -> Pixel {
+		match source.formatting_context_type() {
+			FormattingContextType::BlockFormattingContext => {
+				let mut height = PIXEL_ZERO;
+				for child in source.children() {
+					height += child.layout_info().total_height();
+				}
+				height
+			},
+			FormattingContextType::InlineFormattingContext => {
+				let mut height = PIXEL_ZERO;
+				for line in source.lines().iter() {
+					height += line.bounds.borrow().height();
+				}
+				height
+			},
+		}
 	}
 }
 

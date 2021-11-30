@@ -11,7 +11,8 @@ use uuid::Uuid;
 
 use super::boxes::{Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{LayoutInfo, TextFragment};
+use super::fragment::{Fragment, LayoutInfo, TextFragment};
+use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 use crate::text::TextUI;
 
@@ -45,6 +46,10 @@ impl TextRun {
 
 	pub fn add_fragment(&self, fragment: Rc<RefCell<TextFragment>>) {
 		self.fragments.borrow_mut().push(fragment)
+	}
+
+	pub fn fragments(&self) -> Ref<Vec<Rc<RefCell<TextFragment>>>> {
+		self.fragments.borrow()
 	}
 }
 
@@ -208,6 +213,7 @@ impl Box for TextRun {
 						self.add_fragment(fragment.clone());
 						parent.add_child_fragment(fragment.clone());
 
+						println!("{:?}", establisher.class());
 						let lines = establisher.lines();
 						let latest_line = lines.last().unwrap();
 						if parent.id() == establisher.id() {
@@ -238,8 +244,16 @@ impl Box for TextRun {
 		}
 	}
 
-	fn revisit_layout(&self) {
-		todo!()
+	fn revisit_layout(&self, context: &mut VisitingContext) {
+		let mut height = PIXEL_ZERO;
+		for fragment in self.fragments.borrow().iter() {
+			fragment.borrow_mut().set_y(height + context.height);
+			height += fragment.borrow_mut().total_height();
+		}
+		let mut layout_info = self.layout_info_mut();
+		layout_info.height = height;
+
+		context.height += height;
 	}
 
 	fn class(&self) -> BoxClass {

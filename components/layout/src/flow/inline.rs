@@ -9,6 +9,7 @@ use dom::global_scope::{GlobalScope, NodeRef};
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{BoxFragment, Fragment, LayoutInfo};
+use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
@@ -262,8 +263,28 @@ impl Box for InlineLevelBox {
 		}
 	}
 
-	fn revisit_layout(&self) {
-		todo!()
+	fn revisit_layout(&self, context: &mut VisitingContext) {
+		let mut height = PIXEL_ZERO;
+		match self.formatting_context_type() {
+			FormattingContextType::BlockFormattingContext => {
+				let fragments = self.fragments();
+				assert_eq!(fragments.len(), 1);
+				let fragment = fragments.last().unwrap();
+				fragment.borrow_mut().set_y(context.height);
+				height = BoxClass::get_block_height(self);
+			},
+			FormattingContextType::InlineFormattingContext => {
+				for fragment in self.fragments.borrow().iter() {
+					fragment.borrow_mut().set_y(height + context.height);
+					height += fragment.borrow_mut().total_height();
+				}
+			},
+		}
+
+		let mut layout_info = self.layout_info_mut();
+		layout_info.height = height;
+
+		context.height += height;
 	}
 
 	fn class(&self) -> BoxClass {

@@ -1,23 +1,28 @@
 use std::rc::Rc;
 
+use css::properties::longhands::font_size::DEFAULT_FONT_SIZE;
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::window;
+use layout::flow::fragment::Fragment;
+use layout::text::TextUI;
 use serial_test::serial;
 
-use self::setup::{construct_tree, get_layout_info};
+use self::setup::{construct_tree, find_box};
 
 #[path = "../setup/mod.rs"]
 mod setup;
 
 #[test]
 #[serial]
-fn block_level_with_auto_width_xxx() {
-	let tree = construct_tree(
-		r#"<div id="test"><span><span style="display: inline-block; width: 400px"></span></span></div>"#,
-		r#""#,
-	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.width, Pixel::new(window::DEFAULT_WIDTH));
+fn block_level_with_auto_width() {
+	let tree = construct_tree(r#"<div id="test">hello world</div>"#, r#""#);
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	let (_, height) = TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	assert_eq!(fragment.total_width(), Pixel::new(window::DEFAULT_WIDTH));
+	assert_eq!(fragment.total_height(), Pixel::new(height));
+	assert_eq!(fragment.x(), PIXEL_ZERO);
+	assert_eq!(fragment.y(), PIXEL_ZERO);
 }
 
 #[test]
@@ -27,24 +32,33 @@ fn block_level_with_auto_width_and_include_margin_padding() {
 		r#"<div id="test">hello world</div>"#,
 		r#"#test { padding: 100px; margin: 50px }"#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.width, Pixel::new(window::DEFAULT_WIDTH - 300.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	let (_, height) = TextUI::new().measure_size("hello world", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	assert_eq!(fragment.total_width(), Pixel::new(window::DEFAULT_WIDTH));
+	assert_eq!(fragment.total_height(), Pixel::new(height + 300.0));
+	assert_eq!(fragment.width(), Pixel::new(window::DEFAULT_WIDTH - 300.0));
+	assert_eq!(fragment.height(), Pixel::new(height));
+	assert_eq!(fragment.x(), PIXEL_ZERO);
+	assert_eq!(fragment.y(), PIXEL_ZERO);
 }
 
 #[test]
 #[serial]
 fn block_level_with_fixed_width() {
 	let tree = construct_tree(r#"<div id="test">hello world</div>"#, r#"#test { width: 400px; }"#);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.width, Pixel::new(400.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.width(), Pixel::new(400.0));
 }
 
 #[test]
 #[serial]
 fn block_level_with_percentage_width() {
 	let tree = construct_tree(r#"<div id="test">hello world</div>"#, r#"#test { width: 60%; }"#);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.width, Pixel::new(window::DEFAULT_WIDTH * 0.6));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.width(), Pixel::new(window::DEFAULT_WIDTH * 0.6));
 }
 
 #[test]
@@ -57,9 +71,10 @@ body { width: 400px; }
 #test { width: auto; margin: 0 auto; }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.left, PIXEL_ZERO);
-	assert_eq!(dimension.margin.right, PIXEL_ZERO);
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.left, PIXEL_ZERO);
+	assert_eq!(fragment.margin.right, PIXEL_ZERO);
 }
 
 #[test]
@@ -72,9 +87,10 @@ body { width: 400px; }
 #test { width: 360px; padding: 0 20px; margin: 0 auto; }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.left, PIXEL_ZERO);
-	assert_eq!(dimension.margin.right, PIXEL_ZERO);
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.left, PIXEL_ZERO);
+	assert_eq!(fragment.margin.right, PIXEL_ZERO);
 }
 
 #[test]
@@ -87,9 +103,10 @@ body { width: 400px; }
 #test { width: 360px; padding: 0 10px; margin-left: auto; }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.left, Pixel::new(20.0));
-	assert_eq!(dimension.margin.right, PIXEL_ZERO);
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.left, Pixel::new(20.0));
+	assert_eq!(fragment.margin.right, PIXEL_ZERO);
 }
 
 #[test]
@@ -102,9 +119,10 @@ body { width: 400px; }
 #test { width: 360px; padding: 0 10px; margin: 0 auto; }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.left, Pixel::new(10.0));
-	assert_eq!(dimension.margin.right, Pixel::new(10.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.left, Pixel::new(10.0));
+	assert_eq!(fragment.margin.right, Pixel::new(10.0));
 }
 
 #[test]
@@ -119,8 +137,9 @@ fn block_level_with_auto_height() {
         "#,
 		r#""#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.height, Pixel::new(100.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.height(), Pixel::new(100.0));
 }
 
 #[test]
@@ -135,16 +154,18 @@ fn block_level_with_auto_height_with_margin_padding_children() {
         "#,
 		r#""#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.height, Pixel::new(150.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.height(), Pixel::new(150.0));
 }
 
 #[test]
 #[serial]
 fn block_level_with_fixed_height() {
 	let tree = construct_tree(r#"<div id="test"></div>"#, r#"#test { height: 400px; }"#);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.height, Pixel::new(400.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.height(), Pixel::new(400.0));
 }
 
 #[test]
@@ -157,18 +178,20 @@ html, body { height: 100%; }
 #test { height: 40%; }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.height, Pixel::new(window::DEFAULT_HEIGHT * 0.4));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.height(), Pixel::new(window::DEFAULT_HEIGHT * 0.4));
 }
 
 #[test]
 #[serial]
 fn block_level_with_top_bottom_auto_to_zero() {
 	let tree = construct_tree(r#"<div id="test"></div>"#, r#"#test { height: 400px; margin: auto 0 }"#);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.height, Pixel::new(400.0));
-	assert_eq!(dimension.margin.top, PIXEL_ZERO);
-	assert_eq!(dimension.margin.bottom, PIXEL_ZERO);
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.height(), Pixel::new(400.0));
+	assert_eq!(fragment.margin.top, PIXEL_ZERO);
+	assert_eq!(fragment.margin.bottom, PIXEL_ZERO);
 }
 
 #[test]
@@ -180,15 +203,16 @@ fn block_level_with_fixed_margin_padding() {
 #test { width: auto; margin: 5px 10px 15px 20px; padding: 30px 35px 40px 45px }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.top, Pixel::new(5.0));
-	assert_eq!(dimension.margin.right, Pixel::new(10.0));
-	assert_eq!(dimension.margin.bottom, Pixel::new(15.0));
-	assert_eq!(dimension.margin.left, Pixel::new(20.0));
-	assert_eq!(dimension.padding.top, Pixel::new(30.0));
-	assert_eq!(dimension.padding.right, Pixel::new(35.0));
-	assert_eq!(dimension.padding.bottom, Pixel::new(40.0));
-	assert_eq!(dimension.padding.left, Pixel::new(45.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.top, Pixel::new(5.0));
+	assert_eq!(fragment.margin.right, Pixel::new(10.0));
+	assert_eq!(fragment.margin.bottom, Pixel::new(15.0));
+	assert_eq!(fragment.margin.left, Pixel::new(20.0));
+	assert_eq!(fragment.padding.top, Pixel::new(30.0));
+	assert_eq!(fragment.padding.right, Pixel::new(35.0));
+	assert_eq!(fragment.padding.bottom, Pixel::new(40.0));
+	assert_eq!(fragment.padding.left, Pixel::new(45.0));
 }
 
 #[test]
@@ -200,24 +224,26 @@ fn block_level_with_percentage_margin_padding() {
 #test { width: auto; margin: 1% 2% 3% 4%; padding: 11% 12% 13% 14% }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	assert_eq!(dimension.margin.top, Pixel::new(window::DEFAULT_WIDTH * 0.01));
-	assert_eq!(dimension.margin.right, Pixel::new(window::DEFAULT_WIDTH * 0.02));
-	assert_eq!(dimension.margin.bottom, Pixel::new(window::DEFAULT_WIDTH * 0.03));
-	assert_eq!(dimension.margin.left, Pixel::new(window::DEFAULT_WIDTH * 0.04));
-	assert_eq!(dimension.padding.top, Pixel::new(window::DEFAULT_WIDTH * 0.11));
-	assert_eq!(dimension.padding.right, Pixel::new(window::DEFAULT_WIDTH * 0.12));
-	assert_eq!(dimension.padding.bottom, Pixel::new(window::DEFAULT_WIDTH * 0.13));
-	assert_eq!(dimension.padding.left, Pixel::new(window::DEFAULT_WIDTH * 0.14));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.margin.top, Pixel::new(window::DEFAULT_WIDTH * 0.01));
+	assert_eq!(fragment.margin.right, Pixel::new(window::DEFAULT_WIDTH * 0.02));
+	assert_eq!(fragment.margin.bottom, Pixel::new(window::DEFAULT_WIDTH * 0.03));
+	assert_eq!(fragment.margin.left, Pixel::new(window::DEFAULT_WIDTH * 0.04));
+	assert_eq!(fragment.padding.top, Pixel::new(window::DEFAULT_WIDTH * 0.11));
+	assert_eq!(fragment.padding.right, Pixel::new(window::DEFAULT_WIDTH * 0.12));
+	assert_eq!(fragment.padding.bottom, Pixel::new(window::DEFAULT_WIDTH * 0.13));
+	assert_eq!(fragment.padding.left, Pixel::new(window::DEFAULT_WIDTH * 0.14));
 }
 
 #[test]
 #[serial]
 fn block_level_as_first_child_top_left_position() {
 	let tree = construct_tree(r#"<div id="test">hello world</div>"#, r#""#);
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	// assert_eq!(dimension.x, Pixel::new(0.0));
-	// assert_eq!(dimension.y, Pixel::new(0.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.x(), Pixel::new(0.0));
+	assert_eq!(fragment.y(), Pixel::new(0.0));
 }
 
 #[test]
@@ -232,9 +258,10 @@ fn block_level_as_second_child_position() {
 #test1 { height: 40px; padding: 10px; margin: 15px }
         "#,
 	);
-	let dimension = get_layout_info(&tree, "test2").unwrap();
-	// assert_eq!(dimension.x, Pixel::new(0.0));
-	// assert_eq!(dimension.y, Pixel::new(90.0));
+	let node = find_box(&tree, "test2").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.x(), Pixel::new(0.0));
+	assert_eq!(fragment.y(), Pixel::new(90.0));
 }
 
 #[test]
@@ -251,7 +278,8 @@ fn block_box_contains_inline_block_box() {
 </div>"#,
 		r#""#,
 	));
-	let dimension = get_layout_info(&tree, "test").unwrap();
-	// assert_eq!(dimension.x, Pixel::new(0.0));
-	// assert_eq!(dimension.y, Pixel::new(40.0));
+	let node = find_box(&tree, "test").unwrap();
+	let fragment = node.as_block_level_box().fragment();
+	assert_eq!(fragment.x(), Pixel::new(0.0));
+	assert_eq!(fragment.y(), Pixel::new(40.0));
 }
