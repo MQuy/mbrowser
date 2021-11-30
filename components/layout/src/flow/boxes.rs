@@ -190,7 +190,7 @@ impl AnonymousBox {
 		AnonymousBox {
 			base: BaseBox::new(formatting_context),
 			fragment: Rc::new(RefCell::new(AnonymousFragment::new())),
-			lines: RefCell::new(vec![Line::new()]),
+			lines: RefCell::new(vec![]),
 		}
 	}
 
@@ -322,6 +322,7 @@ impl Box for AnonymousBox {
 		if layout_info.height == PIXEL_ZERO {
 			layout_info.height = height;
 		}
+		BoxClass::calculate_lines(self);
 		context.height += fragment.total_height();
 	}
 
@@ -467,13 +468,9 @@ impl BoxClass {
 			},
 			BoxClass::Block | BoxClass::Anonymous => {
 				let lines = parent.lines();
-				let latest_line = lines.last().unwrap();
+				let line_width = lines.last().map_or(PIXEL_ZERO, |latest_line| latest_line.width());
 				let layout_info = parent.layout_info();
-				(
-					latest_line.width(),
-					layout_info.width - latest_line.width(),
-					layout_info.width,
-				)
+				(line_width, layout_info.width - line_width, layout_info.width)
 			},
 			BoxClass::TextRun => not_reached!(),
 		}
@@ -531,6 +528,14 @@ impl BoxClass {
 		lines.push(latest_line);
 	}
 
+	pub fn calculate_lines(source: &dyn Box) {
+		let mut height = PIXEL_ZERO;
+		for line in source.lines().iter() {
+			line.set_y(height);
+			height += line.height();
+		}
+	}
+
 	pub fn get_block_height(source: &dyn Box) -> Pixel {
 		match source.formatting_context_type() {
 			FormattingContextType::BlockFormattingContext => {
@@ -543,7 +548,7 @@ impl BoxClass {
 			FormattingContextType::InlineFormattingContext => {
 				let mut height = PIXEL_ZERO;
 				for line in source.lines().iter() {
-					height += line.bounds.borrow().height();
+					height += line.height();
 				}
 				height
 			},

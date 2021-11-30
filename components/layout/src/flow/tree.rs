@@ -7,7 +7,6 @@ use css::values::{Pixel, PIXEL_ZERO};
 use dom::global_scope::NodeRef;
 use dom::node::Node;
 use dom::nodetype::NodeTypeId;
-use html5ever::{local_name, namespace_url, ns};
 
 use super::block::BlockLevelBox;
 use super::boxes::{Box, BoxClass};

@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use css::computed_values::ComputedValues;
@@ -23,14 +23,35 @@ impl Line {
 	}
 
 	pub fn width(&self) -> Pixel {
-		self.bounds.borrow().width()
+		let mut width = PIXEL_ZERO;
+		for fragment in self.fragments.borrow().iter() {
+			width += fragment.borrow().total_width();
+		}
+		width
+	}
+
+	pub fn height(&self) -> Pixel {
+		let mut height = PIXEL_ZERO;
+		for fragment in self.fragments.borrow().iter() {
+			height = height.max(fragment.borrow().total_height());
+		}
+		height
+	}
+
+	pub fn y(&self) -> Pixel {
+		self.bounds.borrow().origin.y
+	}
+
+	pub fn set_y(&self, value: Pixel) {
+		self.bounds.borrow_mut().origin.y = value;
 	}
 
 	pub fn add_fragment(&self, fragment: Rc<RefCell<dyn Fragment>>) {
-		let height = self.bounds.borrow().size.height;
 		self.fragments.borrow_mut().push(fragment.clone());
-		self.bounds.borrow_mut().size.width += fragment.borrow().total_width();
-		self.bounds.borrow_mut().size.height = height.max(fragment.borrow().total_height());
+	}
+
+	pub fn fragments(&self) -> Ref<Vec<Rc<RefCell<dyn Fragment>>>> {
+		self.fragments.borrow()
 	}
 }
 
@@ -205,6 +226,10 @@ pub trait Fragment {
 	fn total_height(&self) -> Pixel;
 
 	fn right_sides(&self) -> Pixel;
+
+	fn x(&self) -> Pixel;
+
+	fn y(&self) -> Pixel;
 }
 
 pub struct BoxFragment {
@@ -235,6 +260,14 @@ impl Fragment for BoxFragment {
 
 	fn right_sides(&self) -> Pixel {
 		self.padding.right + self.margin.right
+	}
+
+	fn x(&self) -> Pixel {
+		self.rect.origin.x
+	}
+
+	fn y(&self) -> Pixel {
+		self.rect.origin.y
 	}
 }
 
@@ -285,13 +318,9 @@ impl BoxFragment {
 	}
 
 	#[inline]
-	pub fn x(&self) -> Pixel {
-		self.rect.origin.x
-	}
-
-	#[inline]
-	pub fn y(&self) -> Pixel {
-		self.rect.origin.y
+	pub fn reset_right_sides(&mut self) {
+		self.margin.right = PIXEL_ZERO;
+		self.padding.right = PIXEL_ZERO;
 	}
 }
 
@@ -320,6 +349,14 @@ impl Fragment for TextFragment {
 
 	fn right_sides(&self) -> Pixel {
 		PIXEL_ZERO
+	}
+
+	fn x(&self) -> Pixel {
+		self.rect.origin.x
+	}
+
+	fn y(&self) -> Pixel {
+		self.rect.origin.y
 	}
 }
 
@@ -378,6 +415,14 @@ impl Fragment for AnonymousFragment {
 
 	fn right_sides(&self) -> Pixel {
 		PIXEL_ZERO
+	}
+
+	fn x(&self) -> Pixel {
+		PIXEL_ZERO
+	}
+
+	fn y(&self) -> Pixel {
+		self.rect.origin.y
 	}
 }
 

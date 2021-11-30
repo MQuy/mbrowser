@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use super::boxes::{Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{Fragment, LayoutInfo, TextFragment};
+use super::fragment::{Fragment, LayoutInfo, Line, TextFragment};
 use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 use crate::text::TextUI;
@@ -50,6 +50,49 @@ impl TextRun {
 
 	pub fn fragments(&self) -> Ref<Vec<Rc<RefCell<TextFragment>>>> {
 		self.fragments.borrow()
+	}
+
+	fn split_paragraph(
+		&self,
+		width: Pixel,
+		height: Pixel,
+		parts: &Vec<&str>,
+		parent_current_width: Pixel,
+		in_current_line: bool,
+		parent: Rc<dyn Box>,
+		establisher: Rc<dyn Box>,
+	) {
+		let mut fragment = TextFragment::new(self.dom_node(), parts.join(""));
+		fragment.set_width(width);
+		fragment.set_height(height);
+
+		if in_current_line {
+			fragment.set_x(parent_current_width);
+			let fragment = Rc::new(RefCell::new(fragment));
+			self.add_fragment(fragment.clone());
+			parent.add_child_fragment(fragment.clone());
+
+			let mut lines = establisher.lines_mut();
+			if lines.len() == 0 {
+				lines.push(Line::new());
+			}
+			let latest_line = lines.last().unwrap();
+			if parent.id() == establisher.id() {
+				latest_line.add_fragment(fragment.clone());
+			}
+			BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
+		} else {
+			let mut lines = establisher.lines_mut();
+			let fragment = Rc::new(RefCell::new(fragment));
+			self.add_fragment(fragment.clone());
+			parent.add_child_fragment(fragment.clone());
+			BoxClass::update_ancestors_with_newline(
+				fragment.clone(),
+				establisher.clone(),
+				&mut lines,
+				self.ancestors(),
+			);
+		}
 	}
 }
 
@@ -181,7 +224,10 @@ impl Box for TextRun {
 			self.add_fragment(fragment.clone());
 			parent.add_child_fragment(fragment.clone());
 
-			let lines = establisher.lines();
+			let mut lines = establisher.lines_mut();
+			if lines.len() == 0 {
+				lines.push(Line::new());
+			}
 			let latest_line = lines.last().unwrap();
 			if parent.id() == establisher.id() {
 				latest_line.add_fragment(fragment.clone());
@@ -203,35 +249,15 @@ impl Box for TextRun {
 				if width + word_width <= max_width {
 					width += word_width;
 				} else {
-					let mut fragment = TextFragment::new(self.dom_node(), parts.join(""));
-					fragment.set_width(width);
-					fragment.set_height(height);
-
-					if in_current_line {
-						fragment.set_x(parent_current_width);
-						let fragment = Rc::new(RefCell::new(fragment));
-						self.add_fragment(fragment.clone());
-						parent.add_child_fragment(fragment.clone());
-
-						println!("{:?}", establisher.class());
-						let lines = establisher.lines();
-						let latest_line = lines.last().unwrap();
-						if parent.id() == establisher.id() {
-							latest_line.add_fragment(fragment.clone());
-						}
-						BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
-					} else {
-						let mut lines = establisher.lines_mut();
-						let fragment = Rc::new(RefCell::new(fragment));
-						self.add_fragment(fragment.clone());
-						parent.add_child_fragment(fragment.clone());
-						BoxClass::update_ancestors_with_newline(
-							fragment.clone(),
-							establisher.clone(),
-							&mut lines,
-							self.ancestors(),
-						);
-					}
+					self.split_paragraph(
+						width,
+						height,
+						&parts,
+						parent_current_width,
+						in_current_line,
+						parent.clone(),
+						establisher.clone(),
+					);
 
 					max_width = parent_max_width;
 					width = word_width;
@@ -241,6 +267,15 @@ impl Box for TextRun {
 				}
 				parts.push(word);
 			}
+			self.split_paragraph(
+				width,
+				height,
+				&parts,
+				parent_current_width,
+				in_current_line,
+				parent,
+				establisher,
+			)
 		}
 	}
 
@@ -252,8 +287,6 @@ impl Box for TextRun {
 		}
 		let mut layout_info = self.layout_info_mut();
 		layout_info.height = height;
-
-		context.height += height;
 	}
 
 	fn class(&self) -> BoxClass {

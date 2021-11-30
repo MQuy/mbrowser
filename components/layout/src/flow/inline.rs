@@ -8,7 +8,7 @@ use dom::global_scope::{GlobalScope, NodeRef};
 
 use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
-use super::fragment::{BoxFragment, Fragment, LayoutInfo};
+use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
 use super::tree::VisitingContext;
 use crate::display_list::builder::DisplayListBuilder;
 
@@ -50,6 +50,8 @@ impl InlineLevelBox {
 		let layout_info = self.layout_info();
 		let mut fragment = BoxFragment::new(self.dom_node.clone());
 		fragment.padding = layout_info.padding;
+		fragment.margin.top = layout_info.margin.top;
+		fragment.margin.bottom = layout_info.margin.bottom;
 		if self.fragments.borrow().len() == 0 {
 			fragment.margin.left = layout_info.margin.left;
 		}
@@ -58,7 +60,12 @@ impl InlineLevelBox {
 	}
 
 	pub fn add_fragment(&self, fragment: Rc<RefCell<BoxFragment>>) {
-		self.fragments.borrow_mut().push(fragment.clone());
+		let mut fragments = self.fragments.borrow_mut();
+		if fragments.len() == 1 {
+			fragments[0].borrow_mut().reset_right_sides();
+		}
+		fragments.push(fragment.clone());
+		drop(fragments);
 		self.recalculate_layout_info();
 	}
 
@@ -219,6 +226,9 @@ impl Box for InlineLevelBox {
 				fragment.set_bounded_height(height);
 
 				let mut lines = establisher.lines_mut();
+				if lines.len() == 0 {
+					lines.push(Line::new());
+				}
 				let latest_line = lines.last().unwrap();
 
 				if fragment.total_width() <= parent_leftover_width || latest_line.fragments.borrow().len() == 0 {
@@ -249,12 +259,16 @@ impl Box for InlineLevelBox {
 				drop(layout_info);
 				let mut fragment = self.create_fragment();
 				fragment.set_bounded_width(parent_leftover_width);
+				fragment.set_x(parent_current_width);
 
 				let fragment = Rc::new(RefCell::new(fragment));
 				self.add_fragment(fragment.clone());
 				parent.add_child_fragment(fragment.clone());
 
-				let lines = establisher.lines();
+				let mut lines = establisher.lines_mut();
+				if lines.len() == 0 {
+					lines.push(Line::new());
+				}
 				let latest_line = lines.last().unwrap();
 				if parent.id() == establisher.id() {
 					latest_line.add_fragment(fragment.clone());
@@ -264,27 +278,29 @@ impl Box for InlineLevelBox {
 	}
 
 	fn revisit_layout(&self, context: &mut VisitingContext) {
-		let mut height = PIXEL_ZERO;
 		match self.formatting_context_type() {
 			FormattingContextType::BlockFormattingContext => {
 				let fragments = self.fragments();
 				assert_eq!(fragments.len(), 1);
 				let fragment = fragments.last().unwrap();
-				fragment.borrow_mut().set_y(context.height);
-				height = BoxClass::get_block_height(self);
+
+				let mut layout_info = self.layout_info_mut();
+				if layout_info.height == PIXEL_ZERO {
+					let height = BoxClass::get_block_height(self);
+					layout_info.height = height;
+					fragment.borrow_mut().set_height(height);
+				}
 			},
 			FormattingContextType::InlineFormattingContext => {
 				for fragment in self.fragments.borrow().iter() {
-					fragment.borrow_mut().set_y(height + context.height);
-					height += fragment.borrow_mut().total_height();
+					let mut child_height = PIXEL_ZERO;
+					for child_fragment in &fragment.borrow().children {
+						child_height += child_fragment.borrow().height();
+					}
+					fragment.borrow_mut().set_height(child_height);
 				}
 			},
 		}
-
-		let mut layout_info = self.layout_info_mut();
-		layout_info.height = height;
-
-		context.height += height;
 	}
 
 	fn class(&self) -> BoxClass {

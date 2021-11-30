@@ -26,7 +26,7 @@ impl BlockLevelBox {
 			dom_node: dom_node.clone(),
 			base: BaseBox::new(formatting_context),
 			fragment: Rc::new(RefCell::new(BoxFragment::new(dom_node))),
-			lines: RefCell::new(vec![Line::new()]),
+			lines: RefCell::new(vec![]),
 		}
 	}
 
@@ -251,6 +251,7 @@ impl Box for BlockLevelBox {
 			fragment.set_height(height);
 			layout_info.height = height;
 		}
+		BoxClass::calculate_lines(self);
 		context.height += fragment.total_height();
 	}
 

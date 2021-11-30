@@ -3,6 +3,7 @@ use std::rc::Rc;
 use css::properties::longhands::font_size::DEFAULT_FONT_SIZE;
 use css::values::{Pixel, PIXEL_ZERO};
 use dom::window;
+use layout::flow::boxes::Box;
 use layout::flow::fragment::Fragment;
 use layout::text::TextUI;
 use serial_test::serial;
@@ -272,7 +273,6 @@ fn block_box_contains_inline_block_box() {
 <div style="color: red;">
     Hello world!
     <div id="hello" style="display: inline-block; height: 40px">
-        <div>Echo from the past</div>
     </div>
     <p id="test"><span>Totoland</span></p>
 </div>"#,
@@ -282,4 +282,90 @@ fn block_box_contains_inline_block_box() {
 	let fragment = node.as_block_level_box().fragment();
 	assert_eq!(fragment.x(), Pixel::new(0.0));
 	assert_eq!(fragment.y(), Pixel::new(40.0));
+}
+
+#[test]
+#[serial]
+fn block_box_contains_two_spans_same_line() {
+	let tree = Rc::new(construct_tree(
+		r#"
+<div id="test" style="width: 200px;">
+    <span>hello darkness</span> <span>my old friend</span>
+</div>"#,
+		r#""#,
+	));
+	let (width, _) = TextUI::new().measure_size("hello darkness", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	let node = find_box(&tree, "test").unwrap();
+	let node = node.as_block_level_box();
+	let lines = node.lines();
+	assert_eq!(lines.len(), 1);
+	let fragments = lines[0].fragments();
+	assert_eq!(fragments.len(), 2);
+	assert_eq!(fragments[1].borrow().x(), Pixel::new(width));
+}
+
+#[test]
+#[serial]
+fn block_box_contains_textrun_span_multilines() {
+	let tree = Rc::new(construct_tree(
+		r#"
+<div id="test" style="width: 150px;">
+    <span>hello darkness my old friend</span>
+</div>"#,
+		r#""#,
+	));
+	let (width, height) = TextUI::new().measure_size("hello darkness my old ", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	let node = find_box(&tree, "test").unwrap();
+	let node = node.as_block_level_box();
+	let lines = node.lines();
+	assert_eq!(lines.len(), 2);
+	assert_eq!(lines[0].width(), Pixel::new(width));
+	assert_eq!(lines[1].y(), Pixel::new(height));
+}
+
+#[test]
+#[serial]
+fn block_box_contains_textrun_span_multilines_with_margin() {
+	let tree = Rc::new(construct_tree(
+		r#"
+<div id="test" style="width: 150px;">
+    <span style="margin: 0 10px">hello darkness my old friend</span>
+    <span>again</span>
+</div>"#,
+		r#""#,
+	));
+	let (width1, height1) = TextUI::new().measure_size("hello darkness my old ", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	let (width2, _) = TextUI::new().measure_size("friendagain", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	let node = find_box(&tree, "test").unwrap();
+	let node = node.as_block_level_box();
+	let lines = node.lines();
+	assert_eq!(lines.len(), 2);
+	let first_line = &lines[0];
+	let second_line = &lines[1];
+	assert_eq!(first_line.width(), Pixel::new(width1 + 10.0));
+	assert_eq!(second_line.width(), Pixel::new(width2 + 10.0));
+	assert_eq!(second_line.y(), Pixel::new(height1));
+}
+
+#[test]
+#[serial]
+fn block_box_contains_multilines_with_inline_block() {
+	let tree = Rc::new(construct_tree(
+		r#"
+<div id="test" style="width: 150px;">
+    <span style="margin: 0 10px">hello</span>
+    <span style="display: inline-block; width: 200px">my friend</span>
+</div>"#,
+		r#""#,
+	));
+	let (width1, height1) = TextUI::new().measure_size("hello", &vec!["system-ui"], DEFAULT_FONT_SIZE);
+	let node = find_box(&tree, "test").unwrap();
+	let node = node.as_block_level_box();
+	let lines = node.lines();
+	assert_eq!(lines.len(), 2);
+	let first_line = &lines[0];
+	let second_line = &lines[1];
+	assert_eq!(first_line.width(), Pixel::new(width1 + 20.0));
+	assert_eq!(second_line.width(), Pixel::new(200.0));
+	assert_eq!(second_line.y(), Pixel::new(height1));
 }

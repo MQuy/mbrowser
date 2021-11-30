@@ -51,7 +51,7 @@ impl TreeSink for DomParser {
 	}
 
 	fn parse_error(&mut self, msg: std::borrow::Cow<'static, str>) {
-		println!("Parse error: {}", msg);
+		// println!("Parse error: {}", msg);
 		// panic!();
 	}
 
@@ -149,11 +149,7 @@ impl TreeSink for DomParser {
 		self.document.set_quirks_mode(mode);
 	}
 
-	fn append_before_sibling(
-		&mut self,
-		sibling: &Self::Handle,
-		new_node: NodeOrText<Self::Handle>,
-	) {
+	fn append_before_sibling(&mut self, sibling: &Self::Handle, new_node: NodeOrText<Self::Handle>) {
 		let parent = sibling.parent_node().unwrap();
 		insert(&parent, Some(sibling.clone()), new_node)
 	}
@@ -194,10 +190,7 @@ impl TreeSink for DomParser {
 		self.current_line = line_number;
 	}
 
-	fn complete_script(
-		&mut self,
-		_node: &Self::Handle,
-	) -> html5ever::tree_builder::NextParserState {
+	fn complete_script(&mut self, _node: &Self::Handle) -> html5ever::tree_builder::NextParserState {
 		html5ever::tree_builder::NextParserState::Continue
 	}
 }
@@ -238,11 +231,7 @@ fn insert(parent: &Rc<Node>, reference_child: Option<Rc<Node>>, child: NodeOrTex
 }
 
 /// https://html.spec.whatwg.org/multipage/#create-an-element-for-the-token
-fn create_element_for_token(
-	name: QualName,
-	attrs: Vec<Attribute>,
-	document: Rc<Document>,
-) -> Rc<Element> {
+fn create_element_for_token(name: QualName, attrs: Vec<Attribute>, document: Rc<Document>) -> Rc<Element> {
 	let is = attrs
 		.iter()
 		.find(|attr| attr.name.local.eq_str_ignore_ascii_case("is"))
