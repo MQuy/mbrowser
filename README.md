@@ -21,7 +21,7 @@ mBrowser is a toy browser developed from scratch for learning purpose.
 - [ ] Networking
 - [ ] Javascript Engine
 
-![screenshot](https://i.imgur.com/heVV7P1.png)
+![screenshot](https://i.imgur.com/qYYFwKX.png)
 
 ### Credits
 

@@ -10,23 +10,23 @@ use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
 use super::tree::VisitingContext;
-use crate::display_list::builder::DisplayListBuilder;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#block-boxes
 pub struct BlockLevelBox {
 	dom_node: NodeRef,
 	base: BaseBox,
 	fragment: Rc<RefCell<BoxFragment>>,
-	lines: RefCell<Vec<Line>>,
+	lines: Rc<RefCell<Vec<Line>>>,
 }
 
 impl BlockLevelBox {
 	pub fn new(dom_node: NodeRef, formatting_context: Rc<FormattingContext>) -> Self {
+		let lines = Rc::new(RefCell::new(vec![]));
 		BlockLevelBox {
 			dom_node: dom_node.clone(),
 			base: BaseBox::new(formatting_context),
-			fragment: Rc::new(RefCell::new(BoxFragment::new(dom_node))),
-			lines: RefCell::new(vec![]),
+			fragment: Rc::new(RefCell::new(BoxFragment::new(dom_node, lines.clone()))),
+			lines,
 		}
 	}
 
@@ -34,11 +34,11 @@ impl BlockLevelBox {
 		self.dom_node.clone()
 	}
 
-	pub fn fragment(&self) -> Ref<'_, BoxFragment> {
+	pub fn fragment(&self) -> Ref<BoxFragment> {
 		self.fragment.borrow()
 	}
 
-	pub fn fragment_mut(&self) -> RefMut<'_, BoxFragment> {
+	pub fn fragment_mut(&self) -> RefMut<BoxFragment> {
 		self.fragment.borrow_mut()
 	}
 
@@ -52,7 +52,7 @@ impl BlockLevelBox {
 
 	pub fn create_fragment(&self) -> BoxFragment {
 		let layout_info = self.layout_info();
-		let mut fragment = BoxFragment::new(self.dom_node.clone());
+		let mut fragment = BoxFragment::new(self.dom_node.clone(), self.lines.clone());
 		fragment.padding = layout_info.padding;
 		fragment.margin = layout_info.margin;
 		fragment.set_width(layout_info.width);
@@ -261,9 +261,5 @@ impl Box for BlockLevelBox {
 
 	fn as_block_level_box(&self) -> &BlockLevelBox {
 		self
-	}
-
-	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
-		todo!()
 	}
 }

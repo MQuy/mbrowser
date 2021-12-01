@@ -75,10 +75,10 @@ fn main() {
         <div class="e">
           <div class="f">
             <div class="g">
-                <div style="color: black; background-color: white">
-                    Hello
+                <div style="color: black; background-color: white; width: 150px">
+                    Hello darkness my old friend
                     <div id="hello" style="display: inline-block; height: 40px; padding-left: 4px">
-                        <div>world!</div>
+                        <div>bla bla bla bla</div>
                     </div>
                     <p><span>mBrowser here</span></p>
                 </div>
@@ -106,7 +106,6 @@ fn main() {
 .e { background-color: #0000ff; }
 .f { background-color: #4b0082; }
 .g { background-color: #800080; }
-#hello { font-family: fantasy; font-size: 32px; }
         "#,
 		Origin::UserAgent,
 		media,
@@ -152,9 +151,7 @@ fn main() {
 			.expect("Request adapter");
 
 		(
-			surface
-				.get_preferred_format(&adapter)
-				.expect("Get preferred format"),
+			surface.get_preferred_format(&adapter).expect("Get preferred format"),
 			adapter
 				.request_device(
 					&wgpu::DeviceDescriptor {
@@ -227,13 +224,9 @@ fn main() {
 				match surface.get_current_texture() {
 					Ok(frame) => {
 						let mut encoder =
-							device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-								label: None,
-							});
+							device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
 
-						let view = frame
-							.texture
-							.create_view(&wgpu::TextureViewDescriptor::default());
+						let view = frame.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
 						// And then iced on top
 						let backend = renderer.backend_mut();
@@ -252,8 +245,7 @@ fn main() {
 									border_color: Color::TRANSPARENT,
 								},
 								DisplayItem::Text(text) => {
-									let (font_name, font_bytes) =
-										fonts::load_cached_font(&text.font_families);
+									let (font_name, font_bytes) = fonts::load_cached_font(&text.font_families);
 									Primitive::Text {
 										content: text.content.clone(),
 										bounds: to_rectangle(&text.bounds),
@@ -267,8 +259,7 @@ fn main() {
 											name: font_name,
 											bytes: font_bytes,
 										},
-										horizontal_alignment:
-											iced_winit::alignment::Horizontal::Left,
+										horizontal_alignment: iced_winit::alignment::Horizontal::Left,
 										size: text.font_size,
 										vertical_alignment: iced_winit::alignment::Vertical::Top,
 									}

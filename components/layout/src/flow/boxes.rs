@@ -4,7 +4,6 @@ use std::rc::{Rc, Weak};
 use common::not_reached;
 use css::computed_values::ComputedValues;
 use css::values::{Pixel, PIXEL_ZERO};
-use html5ever::{local_name, namespace_url, ns};
 use uuid::Uuid;
 
 use super::block::BlockLevelBox;
@@ -13,7 +12,6 @@ use super::fragment::{AnonymousFragment, Fragment, LayoutInfo, Line, Sides};
 use super::inline::InlineLevelBox;
 use super::text_run::TextRun;
 use super::tree::VisitingContext;
-use crate::display_list::builder::DisplayListBuilder;
 
 pub trait Box {
 	fn id(&self) -> Uuid;
@@ -85,8 +83,6 @@ pub trait Box {
 	fn as_text_run(&self) -> &TextRun {
 		panic!("called as_text_run on a non text run");
 	}
-
-	fn build_display_list(&self, builder: &mut DisplayListBuilder);
 }
 
 impl PartialEq for dyn Box {
@@ -182,15 +178,16 @@ impl BaseBox {
 pub struct AnonymousBox {
 	base: BaseBox,
 	fragment: Rc<RefCell<AnonymousFragment>>,
-	lines: RefCell<Vec<Line>>,
+	lines: Rc<RefCell<Vec<Line>>>,
 }
 
 impl AnonymousBox {
 	pub fn new(formatting_context: Rc<FormattingContext>) -> Self {
+		let lines = Rc::new(RefCell::new(vec![]));
 		AnonymousBox {
 			base: BaseBox::new(formatting_context),
-			fragment: Rc::new(RefCell::new(AnonymousFragment::new())),
-			lines: RefCell::new(vec![]),
+			fragment: Rc::new(RefCell::new(AnonymousFragment::new(lines.clone()))),
+			lines,
 		}
 	}
 
@@ -204,7 +201,7 @@ impl AnonymousBox {
 
 	pub fn create_fragment(&self) -> AnonymousFragment {
 		let layout_info = self.layout_info();
-		let mut fragment = AnonymousFragment::new();
+		let mut fragment = AnonymousFragment::new(self.lines.clone());
 		fragment.set_width(layout_info.width);
 		fragment.set_bounded_width(layout_info.width);
 		fragment.set_height(layout_info.height);
@@ -310,6 +307,8 @@ impl Box for AnonymousBox {
 		drop(layout_info);
 
 		self.fragment.replace(self.create_fragment());
+		let parent = self.parent().unwrap();
+		parent.add_child_fragment(self.fragment.clone());
 	}
 
 	fn revisit_layout(&self, context: &mut VisitingContext) {
@@ -333,8 +332,6 @@ impl Box for AnonymousBox {
 	fn as_anonymous_box(&self) -> &AnonymousBox {
 		self
 	}
-
-	fn build_display_list(&self, builder: &mut DisplayListBuilder) {}
 }
 
 #[derive(Debug, PartialEq)]

@@ -3,11 +3,12 @@ use std::rc::Rc;
 
 use css::computed_values::ComputedValues;
 use css::values::{CSSPixel, Pixel, PIXEL_ZERO};
-use dom::global_scope::NodeRef;
-use euclid::{Rect, Size2D};
+use dom::global_scope::{GlobalScope, NodeRef};
+use euclid::{Point2D, Rect, Size2D};
 
 use super::boxes::Box;
 use super::formatting_context::FormattingContextType;
+use crate::display_list::builder::{BuilderContext, DisplayListBuilder};
 
 pub struct Line {
 	pub fragments: RefCell<Vec<Rc<RefCell<dyn Fragment>>>>, // BoxFragment or TextFragment
@@ -230,6 +231,32 @@ pub trait Fragment {
 	fn x(&self) -> Pixel;
 
 	fn y(&self) -> Pixel;
+
+	fn rect_x(&self) -> Pixel;
+
+	fn rect_y(&self) -> Pixel;
+
+	fn class(&self) -> FragmentClass;
+
+	fn as_box_fragment(&self) -> &BoxFragment {
+		panic!("called as_box_fragment on a non box fragment");
+	}
+
+	fn as_text_fragment(&self) -> &TextFragment {
+		panic!("called as_text_fragment on a non text fragment");
+	}
+
+	fn as_anonymous_fragment(&self) -> &AnonymousFragment {
+		panic!("called as_anonymous_fragment on a non anonymous fragment");
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder, context: &mut BuilderContext);
+}
+
+pub enum FragmentClass {
+	BoxFragment,
+	TextFragment,
+	AnonymousFragment,
 }
 
 pub struct BoxFragment {
@@ -239,6 +266,7 @@ pub struct BoxFragment {
 	pub rect: Rect<Pixel, CSSPixel>,
 	pub bounds: Size2D<Pixel, CSSPixel>,
 	pub children: Vec<Rc<RefCell<dyn Fragment>>>,
+	pub lines: Rc<RefCell<Vec<Line>>>,
 }
 
 impl Fragment for BoxFragment {
@@ -269,12 +297,43 @@ impl Fragment for BoxFragment {
 	fn y(&self) -> Pixel {
 		self.rect.origin.y
 	}
+
+	fn rect_x(&self) -> Pixel {
+		self.x() + self.margin.left + self.padding.left
+	}
+
+	fn rect_y(&self) -> Pixel {
+		self.y() + self.margin.top + self.padding.top
+	}
+
+	fn class(&self) -> FragmentClass {
+		FragmentClass::BoxFragment
+	}
+
+	fn as_box_fragment(&self) -> &BoxFragment {
+		self
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder, context: &mut BuilderContext) {
+		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
+		builder.push_rect(
+			Rect::new(
+				Point2D::new(
+					context.x + self.rect.origin.x + self.margin.left + self.padding.left,
+					context.y + self.rect.origin.y + self.margin.top + self.padding.top,
+				),
+				self.rect.size,
+			),
+			computed_values.get_background_color().clone(),
+		);
+	}
 }
 
 impl BoxFragment {
-	pub fn new(dom_node: NodeRef) -> Self {
+	pub fn new(dom_node: NodeRef, lines: Rc<RefCell<Vec<Line>>>) -> Self {
 		BoxFragment {
 			dom_node,
+			lines,
 			rect: Default::default(),
 			padding: Default::default(),
 			margin: Default::default(),
@@ -324,6 +383,7 @@ impl BoxFragment {
 	}
 }
 
+#[derive(Debug)]
 pub struct TextFragment {
 	pub dom_node: NodeRef,
 	pub rect: Rect<Pixel, CSSPixel>,
@@ -357,6 +417,33 @@ impl Fragment for TextFragment {
 
 	fn y(&self) -> Pixel {
 		self.rect.origin.y
+	}
+
+	fn rect_x(&self) -> Pixel {
+		self.x()
+	}
+
+	fn rect_y(&self) -> Pixel {
+		self.y()
+	}
+
+	fn class(&self) -> FragmentClass {
+		FragmentClass::TextFragment
+	}
+
+	fn as_text_fragment(&self) -> &TextFragment {
+		self
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder, context: &mut BuilderContext) {
+		let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.parent().unwrap().id());
+		builder.push_text(
+			Rect::new(Point2D::new(context.x + self.x(), context.y + self.y()), self.rect.size),
+			&self.content,
+			computed_values.get_color().clone(),
+			computed_values.get_font_families(),
+			computed_values.get_font_size(),
+		)
 	}
 }
 
@@ -394,6 +481,7 @@ pub struct AnonymousFragment {
 	pub rect: Rect<Pixel, CSSPixel>,
 	pub bounds: Size2D<Pixel, CSSPixel>,
 	pub children: Vec<Rc<RefCell<dyn Fragment>>>,
+	pub lines: Rc<RefCell<Vec<Line>>>,
 }
 
 impl Fragment for AnonymousFragment {
@@ -424,14 +512,33 @@ impl Fragment for AnonymousFragment {
 	fn y(&self) -> Pixel {
 		self.rect.origin.y
 	}
+
+	fn rect_x(&self) -> Pixel {
+		self.x()
+	}
+
+	fn rect_y(&self) -> Pixel {
+		self.y()
+	}
+
+	fn class(&self) -> FragmentClass {
+		FragmentClass::AnonymousFragment
+	}
+
+	fn as_anonymous_fragment(&self) -> &AnonymousFragment {
+		self
+	}
+
+	fn build_display_list(&self, builder: &mut DisplayListBuilder, context: &mut BuilderContext) {}
 }
 
 impl AnonymousFragment {
-	pub fn new() -> Self {
+	pub fn new(lines: Rc<RefCell<Vec<Line>>>) -> Self {
 		Self {
 			rect: Default::default(),
 			bounds: Default::default(),
 			children: Default::default(),
+			lines,
 		}
 	}
 

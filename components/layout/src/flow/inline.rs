@@ -10,7 +10,6 @@ use super::boxes::{BaseBox, Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{BoxFragment, Fragment, LayoutInfo, Line};
 use super::tree::VisitingContext;
-use crate::display_list::builder::DisplayListBuilder;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
 pub struct InlineLevelBox {
@@ -48,7 +47,7 @@ impl InlineLevelBox {
 
 	pub fn create_fragment(&self) -> BoxFragment {
 		let layout_info = self.layout_info();
-		let mut fragment = BoxFragment::new(self.dom_node.clone());
+		let mut fragment = BoxFragment::new(self.dom_node.clone(), Rc::new(Default::default()));
 		fragment.padding = layout_info.padding;
 		fragment.margin.top = layout_info.margin.top;
 		fragment.margin.bottom = layout_info.margin.bottom;
@@ -309,9 +308,5 @@ impl Box for InlineLevelBox {
 
 	fn as_inline_level_box(&self) -> &InlineLevelBox {
 		self
-	}
-
-	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
-		todo!()
 	}
 }

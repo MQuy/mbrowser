@@ -2,10 +2,7 @@ use core::fmt;
 use std::fmt::Write;
 
 use common::not_reached;
-use cssparser::{
-	ascii_case_insensitive_phf_map, match_ignore_ascii_case, Parser,
-	_cssparser_internal_to_lowercase,
-};
+use cssparser::{ascii_case_insensitive_phf_map, match_ignore_ascii_case, Parser, _cssparser_internal_to_lowercase};
 
 use super::longhand_id::LonghandId;
 use super::shorthand_id::ShorthandId;
@@ -267,7 +264,6 @@ impl PropertyId {
 			return Ok(match *id {
 				StaticId::Longhand(id) => PropertyId::Longhand(id),
 				StaticId::Shorthand(id) => PropertyId::Shorthand(id),
-				_ => not_reached!(),
 			});
 		}
 
@@ -312,7 +308,6 @@ impl PropertyId {
 			PropertyId::Custom(_) => return None,
 			PropertyId::Shorthand(shorthand_id) => shorthand_id.into(),
 			PropertyId::Longhand(longhand_id) => longhand_id.into(),
-			_ => not_reached!(),
 		})
 	}
 }
@@ -597,14 +592,13 @@ impl NonCustomPropertyId {
 		);
 
 		static MAP: [u8; NON_CUSTOM_PROPERTY_ID_COUNT] = [
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7,
-			7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			5, 5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 1, 5, 1, 1, 1, 1, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5,
 		];
 		match rule_type {
 			CssRuleType::Style => MAP[self.0] & 1 != 0,

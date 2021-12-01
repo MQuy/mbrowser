@@ -178,26 +178,11 @@ impl BoxTree {
 		}
 	}
 
-	/*
-	we perform multiple traversals to incremental figure out the used value for every elements:
-		- post-order traversal to compute the intrinsic width for elements.
-		- pre-order traversal to compute used value for width for elements.
-		- post-order traversal to compute height for block elements.
-	 */
 	pub fn compute_layout(&self) {
 		self.prepare_layout();
 		self.visit_layout();
 	}
 
-	/*
-	if box is inline-level box and its formatting context is inline formatting context (ignore css width):
-		- if box has children, its intrinsic width = sum of all children's width.
-		- If box has no children and is text node, width = text's width.
-		- otherwise, box's width = 0.
-	otherwise
-		- if box is inline-level box (block formatting context) -> its intrinsic width = total children's width
-		- if box is block-level box -> its intrinsic width = maximum from each child's width
-	*/
 	pub fn prepare_layout(&self) {
 		let node_iter = PostOrderBoxTreeIterator::new(self.root.clone());
 		for node in node_iter {

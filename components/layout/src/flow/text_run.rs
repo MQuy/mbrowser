@@ -13,7 +13,6 @@ use super::boxes::{Box, BoxClass, SimpleBoxIterator};
 use super::formatting_context::{FormattingContext, FormattingContextType};
 use super::fragment::{Fragment, LayoutInfo, Line, TextFragment};
 use super::tree::VisitingContext;
-use crate::display_list::builder::DisplayListBuilder;
 use crate::text::TextUI;
 
 /// https://www.w3.org/TR/CSS22/visuren.html#inline-boxes
@@ -52,6 +51,10 @@ impl TextRun {
 		self.fragments.borrow()
 	}
 
+	pub fn create_fragment(&self, content: String) -> TextFragment {
+		TextFragment::new(self.dom_node(), content)
+	}
+
 	fn split_paragraph(
 		&self,
 		width: Pixel,
@@ -62,7 +65,7 @@ impl TextRun {
 		parent: Rc<dyn Box>,
 		establisher: Rc<dyn Box>,
 	) {
-		let mut fragment = TextFragment::new(self.dom_node(), parts.join(""));
+		let mut fragment = self.create_fragment(parts.join(""));
 		fragment.set_width(width);
 		fragment.set_height(height);
 
@@ -101,7 +104,7 @@ impl Box for TextRun {
 		self.id
 	}
 
-	fn add_child(&self, child: Rc<dyn Box>) {
+	fn add_child(&self, _child: Rc<dyn Box>) {
 		not_reached!()
 	}
 
@@ -163,7 +166,7 @@ impl Box for TextRun {
 		self.layout_info.borrow_mut()
 	}
 
-	fn add_child_fragment(&self, fragment: Rc<RefCell<dyn super::fragment::Fragment>>) {
+	fn add_child_fragment(&self, _fragment: Rc<RefCell<dyn super::fragment::Fragment>>) {
 		not_reached!()
 	}
 
@@ -215,7 +218,7 @@ impl Box for TextRun {
 		let font_size = computed_values.get_font_size();
 
 		if layout_info.intrinsic_size.preferred_width <= parent_leftover_width {
-			let mut fragment = TextFragment::new(self.dom_node(), content.to_string());
+			let mut fragment = self.create_fragment(content.to_string());
 			fragment.set_width(layout_info.intrinsic_size.preferred_width);
 			fragment.set_height(layout_info.intrinsic_size.preferred_height);
 			fragment.set_x(parent_current_width);
@@ -244,10 +247,10 @@ impl Box for TextRun {
 			for word in split_keep(&regex, content.as_ref()) {
 				let bounds = text_ui.measure_size(word, family_names, font_size);
 				let word_width = Pixel::new(bounds.0);
-				height = height.max(Pixel::new(bounds.1));
 
 				if width + word_width <= max_width {
 					width += word_width;
+					height = height.max(Pixel::new(bounds.1));
 				} else {
 					self.split_paragraph(
 						width,
@@ -261,7 +264,7 @@ impl Box for TextRun {
 
 					max_width = parent_max_width;
 					width = word_width;
-					height = PIXEL_ZERO;
+					height = Pixel::new(bounds.1);
 					parts.clear();
 					in_current_line = false;
 				}
@@ -282,7 +285,6 @@ impl Box for TextRun {
 	fn revisit_layout(&self, context: &mut VisitingContext) {
 		let mut height = PIXEL_ZERO;
 		for fragment in self.fragments.borrow().iter() {
-			fragment.borrow_mut().set_y(height + context.height);
 			height += fragment.borrow_mut().total_height();
 		}
 		let mut layout_info = self.layout_info_mut();
@@ -295,10 +297,6 @@ impl Box for TextRun {
 
 	fn as_text_run(&self) -> &TextRun {
 		self
-	}
-
-	fn build_display_list(&self, builder: &mut DisplayListBuilder) {
-		todo!()
 	}
 }
 
