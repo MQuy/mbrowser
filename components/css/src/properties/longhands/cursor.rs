@@ -95,10 +95,7 @@ pub struct CursorImage {
 }
 
 impl CursorImage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = CssUrl::parse(context, input)?;
 		let coordinate = input
 			.try_parse(|input| -> Result<(Number, Number), ParseError<'i>> {
@@ -132,10 +129,7 @@ pub struct Cursor {
 }
 
 impl Cursor {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Cursor, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Cursor, ParseError<'i>> {
 		let images = parse_repeated_with_delimitor(
 			input,
 			&mut |input| CursorImage::parse(context, input),
@@ -155,7 +149,7 @@ impl ToCss for Cursor {
 	where
 		W: std::fmt::Write,
 	{
-		for (index, image) in self.images.iter().enumerate() {
+		for image in self.images.iter() {
 			image.to_css(dest)?;
 			dest.write_str(", ")?;
 		}

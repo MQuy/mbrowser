@@ -417,11 +417,8 @@ impl LonghandId {
 		static ASPECT_RATIO: &'static [ShorthandId] = &[ShorthandId::All];
 		static BACKFACE_VISIBILITY: &'static [ShorthandId] = &[ShorthandId::All];
 		static BORDER_COLLAPSE: &'static [ShorthandId] = &[ShorthandId::All];
-		static BORDER_IMAGE_REPEAT: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Border,
-			ShorthandId::BorderImage,
-		];
+		static BORDER_IMAGE_REPEAT: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Border, ShorthandId::BorderImage];
 		static BOX_SIZING: &'static [ShorthandId] = &[ShorthandId::All];
 		static CAPTION_SIDE: &'static [ShorthandId] = &[ShorthandId::All];
 		static CLEAR: &'static [ShorthandId] = &[ShorthandId::All];
@@ -434,18 +431,13 @@ impl LonghandId {
 		static FLOAT: &'static [ShorthandId] = &[ShorthandId::All];
 		static FONT_STRETCH: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Font];
 		static FONT_STYLE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Font];
-		static FONT_VARIANT_CAPS: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Font,
-			ShorthandId::FontVariant,
-		];
+		static FONT_VARIANT_CAPS: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Font, ShorthandId::FontVariant];
 		static FONT_WEIGHT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Font];
 		static IMAGE_RENDERING: &'static [ShorthandId] = &[ShorthandId::All];
 		static JUSTIFY_CONTENT: &'static [ShorthandId] = &[ShorthandId::All];
-		static LIST_STYLE_POSITION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::ListStyle];
-		static LIST_STYLE_TYPE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::ListStyle];
+		static LIST_STYLE_POSITION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::ListStyle];
+		static LIST_STYLE_TYPE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::ListStyle];
 		static MIX_BLEND_MODE: &'static [ShorthandId] = &[ShorthandId::All];
 		static OPACITY: &'static [ShorthandId] = &[ShorthandId::All];
 		static OBJECTFIT: &'static [ShorthandId] = &[ShorthandId::All];
@@ -456,8 +448,7 @@ impl LonghandId {
 		static POSITION: &'static [ShorthandId] = &[ShorthandId::All];
 		static TABLE_LAYOUT: &'static [ShorthandId] = &[ShorthandId::All];
 		static TEXT_ALIGN: &'static [ShorthandId] = &[ShorthandId::All];
-		static TEXT_DECORATION_LINE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::TextDecoration];
+		static TEXT_DECORATION_LINE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::TextDecoration];
 		static TEXT_JUSTIFY: &'static [ShorthandId] = &[ShorthandId::All];
 		static TEXT_RENDERING: &'static [ShorthandId] = &[ShorthandId::All];
 		static TEXT_TRANSFORM: &'static [ShorthandId] = &[ShorthandId::All];
@@ -522,29 +513,18 @@ impl LonghandId {
 			ShorthandId::BorderStyle,
 			ShorthandId::BorderTop,
 		];
-		static ANIMATION_DELAY: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_DIRECTION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_DURATION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_FILL_MODE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_ITERATION_COUNT: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_DELAY: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_DIRECTION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_DURATION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_FILL_MODE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_ITERATION_COUNT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
 		static ANIMATION_NAME: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_PLAY_STATE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static ANIMATION_TIMING_FUNCTION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Animation];
-		static BACKGROUND_ATTACHMENT: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
-		static BACKGROUND_CLIP: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
-		static BACKGROUND_IMAGE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
-		static BACKGROUND_ORIGIN: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
+		static ANIMATION_PLAY_STATE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static ANIMATION_TIMING_FUNCTION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Animation];
+		static BACKGROUND_ATTACHMENT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
+		static BACKGROUND_CLIP: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
+		static BACKGROUND_IMAGE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
+		static BACKGROUND_ORIGIN: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
 		static BACKGROUND_POSITION_X: &'static [ShorthandId] = &[
 			ShorthandId::All,
 			ShorthandId::Background,
@@ -555,25 +535,14 @@ impl LonghandId {
 			ShorthandId::Background,
 			ShorthandId::BackgroundPosition,
 		];
-		static BACKGROUND_REPEAT: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
-		static BACKGROUND_SIZE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
-		static BORDER_IMAGE_OUTSET: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Border,
-			ShorthandId::BorderImage,
-		];
-		static BORDER_IMAGE_SLICE: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Border,
-			ShorthandId::BorderImage,
-		];
-		static BORDER_IMAGE_WIDTH: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Border,
-			ShorthandId::BorderImage,
-		];
+		static BACKGROUND_REPEAT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
+		static BACKGROUND_SIZE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
+		static BORDER_IMAGE_OUTSET: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Border, ShorthandId::BorderImage];
+		static BORDER_IMAGE_SLICE: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Border, ShorthandId::BorderImage];
+		static BORDER_IMAGE_WIDTH: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Border, ShorthandId::BorderImage];
 		static BORDER_SPACING: &'static [ShorthandId] = &[ShorthandId::All];
 		static BOX_SHADOW: &'static [ShorthandId] = &[ShorthandId::All];
 		static CLIP: &'static [ShorthandId] = &[ShorthandId::All];
@@ -602,49 +571,33 @@ impl LonghandId {
 		static TEXT_SHADOW: &'static [ShorthandId] = &[ShorthandId::All];
 		static TRANSFORM: &'static [ShorthandId] = &[ShorthandId::All];
 		static TRANSFORM_ORIGIN: &'static [ShorthandId] = &[ShorthandId::All];
-		static TRANSITION_DELAY: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Transition];
-		static TRANSITION_DURATION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Transition];
-		static TRANSITION_PROPERTY: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Transition];
-		static TRANSITION_TIMING_FUNCTION: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Transition];
+		static TRANSITION_DELAY: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Transition];
+		static TRANSITION_DURATION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Transition];
+		static TRANSITION_PROPERTY: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Transition];
+		static TRANSITION_TIMING_FUNCTION: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Transition];
 		static TRANSLATE: &'static [ShorthandId] = &[ShorthandId::All];
 		static VERTICAL_ALIGN: &'static [ShorthandId] = &[ShorthandId::All];
 		static WORD_SPACING: &'static [ShorthandId] = &[ShorthandId::All];
-		static BORDER_IMAGE_SOURCE: &'static [ShorthandId] = &[
-			ShorthandId::All,
-			ShorthandId::Border,
-			ShorthandId::BorderImage,
-		];
-		static LIST_STYLE_IMAGE: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::ListStyle];
+		static BORDER_IMAGE_SOURCE: &'static [ShorthandId] =
+			&[ShorthandId::All, ShorthandId::Border, ShorthandId::BorderImage];
+		static LIST_STYLE_IMAGE: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::ListStyle];
 		static MAX_BLOCK_SIZE: &'static [ShorthandId] = &[ShorthandId::All];
 		static MAX_HEIGHT: &'static [ShorthandId] = &[ShorthandId::All];
 		static MAX_INLINE_SIZE: &'static [ShorthandId] = &[ShorthandId::All];
 		static MAX_WIDTH: &'static [ShorthandId] = &[ShorthandId::All];
-		static BORDER_BOTTOM_LEFT_RADIUS: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::BorderRadius];
-		static BORDER_BOTTOM_RIGHT_RADIUS: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::BorderRadius];
+		static BORDER_BOTTOM_LEFT_RADIUS: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::BorderRadius];
+		static BORDER_BOTTOM_RIGHT_RADIUS: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::BorderRadius];
 		static BORDER_END_END_RADIUS: &'static [ShorthandId] = &[ShorthandId::All];
 		static BORDER_END_START_RADIUS: &'static [ShorthandId] = &[ShorthandId::All];
 		static BORDER_START_END_RADIUS: &'static [ShorthandId] = &[ShorthandId::All];
 		static BORDER_START_START_RADIUS: &'static [ShorthandId] = &[ShorthandId::All];
-		static BORDER_TOP_LEFT_RADIUS: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::BorderRadius];
-		static BORDER_TOP_RIGHT_RADIUS: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::BorderRadius];
-		static PADDING_BLOCK_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::PaddingBlock];
-		static PADDING_BLOCK_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::PaddingBlock];
+		static BORDER_TOP_LEFT_RADIUS: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::BorderRadius];
+		static BORDER_TOP_RIGHT_RADIUS: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::BorderRadius];
+		static PADDING_BLOCK_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::PaddingBlock];
+		static PADDING_BLOCK_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::PaddingBlock];
 		static PADDING_BOTTOM: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Padding];
-		static PADDING_INLINE_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::PaddingInline];
-		static PADDING_INLINE_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::PaddingInline];
+		static PADDING_INLINE_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::PaddingInline];
+		static PADDING_INLINE_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::PaddingInline];
 		static PADDING_LEFT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Padding];
 		static PADDING_RIGHT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Padding];
 		static PADDING_TOP: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Padding];
@@ -705,8 +658,7 @@ impl LonghandId {
 			ShorthandId::BorderTop,
 		];
 		static OUTLINE_WIDTH: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Outline];
-		static BACKGROUND_COLOR: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::Background];
+		static BACKGROUND_COLOR: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Background];
 		static BORDER_BLOCK_END_COLOR: &'static [ShorthandId] = &[
 			ShorthandId::All,
 			ShorthandId::BorderBlock,
@@ -757,24 +709,16 @@ impl LonghandId {
 		];
 		static OUTLINE_COLOR: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Outline];
 		static BOTTOM: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Inset];
-		static INSET_BLOCK_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::InsetBlock];
-		static INSET_BLOCK_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::InsetBlock];
-		static INSET_INLINE_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::InsetInline];
-		static INSET_INLINE_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::InsetInline];
+		static INSET_BLOCK_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::InsetBlock];
+		static INSET_BLOCK_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::InsetBlock];
+		static INSET_INLINE_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::InsetInline];
+		static INSET_INLINE_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::InsetInline];
 		static LEFT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Inset];
-		static MARGIN_BLOCK_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::MarginBlock];
-		static MARGIN_BLOCK_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::MarginBlock];
+		static MARGIN_BLOCK_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::MarginBlock];
+		static MARGIN_BLOCK_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::MarginBlock];
 		static MARGIN_BOTTOM: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Margin];
-		static MARGIN_INLINE_END: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::MarginInline];
-		static MARGIN_INLINE_START: &'static [ShorthandId] =
-			&[ShorthandId::All, ShorthandId::MarginInline];
+		static MARGIN_INLINE_END: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::MarginInline];
+		static MARGIN_INLINE_START: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::MarginInline];
 		static MARGIN_LEFT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Margin];
 		static MARGIN_RIGHT: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Margin];
 		static MARGIN_TOP: &'static [ShorthandId] = &[ShorthandId::All, ShorthandId::Margin];
@@ -1026,14 +970,10 @@ impl LonghandId {
 			LonghandId::OverflowX => longhands::overflow_x::parse_declared,
 			LonghandId::OverflowY => longhands::overflow_y::parse_declared,
 			LonghandId::BorderBlockEndStyle => longhands::border_block_end_style::parse_declared,
-			LonghandId::BorderBlockStartStyle => {
-				longhands::border_block_start_style::parse_declared
-			},
+			LonghandId::BorderBlockStartStyle => longhands::border_block_start_style::parse_declared,
 			LonghandId::BorderBottomStyle => longhands::border_bottom_style::parse_declared,
 			LonghandId::BorderInlineEndStyle => longhands::border_inline_end_style::parse_declared,
-			LonghandId::BorderInlineStartStyle => {
-				longhands::border_inline_start_style::parse_declared
-			},
+			LonghandId::BorderInlineStartStyle => longhands::border_inline_start_style::parse_declared,
 			LonghandId::BorderLeftStyle => longhands::border_left_style::parse_declared,
 			LonghandId::BorderRightStyle => longhands::border_right_style::parse_declared,
 			LonghandId::BorderTopStyle => longhands::border_top_style::parse_declared,
@@ -1041,14 +981,10 @@ impl LonghandId {
 			LonghandId::AnimationDirection => longhands::animation_direction::parse_declared,
 			LonghandId::AnimationDuration => longhands::animation_duration::parse_declared,
 			LonghandId::AnimationFillMode => longhands::animation_fill_mode::parse_declared,
-			LonghandId::AnimationIterationCount => {
-				longhands::animation_iteration_count::parse_declared
-			},
+			LonghandId::AnimationIterationCount => longhands::animation_iteration_count::parse_declared,
 			LonghandId::AnimationName => longhands::animation_name::parse_declared,
 			LonghandId::AnimationPlayState => longhands::animation_play_state::parse_declared,
-			LonghandId::AnimationTimingFunction => {
-				longhands::animation_timing_function::parse_declared
-			},
+			LonghandId::AnimationTimingFunction => longhands::animation_timing_function::parse_declared,
 			LonghandId::BackgroundAttachment => longhands::background_attachment::parse_declared,
 			LonghandId::BackgroundClip => longhands::background_clip::parse_declared,
 			LonghandId::BackgroundImage => longhands::background_image::parse_declared,
@@ -1090,9 +1026,7 @@ impl LonghandId {
 			LonghandId::TransitionDelay => longhands::transition_delay::parse_declared,
 			LonghandId::TransitionDuration => longhands::transition_duration::parse_declared,
 			LonghandId::TransitionProperty => longhands::transition_property::parse_declared,
-			LonghandId::TransitionTimingFunction => {
-				longhands::transition_timing_function::parse_declared
-			},
+			LonghandId::TransitionTimingFunction => longhands::transition_timing_function::parse_declared,
 			LonghandId::Translate => longhands::translate::parse_declared,
 			LonghandId::VerticalAlign => longhands::vertical_align::parse_declared,
 			LonghandId::WordSpacing => longhands::word_spacing::parse_declared,
@@ -1102,18 +1036,12 @@ impl LonghandId {
 			LonghandId::MaxHeight => longhands::max_height::parse_declared,
 			LonghandId::MaxInlineSize => longhands::max_inline_size::parse_declared,
 			LonghandId::MaxWidth => longhands::max_width::parse_declared,
-			LonghandId::BorderBottomLeftRadius => {
-				longhands::border_bottom_left_radius::parse_declared
-			},
-			LonghandId::BorderBottomRightRadius => {
-				longhands::border_bottom_right_radius::parse_declared
-			},
+			LonghandId::BorderBottomLeftRadius => longhands::border_bottom_left_radius::parse_declared,
+			LonghandId::BorderBottomRightRadius => longhands::border_bottom_right_radius::parse_declared,
 			LonghandId::BorderEndEndRadius => longhands::border_end_end_radius::parse_declared,
 			LonghandId::BorderEndStartRadius => longhands::border_end_start_radius::parse_declared,
 			LonghandId::BorderStartEndRadius => longhands::border_start_end_radius::parse_declared,
-			LonghandId::BorderStartStartRadius => {
-				longhands::border_start_start_radius::parse_declared
-			},
+			LonghandId::BorderStartStartRadius => longhands::border_start_start_radius::parse_declared,
 			LonghandId::BorderTopLeftRadius => longhands::border_top_left_radius::parse_declared,
 			LonghandId::BorderTopRightRadius => longhands::border_top_right_radius::parse_declared,
 			LonghandId::PaddingBlockEnd => longhands::padding_block_end::parse_declared,
@@ -1133,28 +1061,20 @@ impl LonghandId {
 			LonghandId::MinWidth => longhands::min_width::parse_declared,
 			LonghandId::Width => longhands::width::parse_declared,
 			LonghandId::BorderBlockEndWidth => longhands::border_block_end_width::parse_declared,
-			LonghandId::BorderBlockStartWidth => {
-				longhands::border_block_start_width::parse_declared
-			},
+			LonghandId::BorderBlockStartWidth => longhands::border_block_start_width::parse_declared,
 			LonghandId::BorderBottomWidth => longhands::border_bottom_width::parse_declared,
 			LonghandId::BorderInlineEndWidth => longhands::border_inline_end_width::parse_declared,
-			LonghandId::BorderInlineStartWidth => {
-				longhands::border_inline_start_width::parse_declared
-			},
+			LonghandId::BorderInlineStartWidth => longhands::border_inline_start_width::parse_declared,
 			LonghandId::BorderLeftWidth => longhands::border_left_width::parse_declared,
 			LonghandId::BorderRightWidth => longhands::border_right_width::parse_declared,
 			LonghandId::BorderTopWidth => longhands::border_top_width::parse_declared,
 			LonghandId::OutlineWidth => longhands::outline_width::parse_declared,
 			LonghandId::BackgroundColor => longhands::background_color::parse_declared,
 			LonghandId::BorderBlockEndColor => longhands::border_block_end_color::parse_declared,
-			LonghandId::BorderBlockStartColor => {
-				longhands::border_block_start_color::parse_declared
-			},
+			LonghandId::BorderBlockStartColor => longhands::border_block_start_color::parse_declared,
 			LonghandId::BorderBottomColor => longhands::border_bottom_color::parse_declared,
 			LonghandId::BorderInlineEndColor => longhands::border_inline_end_color::parse_declared,
-			LonghandId::BorderInlineStartColor => {
-				longhands::border_inline_start_color::parse_declared
-			},
+			LonghandId::BorderInlineStartColor => longhands::border_inline_start_color::parse_declared,
 			LonghandId::BorderLeftColor => longhands::border_left_color::parse_declared,
 			LonghandId::BorderRightColor => longhands::border_right_color::parse_declared,
 			LonghandId::BorderTopColor => longhands::border_top_color::parse_declared,
@@ -1180,11 +1100,7 @@ impl LonghandId {
 		parser_func(context, input)
 	}
 
-	pub fn cascade<'a>(
-		&self,
-		declaration: Option<&PropertyDeclaration>,
-		context: &'a mut StyleContext,
-	) {
+	pub fn cascade<'a>(&self, declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 		let cascade_func = match self {
 			LonghandId::BackgroundColor => longhands::background_color::cascade_property,
 			LonghandId::Color => longhands::color::cascade_property,
@@ -1245,7 +1161,7 @@ pub struct LonghandIdPhaseIterator {
 
 impl LonghandIdPhaseIterator {
 	pub fn take(&mut self) -> Option<LonghandId> {
-		let mut id = None;
+		let mut id: Option<LonghandId> = None;
 		loop {
 			id = LonghandId::try_from(self.index).ok();
 			if let Some(id) = id {

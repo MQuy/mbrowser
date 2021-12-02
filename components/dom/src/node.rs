@@ -112,9 +112,7 @@ impl Node {
 				match before.prev_sibling() {
 					Some(ref prev_sibling) => {
 						prev_sibling.next_sibling.replace(Some(new_child.clone()));
-						new_child
-							.prev_sibling
-							.replace(Some(Rc::downgrade(prev_sibling)));
+						new_child.prev_sibling.replace(Some(Rc::downgrade(prev_sibling)));
 					},
 					None => {
 						self.first_child.replace(Some(new_child.clone()));
@@ -127,9 +125,7 @@ impl Node {
 				match self.last_child() {
 					Some(ref last_child) => {
 						last_child.next_sibling.replace(Some(new_child.clone()));
-						new_child
-							.prev_sibling
-							.replace(Some(Rc::downgrade(last_child)));
+						new_child.prev_sibling.replace(Some(Rc::downgrade(last_child)));
 					},
 					None => {
 						self.first_child.replace(Some(new_child.clone()));
@@ -196,11 +192,7 @@ impl Node {
 	}
 
 	// https://dom.spec.whatwg.org/#concept-node-pre-insert
-	pub fn pre_insert(
-		node: Rc<Node>,
-		parent: &Node,
-		child: Option<Rc<Node>>,
-	) -> Fallible<Rc<Node>> {
+	pub fn pre_insert(node: Rc<Node>, parent: &Node, child: Option<Rc<Node>>) -> Fallible<Rc<Node>> {
 		// Step 1
 		Node::ensure_pre_insertion_validity(node.clone(), parent, child.clone())?;
 
@@ -211,22 +203,12 @@ impl Node {
 		};
 
 		// Step 4
-		Node::insert(
-			node.clone(),
-			parent,
-			reference_child,
-			SuppressObserver::Unsuppressed,
-		);
+		Node::insert(node.clone(), parent, reference_child, SuppressObserver::Unsuppressed);
 		Ok(node)
 	}
 
 	// https://dom.spec.whatwg.org/#concept-node-insert
-	fn insert(
-		node: Rc<Node>,
-		parent: &Node,
-		child: Option<Rc<Node>>,
-		suppress_observers: SuppressObserver,
-	) {
+	fn insert(node: Rc<Node>, parent: &Node, child: Option<Rc<Node>>, suppress_observers: SuppressObserver) {
 		// TODO Step 5, 6, 7.5-7, 8-9
 
 		// Step 1
@@ -237,8 +219,7 @@ impl Node {
 			}
 
 			// Step 4
-			node.children()
-				.for_each(|child| node.remove(child, suppress_observers));
+			node.children().for_each(|child| node.remove(child, suppress_observers));
 
 			// Step 7
 			for node in node.children() {
@@ -255,11 +236,7 @@ impl Node {
 	}
 
 	// https://dom.spec.whatwg.org/#concept-node-ensure-pre-insertion-validity
-	pub fn ensure_pre_insertion_validity(
-		node: Rc<Node>,
-		parent: &Node,
-		child: Option<Rc<Node>>,
-	) -> ErrorResult {
+	pub fn ensure_pre_insertion_validity(node: Rc<Node>, parent: &Node, child: Option<Rc<Node>>) -> ErrorResult {
 		// Step 1
 		match parent.node_type_id {
 			NodeTypeId::Document | NodeTypeId::DocumentFragment(_) | NodeTypeId::Element(_) => (),
@@ -320,15 +297,10 @@ impl Node {
 					{
 						0 => (),
 						1 => {
-							if parent
-								.children()
-								.any(|child_node| child_node.node_type_id.is_element())
-							{
+							if parent.children().any(|child_node| child_node.node_type_id.is_element()) {
 								return Err(Error::HierarchyRequest);
 							}
-							if child.is_some()
-								&& child.as_ref().unwrap().node_type_id.is_document_type()
-							{
+							if child.is_some() && child.as_ref().unwrap().node_type_id.is_document_type() {
 								return Err(Error::HierarchyRequest);
 							}
 							if let Some(ref child) = child {
@@ -361,10 +333,7 @@ impl Node {
 							}
 						},
 						None => {
-							if parent
-								.children()
-								.any(|child| child.node_type_id.is_element())
-							{
+							if parent.children().any(|child| child.node_type_id.is_element()) {
 								return Err(Error::HierarchyRequest);
 							}
 						},
@@ -406,9 +375,7 @@ impl Node {
 	}
 
 	pub fn is_parent_of(&self, child: Rc<Node>) -> bool {
-		child
-			.parent_node()
-			.map_or(false, |parent| parent.as_ref() == self)
+		child.parent_node().map_or(false, |parent| parent.as_ref() == self)
 	}
 
 	// https://dom.spec.whatwg.org/#concept-node-pre-remove
@@ -492,6 +459,7 @@ impl VirtualMethods for Node {
 /// suppress observers flag
 /// <https://dom.spec.whatwg.org/#concept-node-insert>
 /// <https://dom.spec.whatwg.org/#concept-node-remove>
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 enum SuppressObserver {
 	Suppressed,

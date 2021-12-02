@@ -245,13 +245,13 @@ impl Box for InlineLevelBox {
 				} else {
 					let fragment = Rc::new(RefCell::new(fragment));
 					self.add_fragment(fragment.clone());
-					parent.add_child_fragment(fragment.clone());
 					BoxClass::update_ancestors_with_newline(
 						fragment.clone(),
 						establisher.clone(),
 						&mut lines,
 						self.ancestors(),
 					);
+					parent.add_child_fragment(fragment.clone());
 				}
 			},
 			FormattingContextType::InlineFormattingContext => {
@@ -276,7 +276,7 @@ impl Box for InlineLevelBox {
 		}
 	}
 
-	fn revisit_layout(&self, context: &mut VisitingContext) {
+	fn revisit_layout(&self, _context: &mut VisitingContext) {
 		match self.formatting_context_type() {
 			FormattingContextType::BlockFormattingContext => {
 				let fragments = self.fragments();
@@ -291,7 +291,20 @@ impl Box for InlineLevelBox {
 				}
 			},
 			FormattingContextType::InlineFormattingContext => {
-				for fragment in self.fragments.borrow().iter() {
+				let mut fragments = self.fragments.borrow_mut();
+				// there is a case when span is splited into multi fragments like below
+				// but the first fragment cannot fit it the current like (created due to our current algorithm)
+				// -- boxfragment
+				// --   text fragment | text fragment (will be removed)
+				// --   text fragment
+				// <div style="width: 50px">
+				//  <span>hello world</span><span>darkness haha</span>
+				// </div>
+				if fragments.len() >= 2 && fragments[0].borrow().total_width() == PIXEL_ZERO {
+					fragments.remove(0);
+				}
+
+				for fragment in fragments.iter() {
 					let mut child_height = PIXEL_ZERO;
 					for child_fragment in &fragment.borrow().children {
 						child_height += child_fragment.borrow().height();

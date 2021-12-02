@@ -140,17 +140,13 @@ pub enum PropertyDeclaration {
 	/// `animation-fill-mode`
 	AnimationFillMode(properties::longhands::animation_fill_mode::AnimationFillMode),
 	/// `animation-iteration-count`
-	AnimationIterationCount(
-		properties::longhands::animation_iteration_count::AnimationIterationCount,
-	),
+	AnimationIterationCount(properties::longhands::animation_iteration_count::AnimationIterationCount),
 	/// `animation-name`
 	AnimationName(properties::longhands::animation_name::AnimationName),
 	/// `animation-play-state`
 	AnimationPlayState(properties::longhands::animation_play_state::AnimationPlayState),
 	/// `animation-timing-function`
-	AnimationTimingFunction(
-		properties::longhands::animation_timing_function::AnimationTimingFunction,
-	),
+	AnimationTimingFunction(properties::longhands::animation_timing_function::AnimationTimingFunction),
 	/// `background-attachment`
 	BackgroundAttachment(properties::longhands::background_attachment::BackgroundAttachment),
 	/// `background-clip`
@@ -236,9 +232,7 @@ pub enum PropertyDeclaration {
 	/// `transition-property`
 	TransitionProperty(properties::longhands::transition_property::TransitionProperty),
 	/// `transition-timing-function`
-	TransitionTimingFunction(
-		properties::longhands::transition_timing_function::TransitionTimingFunction,
-	),
+	TransitionTimingFunction(properties::longhands::transition_timing_function::TransitionTimingFunction),
 	/// `translate`
 	Translate(properties::longhands::translate::Translate),
 	/// `vertical-align`
@@ -490,9 +484,7 @@ impl PropertyDeclaration {
 			PropertyDeclaration::TransitionDelay(..) => LonghandId::TransitionDelay,
 			PropertyDeclaration::TransitionDuration(..) => LonghandId::TransitionDuration,
 			PropertyDeclaration::TransitionProperty(..) => LonghandId::TransitionProperty,
-			PropertyDeclaration::TransitionTimingFunction(..) => {
-				LonghandId::TransitionTimingFunction
-			},
+			PropertyDeclaration::TransitionTimingFunction(..) => LonghandId::TransitionTimingFunction,
 			PropertyDeclaration::Translate(..) => LonghandId::Translate,
 			PropertyDeclaration::VerticalAlign(..) => LonghandId::VerticalAlign,
 			PropertyDeclaration::WordSpacing(..) => LonghandId::WordSpacing,
@@ -598,7 +590,7 @@ impl PropertyDeclaration {
 
 		let non_custom_id = id.non_custom_id();
 		match id {
-			PropertyId::Custom(property_name) => {
+			PropertyId::Custom(_property_name) => {
 				todo!()
 			},
 			PropertyId::Longhand(id) => {
@@ -619,8 +611,7 @@ impl PropertyDeclaration {
 						todo!()
 					} else {
 						for longhand in id.longhands() {
-							declarations
-								.push(PropertyDeclaration::css_wide_keyword(longhand, keyword));
+							declarations.push(PropertyDeclaration::css_wide_keyword(longhand, keyword));
 						}
 					}
 				} else {
@@ -639,10 +630,7 @@ impl PropertyDeclaration {
 				}
 			},
 		}
-		debug_assert!(
-			non_custom_id.is_some(),
-			"Custom properties should've returned earlier"
-		);
+		debug_assert!(non_custom_id.is_some(), "Custom properties should've returned earlier");
 		Ok(())
 	}
 }

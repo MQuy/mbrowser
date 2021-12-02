@@ -320,6 +320,8 @@ fn block_box_contains_textrun_span_multilines() {
 	let lines = node.lines();
 	assert_eq!(lines.len(), 2);
 	assert_eq!(lines[0].width(), Pixel::new(width));
+	assert_eq!(lines[0].height(), Pixel::new(height));
+	assert_eq!(lines[1].height(), Pixel::new(height));
 	assert_eq!(lines[1].y(), Pixel::new(height));
 }
 

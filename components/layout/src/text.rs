@@ -26,12 +26,7 @@ impl TextUI {
 		}
 	}
 
-	pub fn measure_size<T: AsRef<str>>(
-		&self,
-		content: &str,
-		family_names: &[T],
-		font_size: f32,
-	) -> (f32, f32) {
+	pub fn measure_size<T: AsRef<str>>(&self, content: &str, family_names: &[T], font_size: f32) -> (f32, f32) {
 		self.measure_size_in_bounded(content, family_names, font_size, (f32::MAX, f32::MAX))
 	}
 
@@ -69,11 +64,7 @@ impl TextUI {
 	- construct array (element is [string slice, font])
 	  if current font is the same last array, modify last string slice
 	 */
-	pub fn matching_fonts<T: AsRef<str>>(
-		&self,
-		content: &str,
-		family_names: &[T],
-	) -> Vec<(String, FontId)> {
+	pub fn matching_fonts<T: AsRef<str>>(&self, content: &str, family_names: &[T]) -> Vec<(String, FontId)> {
 		let mut latest_font = None;
 		let mut styles: Vec<(Vec<char>, FontId)> = Vec::with_capacity(1);
 		for ch in content.chars() {
@@ -108,7 +99,7 @@ impl TextUI {
 	}
 
 	// TODO: support external font (via font-face)
-	pub fn load_external_font(family_name: &str) -> Option<FontArc> {
+	pub fn load_external_font(_family_name: &str) -> Option<FontArc> {
 		todo!()
 	}
 
@@ -139,9 +130,7 @@ impl TextUI {
 		};
 		if let Ok(font) = FontArc::try_from_vec(bytes) {
 			let font_id = self.brush.borrow_mut().add_font(font.clone());
-			self.font_map
-				.borrow_mut()
-				.insert(family_name.to_string(), font_id);
+			self.font_map.borrow_mut().insert(family_name.to_string(), font_id);
 			Some(font_id)
 		} else {
 			None

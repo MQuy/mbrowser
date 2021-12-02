@@ -88,13 +88,13 @@ impl TextRun {
 			let mut lines = establisher.lines_mut();
 			let fragment = Rc::new(RefCell::new(fragment));
 			self.add_fragment(fragment.clone());
-			parent.add_child_fragment(fragment.clone());
 			BoxClass::update_ancestors_with_newline(
 				fragment.clone(),
 				establisher.clone(),
 				&mut lines,
 				self.ancestors(),
 			);
+			parent.add_child_fragment(fragment.clone());
 		}
 	}
 }
@@ -282,7 +282,7 @@ impl Box for TextRun {
 		}
 	}
 
-	fn revisit_layout(&self, context: &mut VisitingContext) {
+	fn revisit_layout(&self, _context: &mut VisitingContext) {
 		let mut height = PIXEL_ZERO;
 		for fragment in self.fragments.borrow().iter() {
 			height += fragment.borrow_mut().total_height();

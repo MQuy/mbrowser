@@ -43,6 +43,7 @@ pub enum MediaCondition {
 	GeneralEnclosed(String),
 }
 
+#[allow(dead_code)]
 enum AllowedOperator {
 	All,
 	And,
@@ -61,10 +62,7 @@ impl AllowedOperator {
 }
 
 impl MediaCondition {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		MediaCondition::parse_internal(context, input, AllowedOperator::All)
 	}
 
@@ -82,17 +80,10 @@ impl MediaCondition {
 	) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| MediaCondition::parse_media_not(context, input))
-			.or_else(|_err| {
-				input.try_parse(|input| {
-					MediaCondition::parse_media_and_or(context, input, allowed_op)
-				})
-			})
+			.or_else(|_err| input.try_parse(|input| MediaCondition::parse_media_and_or(context, input, allowed_op)))
 	}
 
-	fn parse_media_not<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_media_not<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_ident_matching("not")?;
 		let media_condition = MediaCondition::parse_in_parens(context, input)?;
 		Ok(MediaCondition::Not(Box::new(media_condition)))
@@ -105,8 +96,7 @@ impl MediaCondition {
 	) -> Result<Self, ParseError<'i>> {
 		let media = MediaCondition::parse_in_parens(context, input)?;
 
-		let (mut extras, op) =
-			MediaCondition::parse_media_and_or_repeated(context, input, allowed_op)?;
+		let (mut extras, op) = MediaCondition::parse_media_and_or_repeated(context, input, allowed_op)?;
 		if extras.len() == 0 {
 			Ok(media)
 		} else {
@@ -133,15 +123,12 @@ impl MediaCondition {
 				};
 				if let Some(expected_op) = expected_op {
 					if expected_op != op {
-						return Err(location.new_custom_error(
-							StyleParseErrorKind::UnexpectedValue(ident.clone()),
-						));
+						return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())));
 					}
 				} else if allowed_ops.is_ok(op) {
 					expected_op = Some(op);
 				} else {
-					return Err(location
-						.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())));
+					return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())));
 				}
 				MediaCondition::parse_in_parens(context, input)
 			});
@@ -154,10 +141,7 @@ impl MediaCondition {
 		Ok((extras, expected_op))
 	}
 
-	fn parse_in_parens<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_in_parens<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_parenthesis_block()?;
 		input.parse_nested_block(|input| {
 			let media_condition = input
@@ -214,9 +198,7 @@ pub fn consume_any_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<String, P
 	Ok(input.slice_from(pos).to_owned())
 }
 
-pub fn parse_general_enclosed<'i, 't>(
-	input: &mut Parser<'i, 't>,
-) -> Result<String, ParseError<'i>> {
+pub fn parse_general_enclosed<'i, 't>(input: &mut Parser<'i, 't>) -> Result<String, ParseError<'i>> {
 	let position = input.position();
 	input
 		.try_parse(|input| {

@@ -529,7 +529,7 @@ impl Fragment for AnonymousFragment {
 		self
 	}
 
-	fn build_display_list(&self, builder: &mut DisplayListBuilder, context: &mut BuilderContext) {}
+	fn build_display_list(&self, _builder: &mut DisplayListBuilder, _context: &mut BuilderContext) {}
 }
 
 impl AnonymousFragment {
