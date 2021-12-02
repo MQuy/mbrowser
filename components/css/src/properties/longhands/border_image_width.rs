@@ -10,10 +10,7 @@ use crate::values::specified::length::NonNegativeLengthPercentageNumberOrAuto;
 pub type BorderImageWidth = Rect<NonNegativeLengthPercentageNumberOrAuto>;
 
 impl BorderImageWidth {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		Rect::parse_with(input, |input| {
 			NonNegativeLengthPercentageNumberOrAuto::parse(context, input)
 		})

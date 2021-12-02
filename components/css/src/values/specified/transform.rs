@@ -14,10 +14,7 @@ pub enum AngleOrZero {
 }
 
 impl AngleOrZero {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let angle = Angle::parse(context, input)?;
@@ -59,10 +56,7 @@ pub enum TransformFunction {
 }
 
 impl TransformFunction {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {
 			match_ignore_ascii_case! { &name,
@@ -82,10 +76,7 @@ impl TransformFunction {
 		})
 	}
 
-	fn parse_matrix<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_matrix<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let a = Number::parse(context, input)?;
 		let b = Number::parse(context, input)?;
 		let c = Number::parse(context, input)?;
@@ -95,10 +86,7 @@ impl TransformFunction {
 		Ok(TransformFunction::Matrix(a, b, c, d, e, f))
 	}
 
-	fn parse_translate<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_translate<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let tx = LengthPercentage::parse(context, input)?;
 		let ty = input
 			.try_parse(|input| {
@@ -109,26 +97,17 @@ impl TransformFunction {
 		Ok(TransformFunction::Translate(tx, ty))
 	}
 
-	fn parse_translate_x<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_translate_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let x = LengthPercentage::parse(context, input)?;
 		Ok(TransformFunction::TranslateX(x))
 	}
 
-	fn parse_translate_y<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_translate_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let y = LengthPercentage::parse(context, input)?;
 		Ok(TransformFunction::TranslateY(y))
 	}
 
-	fn parse_scale<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_scale<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let sx = Number::parse(context, input)?;
 		let sy = input
 			.try_parse(|input| {
@@ -139,34 +118,22 @@ impl TransformFunction {
 		Ok(TransformFunction::Scale(sx, sy))
 	}
 
-	fn parse_scale_x<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_scale_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let sx = Number::parse(context, input)?;
 		Ok(TransformFunction::ScaleX(sx))
 	}
 
-	fn parse_scale_y<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_scale_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let sy = Number::parse(context, input)?;
 		Ok(TransformFunction::ScaleY(sy))
 	}
 
-	fn parse_rotate<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_rotate<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let angle = AngleOrZero::parse(context, input)?;
 		Ok(TransformFunction::Rotate(angle))
 	}
 
-	fn parse_skew<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_skew<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let ax = AngleOrZero::parse(context, input)?;
 		let ay = input
 			.try_parse(|input| {
@@ -177,18 +144,12 @@ impl TransformFunction {
 		Ok(TransformFunction::Skew(ax, ay))
 	}
 
-	fn parse_skew_x<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_skew_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let ax = AngleOrZero::parse(context, input)?;
 		Ok(TransformFunction::SkewX(ax))
 	}
 
-	fn parse_skew_y<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_skew_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let ay = AngleOrZero::parse(context, input)?;
 		Ok(TransformFunction::SkewY(ay))
 	}
@@ -208,31 +169,17 @@ impl ToCss for TransformFunction {
 				tx.to_css_string(),
 				ty.to_css_string()
 			)),
-			TransformFunction::TranslateX(x) => {
-				dest.write_fmt(format_args!("translateX({})", x.to_css_string()))
-			},
-			TransformFunction::TranslateY(y) => {
-				dest.write_fmt(format_args!("translateY({})", y.to_css_string()))
-			},
-			TransformFunction::Scale(sx, sy) => {
-				dest.write_fmt(format_args!("scale({}, {})", sx, sy))
-			},
+			TransformFunction::TranslateX(x) => dest.write_fmt(format_args!("translateX({})", x.to_css_string())),
+			TransformFunction::TranslateY(y) => dest.write_fmt(format_args!("translateY({})", y.to_css_string())),
+			TransformFunction::Scale(sx, sy) => dest.write_fmt(format_args!("scale({}, {})", sx, sy)),
 			TransformFunction::ScaleX(sx) => dest.write_fmt(format_args!("scaleX({})", sx)),
 			TransformFunction::ScaleY(sy) => dest.write_fmt(format_args!("scaleY({})", sy)),
-			TransformFunction::Rotate(angle) => {
-				dest.write_fmt(format_args!("rotate({})", angle.to_css_string()))
+			TransformFunction::Rotate(angle) => dest.write_fmt(format_args!("rotate({})", angle.to_css_string())),
+			TransformFunction::Skew(ax, ay) => {
+				dest.write_fmt(format_args!("skew({}, {})", ax.to_css_string(), ay.to_css_string()))
 			},
-			TransformFunction::Skew(ax, ay) => dest.write_fmt(format_args!(
-				"skew({}, {})",
-				ax.to_css_string(),
-				ay.to_css_string()
-			)),
-			TransformFunction::SkewX(ax) => {
-				dest.write_fmt(format_args!("skewX({})", ax.to_css_string()))
-			},
-			TransformFunction::SkewY(ay) => {
-				dest.write_fmt(format_args!("skewY({})", ay.to_css_string()))
-			},
+			TransformFunction::SkewX(ax) => dest.write_fmt(format_args!("skewX({})", ax.to_css_string())),
+			TransformFunction::SkewY(ay) => dest.write_fmt(format_args!("skewY({})", ay.to_css_string())),
 		}
 	}
 }

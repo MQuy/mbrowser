@@ -12,7 +12,4 @@ const TEMPLATE: &str = r#"
 	letter-spacing: {};
 }}"#;
 
-test_property!(
-	length_percentage_or_normal,
-	length_percentage_or_normal_data
-);
+test_property!(length_percentage_or_normal, length_percentage_or_normal_data);

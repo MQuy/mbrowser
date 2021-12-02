@@ -13,16 +13,7 @@ const TEMPLATE: &str = r#"
 
 #[test]
 pub fn keyword() {
-	for value in [
-		"none",
-		"left",
-		"right",
-		"both",
-		"inline-start",
-		"inline-end",
-	]
-	.iter()
-	{
+	for value in ["none", "left", "right", "both", "inline-start", "inline-end"].iter() {
 		let css = &TEMPLATE.format(&[&value]);
 		let (stylesheet, _) = parse(css);
 		assert_css(&stylesheet, css);

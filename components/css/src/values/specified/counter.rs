@@ -12,10 +12,7 @@ use crate::values::CustomIdent;
 pub type CounterWithInteger = GenericCounterOrNone<GenericCounter<Integer>>;
 
 impl CounterWithInteger {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		GenericCounterOrNone::parse_with(input, |input| {
 			GenericCounter::parse_with(input, |input| Integer::parse(context, input))
 		})
@@ -46,10 +43,7 @@ pub enum StringOrImage {
 }
 
 impl StringOrImage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let value = input.expect_string()?.to_string();
@@ -81,19 +75,12 @@ pub struct Symbols {
 }
 
 impl Symbols {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("symbols")?;
 		input.parse_nested_block(|input| {
 			let symbols_type = input.try_parse(|input| SymbolsType::parse(input)).ok();
-			let idents =
-				parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
-			Ok(Symbols {
-				symbols_type,
-				idents,
-			})
+			let idents = parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
+			Ok(Symbols { symbols_type, idents })
 		})
 	}
 }
@@ -124,10 +111,7 @@ pub enum CounterStyle {
 }
 
 impl CounterStyle {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let name = CustomIdent::parse(input)?;
@@ -159,10 +143,7 @@ pub struct InnerMostCounter {
 }
 
 impl InnerMostCounter {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
 		let style = input
 			.try_parse(|input| {
@@ -184,10 +165,7 @@ impl ToCss for InnerMostCounter {
 			self.name.to_css_string(),
 			self.style
 				.as_ref()
-				.map_or(String::from(""), |v| std::format!(
-					", {}",
-					v.to_css_string()
-				))
+				.map_or(String::from(""), |v| std::format!(", {}", v.to_css_string()))
 		))
 	}
 }
@@ -200,10 +178,7 @@ pub struct AllCounters {
 }
 
 impl AllCounters {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
 		input.expect_comma()?;
 		let str = input.expect_string()?.to_string();
@@ -232,10 +207,7 @@ impl ToCss for AllCounters {
 			std::format!("\"{}\"", self.string),
 			self.style
 				.as_ref()
-				.map_or(String::from(""), |v| std::format!(
-					", {}",
-					v.to_css_string()
-				))
+				.map_or(String::from(""), |v| std::format!(", {}", v.to_css_string()))
 		))
 	}
 }
@@ -248,10 +220,7 @@ pub enum Counter {
 }
 
 impl Counter {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {

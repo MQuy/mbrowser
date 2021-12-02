@@ -14,10 +14,7 @@ pub fn filter_list_data() -> Vec<(String, String)> {
 		("contrast()", "contrast(1)"),
 		("contrast(5)", "contrast(5)"),
 		("contrast(15.5%)", "contrast(15.5%)"),
-		(
-			"drop-shadow(10px 0.5px)",
-			"drop-shadow(transparent 10px 0.5px 0px)",
-		),
+		("drop-shadow(10px 0.5px)", "drop-shadow(transparent 10px 0.5px 0px)"),
 		(
 			"drop-shadow(currentColor 12px 2.25px 0px)",
 			"drop-shadow(currentcolor 12px 2.25px 0px)",

@@ -29,10 +29,7 @@ pub struct VerticalPosition {
 }
 
 impl VerticalPosition {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let keyword_parser_ret = input.try_parse(|input| VerticalPositionKeyword::parse(input));
 		let length_parser_ret = input.try_parse(|input| LengthPercentage::parse(context, input));
 
@@ -65,10 +62,7 @@ pub enum VerticalPositionComponent {
 }
 
 impl VerticalPositionComponent {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("center")?;
@@ -100,12 +94,8 @@ pub struct BackgroundPositionY {
 }
 
 impl BackgroundPositionY {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		let positions = input
-			.parse_comma_separated(|input| VerticalPositionComponent::parse(context, input))?;
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let positions = input.parse_comma_separated(|input| VerticalPositionComponent::parse(context, input))?;
 		Ok(BackgroundPositionY { positions })
 	}
 }

@@ -51,10 +51,7 @@ impl VirtualMethods for HTMLElement {
 		match name {
 			&local_name!("itemprop") => AttrValue::from_serialized_tokenlist(value.into()),
 			&local_name!("itemtype") => AttrValue::from_serialized_tokenlist(value.into()),
-			_ => self
-				.super_type()
-				.unwrap()
-				.parse_plain_attribute(name, value),
+			_ => self.super_type().unwrap().parse_plain_attribute(name, value),
 		}
 	}
 }

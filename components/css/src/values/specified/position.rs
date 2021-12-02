@@ -33,10 +33,7 @@ pub enum HorizontalPosition {
 }
 
 impl HorizontalPosition {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		Ok(match token {
@@ -62,10 +59,7 @@ impl HorizontalPosition {
 			})
 	}
 
-	pub fn parse_side<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_side<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.try_parse(|input| {
 			let keyword = LeftOrRight::parse(input)?;
 			let length = LengthPercentage::parse(context, input).ok();
@@ -86,9 +80,9 @@ impl ToCss for HorizontalPosition {
 			HorizontalPosition::Length(length) => length.to_css(dest),
 			HorizontalPosition::Side(side, value) => {
 				side.to_css(dest)?;
-				value.as_ref().map_or(Ok(()), |v| {
-					dest.write_fmt(format_args!(" {}", v.to_css_string()))
-				})
+				value
+					.as_ref()
+					.map_or(Ok(()), |v| dest.write_fmt(format_args!(" {}", v.to_css_string())))
 			},
 		}
 	}
@@ -115,10 +109,7 @@ pub enum VerticalPosition {
 }
 
 impl VerticalPosition {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		Ok(match token {
@@ -144,10 +135,7 @@ impl VerticalPosition {
 			})
 	}
 
-	pub fn parse_side<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_side<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.try_parse(|input| {
 			let keyword = TopOrBottom::parse(input)?;
 			let length = LengthPercentage::parse(context, input).ok();
@@ -168,9 +156,9 @@ impl ToCss for VerticalPosition {
 			VerticalPosition::Length(value) => value.to_css(dest),
 			VerticalPosition::Side(side, value) => {
 				side.to_css(dest)?;
-				value.as_ref().map_or(Ok(()), |v| {
-					dest.write_fmt(format_args!(" {}", v.to_css_string()))
-				})
+				value
+					.as_ref()
+					.map_or(Ok(()), |v| dest.write_fmt(format_args!(" {}", v.to_css_string())))
 			},
 		}
 	}
@@ -185,34 +173,22 @@ pub struct Position {
 
 impl Position {
 	pub fn new(horizontal: HorizontalPosition, vertical: VerticalPosition) -> Self {
-		Self {
-			horizontal,
-			vertical,
-		}
+		Self { horizontal, vertical }
 	}
 
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let horizontal = HorizontalPosition::parse_side(context, input)?;
 				let vertical = VerticalPosition::parse_side(context, input)?;
-				Ok(Position {
-					horizontal,
-					vertical,
-				})
+				Ok(Position { horizontal, vertical })
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
 					let horizontal = HorizontalPosition::parse_with_length(context, input)?;
-					let vertical = VerticalPosition::parse_with_length(context, input)
-						.map_or(VerticalPosition::Center, |v| v);
-					Ok(Position {
-						horizontal,
-						vertical,
-					})
+					let vertical =
+						VerticalPosition::parse_with_length(context, input).map_or(VerticalPosition::Center, |v| v);
+					Ok(Position { horizontal, vertical })
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -273,10 +249,7 @@ pub struct BaselinePosition {
 }
 
 impl BaselinePosition {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let preference = input
 			.try_parse(|input| FirstOrLast::parse(input))
 			.map_or(FirstOrLast::First, |v| v);

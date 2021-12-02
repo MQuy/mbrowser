@@ -25,10 +25,7 @@ property_keywords_impl! { BorderImageRepeatKeyword,
 pub type BorderImageRepeat = Pair<BorderImageRepeatKeyword>;
 
 impl BorderImageRepeat {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		BorderImageRepeat::parse_with(input, |input| BorderImageRepeatKeyword::parse(input))
 	}
 }

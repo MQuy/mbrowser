@@ -17,10 +17,7 @@ pub enum BgSize {
 }
 
 impl BgSize {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let width = LengthPercentageOrAuto::parse(context, input)?;
@@ -71,10 +68,7 @@ pub struct BackgroundSize {
 }
 
 impl BackgroundSize {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let size = input.parse_comma_separated(|input| BgSize::parse(context, input))?;
 		Ok(BackgroundSize { size })
 	}

@@ -27,10 +27,7 @@ pub struct AnimationDirection {
 }
 
 impl AnimationDirection {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let directions = input.parse_comma_separated(SingleAnimationDirection::parse)?;
 		Ok(AnimationDirection { directions })
 	}

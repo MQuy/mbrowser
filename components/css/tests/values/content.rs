@@ -5,12 +5,7 @@ pub fn counter_style_data() -> Vec<(String, String)> {
 	data.push(("echo".to_string(), "echo".to_string()));
 	for (symbol_type, symbol_name) in permutate(
 		["cyclic", "numeric", "alphabetic", "symbolic", "fixed", ""].iter(),
-		[
-			"\"something\"",
-			"element(#id)",
-			"element(#id) element(#class)",
-		]
-		.iter(),
+		["\"something\"", "element(#id)", "element(#id) element(#class)"].iter(),
 	)
 	.iter()
 	{

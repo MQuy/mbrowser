@@ -23,10 +23,7 @@ impl Longhands {
 		}
 	}
 
-	pub fn from_two_values(
-		first: NonNegativeLengthPercentage,
-		second: NonNegativeLengthPercentage,
-	) -> Self {
+	pub fn from_two_values(first: NonNegativeLengthPercentage, second: NonNegativeLengthPercentage) -> Self {
 		Longhands {
 			padding_top: first.clone(),
 			padding_right: second.clone(),
@@ -49,10 +46,7 @@ impl Longhands {
 	}
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	let first = NonNegativeLengthPercentage::parse(context, input)?;
 	let second = if let Ok(second) = NonNegativeLengthPercentage::parse(context, input) {
 		second

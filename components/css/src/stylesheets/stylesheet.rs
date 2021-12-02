@@ -172,8 +172,7 @@ impl<'a> ParserContext<'a> {
 
 	/// Get the rule type, which assumes that one is available.
 	pub fn rule_type(&self) -> CssRuleType {
-		self.rule_type
-			.expect("Rule type expected, but none was found.")
+		self.rule_type.expect("Rule type expected, but none was found.")
 	}
 
 	/// Returns whether CSS error reporting is enabled.

@@ -12,7 +12,4 @@ const TEMPLATE: &str = r#"
 	padding-block-start: {};
 }}"#;
 
-test_property!(
-	non_negative_length_percentage,
-	non_negative_length_percentage_data
-);
+test_property!(non_negative_length_percentage, non_negative_length_percentage_data);

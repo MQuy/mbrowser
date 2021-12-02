@@ -12,10 +12,7 @@ pub struct BackgroundOrigin {
 }
 
 impl BackgroundOrigin {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let boxes = input.parse_comma_separated(Box::parse)?;
 		Ok(BackgroundOrigin { boxes })
 	}

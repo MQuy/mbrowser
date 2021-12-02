@@ -1,7 +1,7 @@
 use common::not_supported;
 use cssparser::{
-	match_ignore_ascii_case, AtRuleParser, AtRuleType, CowRcStr, Parser, ParserState,
-	QualifiedRuleParser, RuleListParser, SourcePosition, Token, _cssparser_internal_to_lowercase,
+	match_ignore_ascii_case, AtRuleParser, AtRuleType, CowRcStr, Parser, ParserState, QualifiedRuleParser,
+	RuleListParser, SourcePosition, Token, _cssparser_internal_to_lowercase,
 };
 use html5ever::Prefix;
 use selectors::parser::SelectorParseErrorKind;
@@ -182,11 +182,7 @@ impl<'a, 'i> AtRuleParser<'i> for TopLevelRuleParser<'a> {
 	}
 
 	#[inline]
-	fn rule_without_block(
-		&mut self,
-		prelude: AtRuleNonBlockPrelude,
-		start: &ParserState,
-	) -> Self::AtRule {
+	fn rule_without_block(&mut self, prelude: AtRuleNonBlockPrelude, start: &ParserState) -> Self::AtRule {
 		let rule = match prelude {
 			AtRuleNonBlockPrelude::Namespace(prefix, url) => {
 				self.state = State::Namespaces;
@@ -209,10 +205,7 @@ impl<'a, 'i> QualifiedRuleParser<'i> for TopLevelRuleParser<'a> {
 	type QualifiedRule = (SourcePosition, CssRule);
 
 	#[inline]
-	fn parse_prelude<'t>(
-		&mut self,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self::Prelude, ParseError<'i>> {
+	fn parse_prelude<'t>(&mut self, input: &mut Parser<'i, 't>) -> Result<Self::Prelude, ParseError<'i>> {
 		QualifiedRuleParser::parse_prelude(&mut self.nested(), input)
 	}
 
@@ -315,11 +308,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
 				source_location: start.source_location(),
 			})),
 			AtRuleBlockPrelude::Keyframes(name, vendor_prefix) => {
-				let context = ParserContext::new_with_rule_type(
-					self.context,
-					CssRuleType::Keyframes,
-					self.namespaces,
-				);
+				let context = ParserContext::new_with_rule_type(self.context, CssRuleType::Keyframes, self.namespaces);
 
 				Ok(CssRule::Keyframes(KeyframesRule {
 					name,
@@ -329,11 +318,7 @@ impl<'a, 'b, 'i> AtRuleParser<'i> for NestedRuleParser<'a, 'b> {
 				}))
 			},
 			AtRuleBlockPrelude::Page => {
-				let context = ParserContext::new_with_rule_type(
-					self.context,
-					CssRuleType::Page,
-					self.namespaces,
-				);
+				let context = ParserContext::new_with_rule_type(self.context, CssRuleType::Page, self.namespaces);
 
 				let declarations = parse_property_declaration_list(&context, input, None);
 				Ok(CssRule::Page(PageRule {
@@ -351,10 +336,7 @@ impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
 	type Prelude = SelectorList<Selectors>;
 	type QualifiedRule = CssRule;
 
-	fn parse_prelude<'t>(
-		&mut self,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self::Prelude, ParseError<'i>> {
+	fn parse_prelude<'t>(&mut self, input: &mut Parser<'i, 't>) -> Result<Self::Prelude, ParseError<'i>> {
 		let selector_parser = SelectorParser {
 			stylesheet_origin: self.context.stylesheet_origin,
 			namespaces: self.namespaces,
@@ -368,8 +350,7 @@ impl<'a, 'b, 'i> QualifiedRuleParser<'i> for NestedRuleParser<'a, 'b> {
 		start: &ParserState,
 		input: &mut Parser<'i, 't>,
 	) -> Result<CssRule, ParseError<'i>> {
-		let context =
-			ParserContext::new_with_rule_type(self.context, CssRuleType::Style, self.namespaces);
+		let context = ParserContext::new_with_rule_type(self.context, CssRuleType::Style, self.namespaces);
 
 		let declarations = parse_property_declaration_list(&context, input, Some(&selectors));
 		Ok(CssRule::Style(StyleRule {
@@ -480,12 +461,8 @@ impl<'i> StyleParseErrorKind<'i> {
 		let name = name.into();
 		let variant = match value_error.kind {
 			cssparser::ParseErrorKind::Custom(StyleParseErrorKind::ValueError(e)) => match e {
-				ValueParseErrorKind::InvalidColor(token) => {
-					StyleParseErrorKind::InvalidColor(name, token)
-				},
-				ValueParseErrorKind::InvalidFilter(token) => {
-					StyleParseErrorKind::InvalidFilter(name, token)
-				},
+				ValueParseErrorKind::InvalidColor(token) => StyleParseErrorKind::InvalidColor(name, token),
+				ValueParseErrorKind::InvalidFilter(token) => StyleParseErrorKind::InvalidFilter(name, token),
 			},
 			_ => StyleParseErrorKind::OtherInvalidValue(name),
 		};

@@ -11,10 +11,7 @@ pub enum GenericLengthOrAuto<Length> {
 }
 
 impl<L> GenericLengthOrAuto<L> {
-	pub fn parse_with<'i, 't, LP>(
-		input: &mut Parser<'i, 't>,
-		length_parser: LP,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, LP>(input: &mut Parser<'i, 't>, length_parser: LP) -> Result<Self, ParseError<'i>>
 	where
 		LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
 	{
@@ -50,10 +47,7 @@ pub enum GenericLengthOrNone<Length> {
 }
 
 impl<L> GenericLengthOrNone<L> {
-	pub fn parse_with<'i, 't, LP>(
-		input: &mut Parser<'i, 't>,
-		length_parser: LP,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, LP>(input: &mut Parser<'i, 't>, length_parser: LP) -> Result<Self, ParseError<'i>>
 	where
 		LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
 	{
@@ -185,9 +179,7 @@ impl<LP: ToCss> ToCss for ExtremumLength<LP> {
 		match self {
 			ExtremumLength::MaxContent => dest.write_str("max-content"),
 			ExtremumLength::MinContent => dest.write_str("min-content"),
-			ExtremumLength::FitContent(value) => {
-				dest.write_fmt(format_args!("fit-content({})", value.to_css_string()))
-			},
+			ExtremumLength::FitContent(value) => dest.write_fmt(format_args!("fit-content({})", value.to_css_string())),
 		}
 	}
 }
@@ -200,10 +192,7 @@ pub enum GenericSize<LengthPercent> {
 }
 
 impl<LP> GenericSize<LP> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: for<'ii, 'tt> Fn(&mut Parser<'ii, 'tt>) -> Result<LP, ParseError<'ii>>,
 	{
@@ -222,25 +211,20 @@ impl<LP> GenericSize<LP> {
 						let location = input.current_source_location();
 						let token = input.next()?.clone();
 						match &token {
-							Token::Ident(ident) => {
-								Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
-									"max-content" => ExtremumLength::MaxContent,
-									"min-content" => ExtremumLength::MinContent,
-									_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
-								}))
-							},
-							Token::Function(name) if name.eq_ignore_ascii_case("fit-content") => {
-								input.parse_nested_block(|input| {
+							Token::Ident(ident) => Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
+								"max-content" => ExtremumLength::MaxContent,
+								"min-content" => ExtremumLength::MinContent,
+								_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+							})),
+							Token::Function(name) if name.eq_ignore_ascii_case("fit-content") => input
+								.parse_nested_block(|input| {
 									let length_percentage = item_parser(input)?;
-									Ok(Self::ExtremumLength(ExtremumLength::FitContent(
-										length_percentage,
-									)))
-								})
-							},
+									Ok(Self::ExtremumLength(ExtremumLength::FitContent(length_percentage)))
+								}),
 							_ => {
-								return Err(location.new_custom_error(
-									StyleParseErrorKind::UnexpectedToken(token.clone()),
-								))
+								return Err(
+									location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
+								)
 							},
 						}
 					})
@@ -269,10 +253,7 @@ pub enum GenericLengthPercentageOrNormal<LengthPercent> {
 }
 
 impl<LP> GenericLengthPercentageOrNormal<LP> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: Fn(&mut Parser<'i, 't>) -> Result<LP, ParseError<'i>>,
 	{
@@ -393,10 +374,7 @@ where
 	T: Clone;
 
 impl<T: Clone> Rect<T> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: Fn(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{
@@ -448,10 +426,7 @@ pub enum GenericRectOrAuto<T: Clone> {
 }
 
 impl<T: Clone> GenericRectOrAuto<T> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: Fn(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{

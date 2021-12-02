@@ -21,12 +21,7 @@ pub fn keyword() {
 
 #[test]
 pub fn content() {
-	for input in [
-		"\"hello\" \"world\"",
-		"\"hello\" \"darkness\" \"my old\" \"friend\"",
-	]
-	.iter()
-	{
+	for input in ["\"hello\" \"world\"", "\"hello\" \"darkness\" \"my old\" \"friend\""].iter() {
 		let css = &TEMPLATE.format(&[&input]);
 		let (stylesheet, _) = parse(css);
 		assert_css(&stylesheet, css);

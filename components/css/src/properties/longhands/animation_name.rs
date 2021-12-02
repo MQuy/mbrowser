@@ -12,10 +12,7 @@ pub struct AnimationName {
 }
 
 impl AnimationName {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let names = input.parse_comma_separated(|input| {
 			input
 				.try_parse(|input| {
@@ -39,10 +36,7 @@ impl ToCss for AnimationName {
 		let names: Vec<String> = self
 			.names
 			.iter()
-			.map(|name| {
-				name.as_ref()
-					.map_or("none".to_string(), |v| v.to_css_string())
-			})
+			.map(|name| name.as_ref().map_or("none".to_string(), |v| v.to_css_string()))
 			.collect();
 		dest.write_str(&names.join(", "))
 	}

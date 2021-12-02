@@ -26,10 +26,7 @@ pub fn keyword() {
 pub fn position_angle() {
 	let mut values = Vec::with_capacity(1);
 	for (input, output) in number_or_percentage_data().iter() {
-		values.push((
-			std::format!("{}", input),
-			std::format!("{} {} 1", output, output),
-		));
+		values.push((std::format!("{}", input), std::format!("{} {} 1", output, output)));
 	}
 	for (input, output) in [("10 5.5%", "10 5.5% 1"), ("2.5 100% 0%", "2.5 100% 0%")].iter() {
 		values.push((input.to_string(), output.to_string()));

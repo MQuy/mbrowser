@@ -24,9 +24,7 @@ impl BrowserUrl {
 	}
 
 	pub fn into_string(self) -> String {
-		Arc::try_unwrap(self.0)
-			.unwrap_or_else(|s| (*s).clone())
-			.to_string()
+		Arc::try_unwrap(self.0).unwrap_or_else(|s| (*s).clone()).to_string()
 	}
 
 	pub fn into_url(self) -> Url {

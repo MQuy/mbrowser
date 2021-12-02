@@ -138,10 +138,8 @@ impl ShorthandId {
 			LonghandId::BackgroundOrigin,
 			LonghandId::BackgroundClip,
 		];
-		static BACKGROUND_POSITION: &'static [LonghandId] = &[
-			LonghandId::BackgroundPositionX,
-			LonghandId::BackgroundPositionY,
-		];
+		static BACKGROUND_POSITION: &'static [LonghandId] =
+			&[LonghandId::BackgroundPositionX, LonghandId::BackgroundPositionY];
 		static BORDER_COLOR: &'static [LonghandId] = &[
 			LonghandId::BorderTopColor,
 			LonghandId::BorderRightColor,
@@ -232,30 +230,18 @@ impl ShorthandId {
 			LonghandId::BorderImageSource,
 			LonghandId::BorderImageWidth,
 		];
-		static BORDER_BLOCK_WIDTH: &'static [LonghandId] = &[
-			LonghandId::BorderBlockStartWidth,
-			LonghandId::BorderBlockEndWidth,
-		];
-		static BORDER_BLOCK_STYLE: &'static [LonghandId] = &[
-			LonghandId::BorderBlockStartStyle,
-			LonghandId::BorderBlockEndStyle,
-		];
-		static BORDER_BLOCK_COLOR: &'static [LonghandId] = &[
-			LonghandId::BorderBlockStartColor,
-			LonghandId::BorderBlockEndColor,
-		];
-		static BORDER_INLINE_WIDTH: &'static [LonghandId] = &[
-			LonghandId::BorderInlineStartWidth,
-			LonghandId::BorderInlineEndWidth,
-		];
-		static BORDER_INLINE_STYLE: &'static [LonghandId] = &[
-			LonghandId::BorderInlineStartStyle,
-			LonghandId::BorderInlineEndStyle,
-		];
-		static BORDER_INLINE_COLOR: &'static [LonghandId] = &[
-			LonghandId::BorderInlineStartColor,
-			LonghandId::BorderInlineEndColor,
-		];
+		static BORDER_BLOCK_WIDTH: &'static [LonghandId] =
+			&[LonghandId::BorderBlockStartWidth, LonghandId::BorderBlockEndWidth];
+		static BORDER_BLOCK_STYLE: &'static [LonghandId] =
+			&[LonghandId::BorderBlockStartStyle, LonghandId::BorderBlockEndStyle];
+		static BORDER_BLOCK_COLOR: &'static [LonghandId] =
+			&[LonghandId::BorderBlockStartColor, LonghandId::BorderBlockEndColor];
+		static BORDER_INLINE_WIDTH: &'static [LonghandId] =
+			&[LonghandId::BorderInlineStartWidth, LonghandId::BorderInlineEndWidth];
+		static BORDER_INLINE_STYLE: &'static [LonghandId] =
+			&[LonghandId::BorderInlineStartStyle, LonghandId::BorderInlineEndStyle];
+		static BORDER_INLINE_COLOR: &'static [LonghandId] =
+			&[LonghandId::BorderInlineStartColor, LonghandId::BorderInlineEndColor];
 		static BORDER_BLOCK: &'static [LonghandId] = &[
 			LonghandId::BorderBlockStartWidth,
 			LonghandId::BorderBlockEndWidth,
@@ -311,10 +297,8 @@ impl ShorthandId {
 			LonghandId::MarginBottom,
 			LonghandId::MarginLeft,
 		];
-		static MARGIN_BLOCK: &'static [LonghandId] =
-			&[LonghandId::MarginBlockStart, LonghandId::MarginBlockEnd];
-		static MARGIN_INLINE: &'static [LonghandId] =
-			&[LonghandId::MarginInlineStart, LonghandId::MarginInlineEnd];
+		static MARGIN_BLOCK: &'static [LonghandId] = &[LonghandId::MarginBlockStart, LonghandId::MarginBlockEnd];
+		static MARGIN_INLINE: &'static [LonghandId] = &[LonghandId::MarginInlineStart, LonghandId::MarginInlineEnd];
 		static OUTLINE: &'static [LonghandId] = &[
 			LonghandId::OutlineColor,
 			LonghandId::OutlineStyle,
@@ -326,27 +310,14 @@ impl ShorthandId {
 			LonghandId::PaddingBottom,
 			LonghandId::PaddingLeft,
 		];
-		static PADDING_BLOCK: &'static [LonghandId] =
-			&[LonghandId::PaddingBlockStart, LonghandId::PaddingBlockEnd];
-		static PADDING_INLINE: &'static [LonghandId] =
-			&[LonghandId::PaddingInlineStart, LonghandId::PaddingInlineEnd];
-		static FLEX_FLOW: &'static [LonghandId] =
-			&[LonghandId::FlexDirection, LonghandId::FlexWrap];
-		static FLEX: &'static [LonghandId] = &[
-			LonghandId::FlexGrow,
-			LonghandId::FlexShrink,
-			LonghandId::FlexBasis,
-		];
-		static INSET: &'static [LonghandId] = &[
-			LonghandId::Top,
-			LonghandId::Right,
-			LonghandId::Bottom,
-			LonghandId::Left,
-		];
-		static INSET_BLOCK: &'static [LonghandId] =
-			&[LonghandId::InsetBlockStart, LonghandId::InsetBlockEnd];
-		static INSET_INLINE: &'static [LonghandId] =
-			&[LonghandId::InsetInlineStart, LonghandId::InsetInlineEnd];
+		static PADDING_BLOCK: &'static [LonghandId] = &[LonghandId::PaddingBlockStart, LonghandId::PaddingBlockEnd];
+		static PADDING_INLINE: &'static [LonghandId] = &[LonghandId::PaddingInlineStart, LonghandId::PaddingInlineEnd];
+		static FLEX_FLOW: &'static [LonghandId] = &[LonghandId::FlexDirection, LonghandId::FlexWrap];
+		static FLEX: &'static [LonghandId] = &[LonghandId::FlexGrow, LonghandId::FlexShrink, LonghandId::FlexBasis];
+		static INSET: &'static [LonghandId] =
+			&[LonghandId::Top, LonghandId::Right, LonghandId::Bottom, LonghandId::Left];
+		static INSET_BLOCK: &'static [LonghandId] = &[LonghandId::InsetBlockStart, LonghandId::InsetBlockEnd];
+		static INSET_INLINE: &'static [LonghandId] = &[LonghandId::InsetInlineStart, LonghandId::InsetInlineEnd];
 		static TEXT_DECORATION: &'static [LonghandId] = &[LonghandId::TextDecorationLine];
 		static ALL: &'static [LonghandId] = &[
 			LonghandId::BorderBlockStartColor,

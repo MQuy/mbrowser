@@ -79,11 +79,7 @@ impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
 				return Ok(pseudo_class);
 			}
 		}
-		Err(
-			location.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(
-				name,
-			)),
-		)
+		Err(location.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(name)))
 	}
 
 	fn parse_pseudo_element(
@@ -97,11 +93,7 @@ impl<'a, 'i> ::selectors::Parser<'i> for SelectorParser<'a> {
 			}
 		}
 
-		Err(
-			location.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(
-				name,
-			)),
-		)
+		Err(location.new_custom_error(SelectorParseErrorKind::UnsupportedPseudoClassOrElement(name)))
 	}
 
 	fn default_namespace(&self) -> Option<Namespace> {

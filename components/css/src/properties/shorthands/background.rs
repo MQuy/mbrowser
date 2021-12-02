@@ -19,10 +19,7 @@ pub struct Longhands {
 	pub background_clip: longhands::background_clip::BackgroundClip,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 /// Parse the given shorthand and fill the result into the
@@ -35,32 +32,20 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::BackgroundColor(
-				longhands.background_color,
-			));
+			declarations.push(PropertyDeclaration::BackgroundColor(longhands.background_color));
 			declarations.push(PropertyDeclaration::BackgroundPositionX(
 				longhands.background_position_x,
 			));
 			declarations.push(PropertyDeclaration::BackgroundPositionY(
 				longhands.background_position_y,
 			));
-			declarations.push(PropertyDeclaration::BackgroundRepeat(
-				longhands.background_repeat,
-			));
+			declarations.push(PropertyDeclaration::BackgroundRepeat(longhands.background_repeat));
 			declarations.push(PropertyDeclaration::BackgroundAttachment(
 				longhands.background_attachment,
 			));
-			declarations.push(PropertyDeclaration::BackgroundImage(
-				longhands.background_image,
-			));
-			declarations.push(PropertyDeclaration::BackgroundSize(
-				longhands.background_size,
-			));
-			declarations.push(PropertyDeclaration::BackgroundOrigin(
-				longhands.background_origin,
-			));
-			declarations.push(PropertyDeclaration::BackgroundClip(
-				longhands.background_clip,
-			));
+			declarations.push(PropertyDeclaration::BackgroundImage(longhands.background_image));
+			declarations.push(PropertyDeclaration::BackgroundSize(longhands.background_size));
+			declarations.push(PropertyDeclaration::BackgroundOrigin(longhands.background_origin));
+			declarations.push(PropertyDeclaration::BackgroundClip(longhands.background_clip));
 		})
 }

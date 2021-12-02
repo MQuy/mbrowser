@@ -6,9 +6,7 @@ use super::layout::Resolution;
 use super::length::{LengthPercentage, NonNegativeLengthPercentage};
 use super::percentage::Percentage;
 use super::position::{HorizontalPosition, Position, VerticalPosition};
-use crate::parser::{
-	parse_in_any_order, parse_item_if_missing, parse_repeated_with_delimitor, ParseError,
-};
+use crate::parser::{parse_in_any_order, parse_item_if_missing, parse_repeated_with_delimitor, ParseError};
 use crate::properties::declaration::property_keywords_impl;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -35,18 +33,13 @@ pub struct Annotation {
 }
 
 impl Annotation {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let tag = input
 			.try_parse(|input| ImageDirection::parse(input))
 			.map_or(None, |v| Some(v));
 		let src = input
 			.try_parse(|input| CssUrl::parse(context, input))
-			.or_else(|_err: ParseError<'i>| {
-				input.try_parse(|input| CssUrl::parse_string(context, input))
-			})
+			.or_else(|_err: ParseError<'i>| input.try_parse(|input| CssUrl::parse_string(context, input)))
 			.ok();
 		let color = input
 			.try_parse(|input| {
@@ -89,10 +82,7 @@ pub enum ImageReference {
 }
 
 impl ImageReference {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let image = Image::parse(context, input)?;
@@ -125,10 +115,7 @@ pub struct ImageSetOption {
 }
 
 impl ImageSetOption {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let reference = ImageReference::parse(context, input)?;
 		let mut resolution = None;
 		let mut mime = None;
@@ -186,10 +173,7 @@ pub enum ImageOrColor {
 }
 
 impl ImageOrColor {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let image = Image::parse(context, input)?;
@@ -221,10 +205,7 @@ pub struct CFImage {
 }
 
 impl CFImage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut percentage = None;
 		let mut fade = None;
 		parse_in_any_order(
@@ -236,9 +217,7 @@ impl CFImage {
 					})
 				},
 				&mut |input| {
-					parse_item_if_missing(input, &mut fade, &mut |_, input| {
-						ImageOrColor::parse(context, input)
-					})
+					parse_item_if_missing(input, &mut fade, &mut |_, input| ImageOrColor::parse(context, input))
 				},
 			],
 		);
@@ -295,10 +274,7 @@ pub enum LineDirection {
 }
 
 impl LineDirection {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let angle = Angle::parse(context, input)?;
@@ -311,16 +287,8 @@ impl LineDirection {
 				parse_in_any_order(
 					input,
 					&mut [
-						&mut |input| {
-							parse_item_if_missing(input, &mut side, &mut |_, input| {
-								Side::parse(input)
-							})
-						},
-						&mut |input| {
-							parse_item_if_missing(input, &mut corner, &mut |_, input| {
-								Corner::parse(input)
-							})
-						},
+						&mut |input| parse_item_if_missing(input, &mut side, &mut |_, input| Side::parse(input)),
+						&mut |input| parse_item_if_missing(input, &mut corner, &mut |_, input| Corner::parse(input)),
 					],
 				);
 				Ok(LineDirection::Keyword(side, corner))
@@ -369,14 +337,8 @@ impl<T> LinearColorStop<T> {
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut color, &mut |_, input| {
-						Color::parse(context, input)
-					})
-				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut length, &mut |_, input| item_parser(input))
-				},
+				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(context, input)),
+				&mut |input| parse_item_if_missing(input, &mut length, &mut |_, input| item_parser(input)),
 			],
 		);
 
@@ -498,10 +460,7 @@ pub struct LinearGradient {
 }
 
 impl LinearGradient {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let direction = input.try_parse(|input| LineDirection::parse(context, input));
 		let direction = if direction.is_ok() {
 			input.expect_comma()?;
@@ -509,9 +468,7 @@ impl LinearGradient {
 		} else {
 			LineDirection::Keyword(None, Some(Corner::Bottom))
 		};
-		let color_stop = ColorStopList::parse(context, input, &mut |input| {
-			LengthPercentage::parse(context, input)
-		})?;
+		let color_stop = ColorStopList::parse(context, input, &mut |input| LengthPercentage::parse(context, input))?;
 		Ok(LinearGradient {
 			direction,
 			color_stop,
@@ -556,17 +513,11 @@ pub enum RadialSize {
 	FarthestSide,
 	ClosestCorner,
 	FarthestCorner,
-	Length(
-		NonNegativeLengthPercentage,
-		Option<NonNegativeLengthPercentage>,
-	),
+	Length(NonNegativeLengthPercentage, Option<NonNegativeLengthPercentage>),
 }
 
 impl RadialSize {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let horizontal = NonNegativeLengthPercentage::parse(context, input)?;
@@ -620,25 +571,14 @@ pub struct RadialGradient {
 }
 
 impl RadialGradient {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut end_shape = None;
 		let mut size = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut end_shape, &mut |_, input| {
-						EndingShape::parse(input)
-					})
-				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut size, &mut |_, input| {
-						RadialSize::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut end_shape, &mut |_, input| EndingShape::parse(input)),
+				&mut |input| parse_item_if_missing(input, &mut size, &mut |_, input| RadialSize::parse(context, input)),
 			],
 		);
 		let position = input
@@ -650,9 +590,7 @@ impl RadialGradient {
 		if end_shape.is_some() || size.is_some() || position.is_some() {
 			input.expect_comma()?;
 		}
-		let color_stop = ColorStopList::parse(context, input, &mut |input| {
-			LengthPercentage::parse(context, input)
-		})?;
+		let color_stop = ColorStopList::parse(context, input, &mut |input| LengthPercentage::parse(context, input))?;
 		let size = size.map_or(RadialSize::FarthestCorner, |v| v);
 		let end_shape = if let Some(end_shape) = end_shape {
 			end_shape
@@ -705,10 +643,7 @@ pub struct ConicRadient {
 }
 
 impl ConicRadient {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let angle = input
 			.try_parse(|input| {
 				input.expect_ident_matching("from")?;
@@ -725,9 +660,7 @@ impl ConicRadient {
 		if angle.is_some() || position.is_some() {
 			input.expect_comma()?;
 		}
-		let color_stop = ColorStopList::parse(context, input, &mut |input| {
-			AnglePercentage::parse(context, input)
-		})?;
+		let color_stop = ColorStopList::parse(context, input, &mut |input| AnglePercentage::parse(context, input))?;
 		Ok(ConicRadient {
 			color_stop,
 			angle: angle.map_or("0deg".into(), |v| v),
@@ -792,10 +725,7 @@ pub enum Image {
 }
 
 impl Image {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let url = CssUrl::parse(context, input)?;
@@ -822,18 +752,12 @@ impl Image {
 			})
 	}
 
-	pub fn parse_image<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_image<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = Annotation::parse(context, input)?;
 		Ok(Image::Image(value))
 	}
 
-	pub fn parse_set<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_set<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.parse_comma_separated(|input| ImageSetOption::parse(context, input))?;
 		if value.len() == 0 {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
@@ -854,19 +778,12 @@ impl Image {
 		}
 	}
 
-	pub fn parse_element<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_element<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		let id = match token {
 			Token::IDHash(value) | Token::Hash(value) => Ident(value.to_string()),
-			_ => {
-				return Err(
-					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
-				)
-			},
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))),
 		};
 		Ok(Image::Element(id))
 	}
@@ -926,9 +843,7 @@ impl ToCss for Image {
 					.collect::<Vec<String>>()
 					.join(", ")
 			)),
-			Image::Element(value) => {
-				dest.write_fmt(format_args!("element(#{})", value.to_css_string()))
-			},
+			Image::Element(value) => dest.write_fmt(format_args!("element(#{})", value.to_css_string())),
 			Image::Gradient(value) => value.to_css(dest),
 		}
 	}

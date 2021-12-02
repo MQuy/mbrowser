@@ -16,10 +16,7 @@ pub struct Longhands {
 	pub transition_delay: TransitionDelay,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -33,17 +30,11 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::TransitionProperty(
-				longhands.transition_property,
-			));
-			declarations.push(PropertyDeclaration::TransitionDuration(
-				longhands.transition_duration,
-			));
+			declarations.push(PropertyDeclaration::TransitionProperty(longhands.transition_property));
+			declarations.push(PropertyDeclaration::TransitionDuration(longhands.transition_duration));
 			declarations.push(PropertyDeclaration::TransitionTimingFunction(
 				longhands.transition_timing_function,
 			));
-			declarations.push(PropertyDeclaration::TransitionDelay(
-				longhands.transition_delay,
-			));
+			declarations.push(PropertyDeclaration::TransitionDelay(longhands.transition_delay));
 		})
 }

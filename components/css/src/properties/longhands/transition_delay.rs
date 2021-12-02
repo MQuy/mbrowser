@@ -12,10 +12,7 @@ pub struct TransitionDelay {
 }
 
 impl TransitionDelay {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let delays = input.parse_comma_separated(|input| Time::parse(context, input))?;
 		Ok(TransitionDelay { delays })
 	}

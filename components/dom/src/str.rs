@@ -20,8 +20,7 @@ pub type StaticStringVec = &'static [&'static str];
 /// A "space character" according to:
 ///
 /// <https://html.spec.whatwg.org/multipage/#space-character>
-pub static HTML_SPACE_CHARACTERS: StaticCharVec =
-	&['\u{0020}', '\u{0009}', '\u{000a}', '\u{000c}', '\u{000d}'];
+pub static HTML_SPACE_CHARACTERS: StaticCharVec = &['\u{0020}', '\u{0009}', '\u{000a}', '\u{000c}', '\u{000d}'];
 
 /// Whether a character is a HTML whitespace character.
 #[inline]
@@ -42,11 +41,8 @@ fn not_empty(&split: &&str) -> bool {
 
 /// Split a string on HTML whitespace.
 #[inline]
-pub fn split_html_space_chars<'a>(
-	s: &'a str,
-) -> Filter<Split<'a, StaticCharVec>, fn(&&str) -> bool> {
-	s.split(HTML_SPACE_CHARACTERS)
-		.filter(not_empty as fn(&&str) -> bool)
+pub fn split_html_space_chars<'a>(s: &'a str) -> Filter<Split<'a, StaticCharVec>, fn(&&str) -> bool> {
+	s.split(HTML_SPACE_CHARACTERS).filter(not_empty as fn(&&str) -> bool)
 }
 
 /// Split a string on commas.
@@ -93,11 +89,7 @@ pub fn read_numbers<I: Iterator<Item = char>>(mut iter: Peekable<I>) -> (Option<
 }
 
 /// Read a decimal fraction.
-pub fn read_fraction<I: Iterator<Item = char>>(
-	mut iter: Peekable<I>,
-	mut divisor: f64,
-	value: f64,
-) -> (f64, usize) {
+pub fn read_fraction<I: Iterator<Item = char>>(mut iter: Peekable<I>, mut divisor: f64, value: f64) -> (f64, usize) {
 	match iter.peek() {
 		Some(c) if is_decimal_point(*c) => (),
 		_ => return (value, 0),
@@ -140,21 +132,18 @@ where
 	I: IntoIterator<Item = T>,
 	T: AsRef<str>,
 {
-	strs.into_iter()
-		.enumerate()
-		.fold(String::new(), |mut acc, (i, s)| {
-			if i > 0 {
-				acc.push_str(join);
-			}
-			acc.push_str(s.as_ref());
-			acc
-		})
+	strs.into_iter().enumerate().fold(String::new(), |mut acc, (i, s)| {
+		if i > 0 {
+			acc.push_str(join);
+		}
+		acc.push_str(s.as_ref());
+		acc
+	})
 }
 
 /// Returns true if a given string has a given prefix with case-insensitive match.
 pub fn starts_with_ignore_ascii_case(string: &str, prefix: &str) -> bool {
-	string.len() >= prefix.len()
-		&& string.as_bytes()[0..prefix.len()].eq_ignore_ascii_case(prefix.as_bytes())
+	string.len() >= prefix.len() && string.as_bytes()[0..prefix.len()].eq_ignore_ascii_case(prefix.as_bytes())
 }
 
 /// Returns an ascii lowercase version of a string, only allocating if needed.

@@ -27,10 +27,7 @@ pub struct AnimationFillMode {
 }
 
 impl AnimationFillMode {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let fill_modes = input.parse_comma_separated(SingleAnimationFillMode::parse)?;
 		Ok(AnimationFillMode { fill_modes })
 	}

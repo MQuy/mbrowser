@@ -11,10 +11,7 @@ pub enum KeyframesName {
 }
 
 impl KeyframesName {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		match input.next()? {
 			Token::Ident(ref ident) => Ok(KeyframesName::Ident(CustomIdent::from_ident(

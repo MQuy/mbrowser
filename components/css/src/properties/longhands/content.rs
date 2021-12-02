@@ -22,10 +22,7 @@ pub enum ContentList {
 }
 
 impl ContentList {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("contents")?;
@@ -94,18 +91,14 @@ pub enum ContentReplacementOrList {
 }
 
 impl ContentReplacementOrList {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let image = Image::parse(context, input)?;
 				Ok(ContentReplacementOrList::Replacement(image))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let values =
-					parse_repeated(input, &mut |input| ContentList::parse(context, input), 1)?;
+				let values = parse_repeated(input, &mut |input| ContentList::parse(context, input), 1)?;
 				Ok(ContentReplacementOrList::List(values))
 			})
 	}
@@ -136,10 +129,7 @@ pub enum CounterOrString {
 }
 
 impl CounterOrString {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let value = Counter::parse(context, input)?;
@@ -171,19 +161,12 @@ pub struct ContentData {
 }
 
 impl ContentData {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let content = ContentReplacementOrList::parse(context, input)?;
 		let alt = input
 			.try_parse(|input| -> Result<Vec<CounterOrString>, ParseError<'i>> {
 				input.expect_delim('/')?;
-				let value = parse_repeated(
-					input,
-					&mut |input| CounterOrString::parse(context, input),
-					1,
-				)?;
+				let value = parse_repeated(input, &mut |input| CounterOrString::parse(context, input), 1)?;
 				Ok(value)
 			})
 			.map_or(vec![], |alt| alt);
@@ -221,10 +204,7 @@ pub enum Content {
 }
 
 impl Content {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();

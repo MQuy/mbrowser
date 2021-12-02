@@ -54,8 +54,7 @@ impl TransitionProperty {
 				Ok(TransitionProperty { properties: vec![] })
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let properties =
-					input.parse_comma_separated(|input| SingleTransitionProperty::parse(input))?;
+				let properties = input.parse_comma_separated(|input| SingleTransitionProperty::parse(input))?;
 				Ok(TransitionProperty { properties })
 			})
 	}

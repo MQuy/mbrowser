@@ -11,10 +11,7 @@ pub struct Longhands {
 	pub padding_block_end: NonNegativeLengthPercentage,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	let first = NonNegativeLengthPercentage::parse(context, input)?;
 	if let Ok(second) = NonNegativeLengthPercentage::parse(context, input) {
 		Ok(Longhands {
@@ -39,11 +36,7 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::PaddingBlockStart(
-				longhands.padding_block_start,
-			));
-			declarations.push(PropertyDeclaration::PaddingBlockEnd(
-				longhands.padding_block_end,
-			));
+			declarations.push(PropertyDeclaration::PaddingBlockStart(longhands.padding_block_start));
+			declarations.push(PropertyDeclaration::PaddingBlockEnd(longhands.padding_block_end));
 		})
 }

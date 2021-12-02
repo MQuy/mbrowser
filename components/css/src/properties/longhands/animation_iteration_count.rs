@@ -13,18 +13,11 @@ pub enum SingleAnimationIterationCount {
 }
 
 impl SingleAnimationIterationCount {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		Ok(match token {
-			Token::Ident(ident) if ident.eq_ignore_ascii_case("infinite") => {
-				SingleAnimationIterationCount::Infinite
-			},
-			Token::Number { value, .. } => {
-				SingleAnimationIterationCount::Number(Number::new(value))
-			},
+			Token::Ident(ident) if ident.eq_ignore_ascii_case("infinite") => SingleAnimationIterationCount::Infinite,
+			Token::Number { value, .. } => SingleAnimationIterationCount::Number(Number::new(value)),
 			_ => return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedToken(token))),
 		})
 	}
@@ -49,12 +42,9 @@ pub struct AnimationIterationCount {
 }
 
 impl AnimationIterationCount {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		let iteration_count = input
-			.parse_comma_separated(|input| SingleAnimationIterationCount::parse(context, input))?;
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let iteration_count =
+			input.parse_comma_separated(|input| SingleAnimationIterationCount::parse(context, input))?;
 		Ok(AnimationIterationCount { iteration_count })
 	}
 }
@@ -64,11 +54,7 @@ impl ToCss for AnimationIterationCount {
 	where
 		W: std::fmt::Write,
 	{
-		let count: Vec<String> = self
-			.iteration_count
-			.iter()
-			.map(|v| v.to_css_string())
-			.collect();
+		let count: Vec<String> = self.iteration_count.iter().map(|v| v.to_css_string()).collect();
 		dest.write_str(&count.join(", "))
 	}
 }

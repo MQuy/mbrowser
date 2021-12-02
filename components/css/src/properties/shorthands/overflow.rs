@@ -11,10 +11,7 @@ pub struct Longhands {
 	pub overflow_y: Overflow,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 

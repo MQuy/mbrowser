@@ -25,10 +25,7 @@ pub struct BackgroundAttachment {
 }
 
 impl BackgroundAttachment {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let attachments = input.parse_comma_separated(Attachment::parse)?;
 		Ok(BackgroundAttachment { attachments })
 	}

@@ -19,14 +19,10 @@ pub enum Angle {
 }
 
 impl Angle {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		macro_rules! return_unexpected_token {
 			($location:tt, $token:tt) => {
-				return Err($location
-					.new_custom_error(StyleParseErrorKind::UnexpectedToken($token.clone())))
+				return Err($location.new_custom_error(StyleParseErrorKind::UnexpectedToken($token.clone())))
 			};
 		}
 
@@ -93,10 +89,7 @@ pub enum AnglePercentage {
 }
 
 impl AnglePercentage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let angle = Angle::parse(context, input)?;

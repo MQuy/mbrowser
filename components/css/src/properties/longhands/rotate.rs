@@ -16,10 +16,7 @@ pub enum NumberOrKeyword {
 }
 
 impl NumberOrKeyword {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -33,10 +30,7 @@ impl NumberOrKeyword {
 							StyleParseErrorKind::UnexpectedToken(token.clone()),
 						))
 					}),
-					_ => {
-						return Err(location
-							.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone())))
-					},
+					_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))),
 				}
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -71,10 +65,7 @@ pub enum Rotate {
 }
 
 impl Rotate {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Rotate, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Rotate, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
@@ -93,9 +84,7 @@ impl Rotate {
 					input,
 					&mut [
 						&mut |input| {
-							parse_item_if_missing(input, &mut angle, &mut |_, input| {
-								Angle::parse(context, input)
-							})
+							parse_item_if_missing(input, &mut angle, &mut |_, input| Angle::parse(context, input))
 						},
 						&mut |input| {
 							parse_item_if_missing(input, &mut coordinate, &mut |_, input| {

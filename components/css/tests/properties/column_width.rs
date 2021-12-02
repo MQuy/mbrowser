@@ -12,7 +12,4 @@ const TEMPLATE: &str = r#"
 	column-width: {};
 }}"#;
 
-test_property!(
-	non_negative_length_or_auto,
-	non_negative_length_or_auto_data
-);
+test_property!(non_negative_length_or_auto, non_negative_length_or_auto_data);

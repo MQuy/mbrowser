@@ -15,11 +15,7 @@ const TEMPLATE: &str = r#"
 
 #[test]
 pub fn absolute_size() {
-	for value in [
-		"xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large",
-	]
-	.iter()
-	{
+	for value in ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"].iter() {
 		let css = &TEMPLATE.format(&[&value]);
 		let (stylesheet, _) = parse(css);
 		assert_css(&stylesheet, css);

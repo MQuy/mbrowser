@@ -31,9 +31,9 @@ impl SVGSVGElement {
 	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
 		Self {
 			svggraphicselement: SVGGraphicsElement::new_inherited(
-				NodeTypeId::Element(ElementTypeId::SVGElement(
-					SVGElementTypeId::SVGGraphicsElement(SVGGraphicsElementTypeId::SVGSVGElement),
-				)),
+				NodeTypeId::Element(ElementTypeId::SVGElement(SVGElementTypeId::SVGGraphicsElement(
+					SVGGraphicsElementTypeId::SVGSVGElement,
+				))),
 				local_name,
 				prefix,
 				document,
@@ -51,10 +51,7 @@ impl VirtualMethods for SVGSVGElement {
 		match name {
 			&local_name!("width") => AttrValue::from_u32(value.into(), DEFAULT_WIDTH),
 			&local_name!("height") => AttrValue::from_u32(value.into(), DEFAULT_HEIGHT),
-			_ => self
-				.super_type()
-				.unwrap()
-				.parse_plain_attribute(name, value),
+			_ => self.super_type().unwrap().parse_plain_attribute(name, value),
 		}
 	}
 }

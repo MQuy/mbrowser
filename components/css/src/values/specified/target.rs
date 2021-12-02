@@ -16,10 +16,7 @@ pub struct TargetCounter {
 }
 
 impl TargetCounter {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
 			.try_parse(|input| CssUrl::parse(context, input))
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
@@ -60,10 +57,7 @@ pub struct TargetCounters {
 }
 
 impl TargetCounters {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
 			.try_parse(|input| CssUrl::parse(context, input))
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
@@ -125,10 +119,7 @@ pub struct TargetText {
 }
 
 impl TargetText {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
 			.try_parse(|input| CssUrl::parse(context, input))
 			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
@@ -166,10 +157,7 @@ pub enum Target {
 
 impl Target {
 	/// https://drafts.csswg.org/css-content/#typedef-target
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {
@@ -182,26 +170,17 @@ impl Target {
 		})
 	}
 
-	fn parse_counter<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_counter<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let counter = TargetCounter::parse(context, input)?;
 		Ok(Target::Counter(counter))
 	}
 
-	fn parse_counters<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_counters<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let counters = TargetCounters::parse(context, input)?;
 		Ok(Target::Counters(counters))
 	}
 
-	fn parse_text<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_text<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let text = TargetText::parse(context, input)?;
 		Ok(Target::Text(text))
 	}

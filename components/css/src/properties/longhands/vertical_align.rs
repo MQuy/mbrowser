@@ -38,10 +38,7 @@ pub enum VerticalAlign {
 }
 
 impl VerticalAlign {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<VerticalAlign, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<VerticalAlign, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = VerticalAlignKeyword::parse(input)?;

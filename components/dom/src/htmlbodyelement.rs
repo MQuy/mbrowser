@@ -26,9 +26,7 @@ impl HTMLBodyElement {
 	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
 		Self {
 			htmlelement: HTMLElement::new_inherited(
-				NodeTypeId::Element(ElementTypeId::HTMLElement(
-					HTMLElementTypeId::HTMLBodyElement,
-				)),
+				NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLBodyElement)),
 				local_name,
 				prefix,
 				document,
@@ -43,16 +41,11 @@ impl VirtualMethods for HTMLBodyElement {
 
 	fn parse_plain_attribute(&self, name: &LocalName, value: String) -> AttrValue {
 		match *name {
-			local_name!("bgcolor") | local_name!("text") => {
-				AttrValue::from_legacy_color(value.into())
-			},
+			local_name!("bgcolor") | local_name!("text") => AttrValue::from_legacy_color(value.into()),
 			local_name!("background") => {
 				AttrValue::from_resolved_url(&document_from_node(self).base_url(), value.into())
 			},
-			_ => self
-				.super_type()
-				.unwrap()
-				.parse_plain_attribute(name, value),
+			_ => self.super_type().unwrap().parse_plain_attribute(name, value),
 		}
 	}
 }

@@ -22,10 +22,7 @@ pub struct Longhands {
 	pub font_family: FontFamily,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -40,9 +37,7 @@ pub fn parse_into<'i, 't>(
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
 			declarations.push(PropertyDeclaration::FontStyle(longhands.font_style));
-			declarations.push(PropertyDeclaration::FontVariantCaps(
-				longhands.font_variant_caps,
-			));
+			declarations.push(PropertyDeclaration::FontVariantCaps(longhands.font_variant_caps));
 			declarations.push(PropertyDeclaration::FontWeight(longhands.font_weight));
 			declarations.push(PropertyDeclaration::FontStretch(longhands.font_stretch));
 			declarations.push(PropertyDeclaration::FontSize(longhands.font_size));

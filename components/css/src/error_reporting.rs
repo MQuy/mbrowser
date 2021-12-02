@@ -56,19 +56,13 @@ impl<'a> fmt::Display for ContextualParseError<'a> {
 				Token::QuotedString(ref s) => write!(f, "quoted string \"{}\"", s),
 				Token::UnquotedUrl(ref u) => write!(f, "url {}", u),
 				Token::Delim(ref d) => write!(f, "delimiter {}", d),
-				Token::Number {
-					int_value: Some(i), ..
-				} => write!(f, "number {}", i),
+				Token::Number { int_value: Some(i), .. } => write!(f, "number {}", i),
 				Token::Number { value, .. } => write!(f, "number {}", value),
-				Token::Percentage {
-					int_value: Some(i), ..
-				} => write!(f, "percentage {}", i),
+				Token::Percentage { int_value: Some(i), .. } => write!(f, "percentage {}", i),
 				Token::Percentage { unit_value, .. } => {
 					write!(f, "percentage {}", unit_value * 100.)
 				},
-				Token::Dimension {
-					value, ref unit, ..
-				} => write!(f, "dimension {}{}", value, unit),
+				Token::Dimension { value, ref unit, .. } => write!(f, "dimension {}{}", value, unit),
 				Token::WhiteSpace(_) => write!(f, "whitespace"),
 				Token::Comment(_) => write!(f, "comment"),
 				Token::Colon => write!(f, "colon (:)"),
@@ -121,11 +115,7 @@ impl<'a> fmt::Display for ContextualParseError<'a> {
 				parse_error_to_str(err, f)
 			},
 			ContextualParseError::UnsupportedFontFaceDescriptor(decl, ref err) => {
-				write!(
-					f,
-					"Unsupported @font-face descriptor declaration: '{}', ",
-					decl
-				)?;
+				write!(f, "Unsupported @font-face descriptor declaration: '{}', ", decl)?;
 				parse_error_to_str(err, f)
 			},
 			ContextualParseError::UnsupportedFontFeatureValuesDescriptor(decl, ref err) => {
@@ -157,26 +147,16 @@ impl<'a> fmt::Display for ContextualParseError<'a> {
 				parse_error_to_str(err, f)
 			},
 			ContextualParseError::UnsupportedViewportDescriptorDeclaration(decl, ref err) => {
-				write!(
-					f,
-					"Unsupported @viewport descriptor declaration: '{}', ",
-					decl
-				)?;
+				write!(f, "Unsupported @viewport descriptor declaration: '{}', ", decl)?;
 				parse_error_to_str(err, f)
 			},
 			ContextualParseError::UnsupportedCounterStyleDescriptorDeclaration(decl, ref err) => {
-				write!(
-					f,
-					"Unsupported @counter-style descriptor declaration: '{}', ",
-					decl
-				)?;
+				write!(f, "Unsupported @counter-style descriptor declaration: '{}', ", decl)?;
 				parse_error_to_str(err, f)
 			},
-			ContextualParseError::InvalidCounterStyleWithoutSymbols(ref system) => write!(
-				f,
-				"Invalid @counter-style rule: 'system: {}' without 'symbols'",
-				system
-			),
+			ContextualParseError::InvalidCounterStyleWithoutSymbols(ref system) => {
+				write!(f, "Invalid @counter-style rule: 'system: {}' without 'symbols'", system)
+			},
 			ContextualParseError::InvalidCounterStyleNotEnoughSymbols(ref system) => write!(
 				f,
 				"Invalid @counter-style rule: 'system: {}' less than two 'symbols'",
@@ -186,10 +166,9 @@ impl<'a> fmt::Display for ContextualParseError<'a> {
 				f,
 				"Invalid @counter-style rule: 'system: additive' without 'additive-symbols'"
 			),
-			ContextualParseError::InvalidCounterStyleExtendsWithSymbols => write!(
-				f,
-				"Invalid @counter-style rule: 'system: extends …' with 'symbols'"
-			),
+			ContextualParseError::InvalidCounterStyleExtendsWithSymbols => {
+				write!(f, "Invalid @counter-style rule: 'system: extends …' with 'symbols'")
+			},
 			ContextualParseError::InvalidCounterStyleExtendsWithAdditiveSymbols => write!(
 				f,
 				"Invalid @counter-style rule: 'system: extends …' with 'additive-symbols'"

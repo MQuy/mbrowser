@@ -34,10 +34,7 @@ pub struct CssUrl {
 }
 
 impl CssUrl {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?.clone();
 		let (name, value, modifiers) = match token {
@@ -46,23 +43,15 @@ impl CssUrl {
 						"url" | "src" => Ok(input.expect_string()?.to_string()),
 						_ => Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
 				}?;
-				let modifiers = parse_repeated(
-					input,
-					&mut |input| CssUrl::parse_url_modifier(context, input),
-					0,
-				)
-				.map_or(vec![], |v| v);
+				let modifiers = parse_repeated(input, &mut |input| CssUrl::parse_url_modifier(context, input), 0)
+					.map_or(vec![], |v| v);
 				Ok((name.to_string(), value, modifiers))
 			})?,
 			Token::UnquotedUrl(ref value) => ("url".to_string(), value.to_string(), vec![]),
-			_ => {
-				return Err(
-					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
-				)
-			},
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))),
 		};
-		let url = BrowserUrl::parse(&value)
-			.map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))?;
+		let url =
+			BrowserUrl::parse(&value).map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))?;
 		Ok(CssUrl {
 			original: std::format!(
 				"{}(\"{}\"{})",
@@ -86,10 +75,7 @@ impl CssUrl {
 		})
 	}
 
-	pub fn parse_string<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_string<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_string()?.to_string();
 		Ok(CssUrl {
 			original: std::format!("\"{}\"", value),

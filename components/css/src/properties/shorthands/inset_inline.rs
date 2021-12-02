@@ -11,10 +11,7 @@ pub struct Longhands {
 	pub inset_inline_end: LengthPercentageOrAuto,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -28,11 +25,7 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::InsetInlineStart(
-				longhands.inset_inline_start,
-			));
-			declarations.push(PropertyDeclaration::InsetInlineEnd(
-				longhands.inset_inline_end,
-			));
+			declarations.push(PropertyDeclaration::InsetInlineStart(longhands.inset_inline_start));
+			declarations.push(PropertyDeclaration::InsetInlineEnd(longhands.inset_inline_end));
 		})
 }

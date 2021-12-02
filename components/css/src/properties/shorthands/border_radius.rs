@@ -12,10 +12,7 @@ pub struct Longhands {
 	pub border_bottom_right_radius: BorderCornerRadius,
 	pub border_bottom_left_radius: BorderCornerRadius,
 }
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 

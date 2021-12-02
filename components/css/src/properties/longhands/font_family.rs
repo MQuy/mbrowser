@@ -2,9 +2,7 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 
 use crate::computed_values::StyleContext;
 use crate::parser::{parse_repeated, ParseError};
-use crate::properties::declaration::{
-	property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration,
-};
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration};
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::CSSWideKeyword;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -83,10 +81,7 @@ pub enum SingleFontFamily {
 }
 
 impl SingleFontFamily {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let family = GenericFamilyName::parse(input)?;
@@ -122,10 +117,7 @@ impl ToCss for SingleFontFamily {
 pub struct FontFamily(Vec<SingleFontFamily>);
 
 impl FontFamily {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let fonts = input.parse_comma_separated(|input| SingleFontFamily::parse(context, input))?;
 		Ok(FontFamily(fonts))
 	}
@@ -145,10 +137,7 @@ pub fn initial_value() -> String {
 	"sans-seri".to_string()
 }
 
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_inherited_property!(
 		declaration,
 		context.parent_style.get_font_families().clone(),

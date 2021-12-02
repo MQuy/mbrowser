@@ -23,10 +23,7 @@ pub struct AnimationPlayState {
 }
 
 impl AnimationPlayState {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let play_states = input.parse_comma_separated(SingleAnimationPlayState::parse)?;
 		Ok(AnimationPlayState { play_states })
 	}

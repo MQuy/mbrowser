@@ -16,10 +16,7 @@ pub struct DropShadow {
 }
 
 impl DropShadow {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let color = input
 			.try_parse(|input| Color::parse(context, input))
 			.map_or(Color::Transparent, |color| color);
@@ -65,10 +62,7 @@ pub enum FilterFunction {
 }
 
 impl FilterFunction {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let length = FilterFunction::parse_argugment(
@@ -124,12 +118,10 @@ impl FilterFunction {
 					FilterFunction::parse_argugment(
 						input,
 						|input| {
-							input
-								.try_parse(|input| Angle::parse(context, input))
-								.or_else(|_err| {
-									Zero::parse(context, input)?;
-									Ok(Angle::Deg(0.0))
-								})
+							input.try_parse(|input| Angle::parse(context, input)).or_else(|_err| {
+								Zero::parse(context, input)?;
+								Ok(Angle::Deg(0.0))
+							})
 						},
 						"hue-rotate",
 						"0deg".into(),
@@ -208,36 +200,16 @@ impl ToCss for FilterFunction {
 		W: std::fmt::Write,
 	{
 		match self {
-			FilterFunction::Blur(value) => {
-				dest.write_fmt(format_args!("blur({})", value.to_css_string()))
-			},
-			FilterFunction::Brightness(value) => {
-				dest.write_fmt(format_args!("brightness({})", value.to_css_string()))
-			},
-			FilterFunction::Contrast(value) => {
-				dest.write_fmt(format_args!("contrast({})", value.to_css_string()))
-			},
-			FilterFunction::DropShadow(value) => {
-				dest.write_fmt(format_args!("drop-shadow({})", value.to_css_string()))
-			},
-			FilterFunction::Grayscale(value) => {
-				dest.write_fmt(format_args!("grayscale({})", value.to_css_string()))
-			},
-			FilterFunction::HueRotate(value) => {
-				dest.write_fmt(format_args!("hue-rotate({})", value.to_css_string()))
-			},
-			FilterFunction::Invert(value) => {
-				dest.write_fmt(format_args!("invert({})", value.to_css_string()))
-			},
-			FilterFunction::Opacity(value) => {
-				dest.write_fmt(format_args!("opacity({})", value.to_css_string()))
-			},
-			FilterFunction::Saturate(value) => {
-				dest.write_fmt(format_args!("saturate({})", value.to_css_string()))
-			},
-			FilterFunction::Sepia(value) => {
-				dest.write_fmt(format_args!("sepia({})", value.to_css_string()))
-			},
+			FilterFunction::Blur(value) => dest.write_fmt(format_args!("blur({})", value.to_css_string())),
+			FilterFunction::Brightness(value) => dest.write_fmt(format_args!("brightness({})", value.to_css_string())),
+			FilterFunction::Contrast(value) => dest.write_fmt(format_args!("contrast({})", value.to_css_string())),
+			FilterFunction::DropShadow(value) => dest.write_fmt(format_args!("drop-shadow({})", value.to_css_string())),
+			FilterFunction::Grayscale(value) => dest.write_fmt(format_args!("grayscale({})", value.to_css_string())),
+			FilterFunction::HueRotate(value) => dest.write_fmt(format_args!("hue-rotate({})", value.to_css_string())),
+			FilterFunction::Invert(value) => dest.write_fmt(format_args!("invert({})", value.to_css_string())),
+			FilterFunction::Opacity(value) => dest.write_fmt(format_args!("opacity({})", value.to_css_string())),
+			FilterFunction::Saturate(value) => dest.write_fmt(format_args!("saturate({})", value.to_css_string())),
+			FilterFunction::Sepia(value) => dest.write_fmt(format_args!("sepia({})", value.to_css_string())),
 		}
 	}
 }
@@ -249,10 +221,7 @@ pub enum FilterFunctionOrUrl {
 }
 
 impl FilterFunctionOrUrl {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let url = CssUrl::parse(context, input)?;
@@ -285,21 +254,14 @@ pub enum Filter {
 }
 
 impl Filter {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(Filter::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let filters = parse_repeated(
-					input,
-					&mut |input| FilterFunctionOrUrl::parse(context, input),
-					1,
-				)?;
+				let filters = parse_repeated(input, &mut |input| FilterFunctionOrUrl::parse(context, input), 1)?;
 				Ok(Filter::List(filters))
 			})
 	}

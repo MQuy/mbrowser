@@ -16,10 +16,7 @@ pub struct TextIndent {
 }
 
 impl TextIndent {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut indent = None;
 		let mut hanging = None;
 		let mut each_line = None;
@@ -64,11 +61,7 @@ impl ToCss for TextIndent {
 	{
 		let indent = Some(self.indent.to_css_string());
 		let hanging = if self.hanging { Some("hanging") } else { None };
-		let each_line = if self.each_line {
-			Some("each-line")
-		} else {
-			None
-		};
+		let each_line = if self.each_line { Some("each-line") } else { None };
 		write_elements(dest, &[indent.as_deref(), hanging, each_line], ' ')
 	}
 }

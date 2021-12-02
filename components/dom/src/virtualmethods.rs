@@ -9,9 +9,7 @@ use crate::htmlbodyelement::HTMLBodyElement;
 use crate::htmlelement::HTMLElement;
 use crate::inheritance::Castable;
 use crate::node::Node;
-use crate::nodetype::{
-	ElementTypeId, HTMLElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId,
-};
+use crate::nodetype::{ElementTypeId, HTMLElementTypeId, NodeTypeId, SVGElementTypeId, SVGGraphicsElementTypeId};
 use crate::svgelement::SVGElement;
 use crate::svgsvgelement::SVGSVGElement;
 
@@ -81,9 +79,7 @@ pub fn vtable_for(node: &Node) -> &dyn VirtualMethods {
 		NodeTypeId::Element(ElementTypeId::SVGElement(SVGElementTypeId::SVGElement)) => {
 			node.downcast::<SVGElement>() as &dyn VirtualMethods
 		},
-		NodeTypeId::Element(ElementTypeId::Element) => {
-			node.downcast::<Element>() as &dyn VirtualMethods
-		},
+		NodeTypeId::Element(ElementTypeId::Element) => node.downcast::<Element>() as &dyn VirtualMethods,
 		NodeTypeId::Element(_) => node.downcast::<HTMLElement>() as &dyn VirtualMethods,
 		_ => node as &dyn VirtualMethods,
 	}

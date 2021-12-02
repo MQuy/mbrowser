@@ -5,9 +5,7 @@ macro_rules! from_non_inherited_property {
 		match $declaration {
 			Some($declaration) => match $declaration {
 				$pattern => $then,
-				PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
-					if *id == $longhand_id =>
-				{
+				PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword }) if *id == $longhand_id => {
 					match keyword {
 						CSSWideKeyword::Initial | CSSWideKeyword::Unset => $initial_value,
 						CSSWideKeyword::Inherit => $inherited_value,
@@ -27,9 +25,7 @@ macro_rules! from_inherited_property {
 		match $declaration {
 			Some($declaration) => match $declaration {
 				$pattern => $then,
-				PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword })
-					if *id == $longhand_id =>
-				{
+				PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { id, keyword }) if *id == $longhand_id => {
 					match keyword {
 						CSSWideKeyword::Initial => $initial_value,
 						CSSWideKeyword::Inherit | CSSWideKeyword::Unset => $inherited_value,

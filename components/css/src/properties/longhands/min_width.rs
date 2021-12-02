@@ -14,10 +14,7 @@ pub fn initial_value() -> Size {
 }
 
 /// https://drafts.csswg.org/css2/#propdef-min-width
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_non_inherited_property!(
 		declaration,
 		context.parent_style.get_min_width().clone(),

@@ -12,10 +12,7 @@ pub struct AnimationTimingFunction {
 }
 
 impl AnimationTimingFunction {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let timing = input.parse_comma_separated(|input| EasingFunction::parse(context, input))?;
 		Ok(AnimationTimingFunction { timing })
 	}

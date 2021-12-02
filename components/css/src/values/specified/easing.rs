@@ -62,10 +62,7 @@ pub enum EasingFunction {
 }
 
 impl EasingFunction {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = EasingKeyword::parse(input)?;
@@ -96,11 +93,7 @@ impl EasingFunction {
 							StepPosition::parse(input)
 						})
 						.map_or(StepPosition::End, |v| v);
-					let lower_limit = if position == StepPosition::JumpNone {
-						1.0
-					} else {
-						0.0
-					};
+					let lower_limit = if position == StepPosition::JumpNone { 1.0 } else { 0.0 };
 					if intervals > lower_limit {
 						Ok(EasingFunction::Steps(intervals, position))
 					} else {

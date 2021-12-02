@@ -3,9 +3,7 @@ use cssparser::{Parser, ToCss};
 use crate::parser::ParseError;
 use crate::properties::declaration::PropertyDeclaration;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::specified::position::{
-	BaselinePosition, ContentDistribution, ContentPosition, OverflowPosition,
-};
+use crate::values::specified::position::{BaselinePosition, ContentDistribution, ContentPosition, OverflowPosition};
 
 /// https://drafts.csswg.org/css-align-3/#propdef-align-content
 #[derive(Clone, Debug)]
@@ -17,10 +15,7 @@ pub enum AlignContent {
 }
 
 impl AlignContent {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("normal")?;

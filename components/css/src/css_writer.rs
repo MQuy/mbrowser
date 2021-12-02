@@ -134,11 +134,7 @@ where
 	}
 }
 
-pub fn write_elements<W>(
-	dest: &mut W,
-	elements: &[Option<&str>],
-	delimiter: char,
-) -> std::fmt::Result
+pub fn write_elements<W>(dest: &mut W, elements: &[Option<&str>], delimiter: char) -> std::fmt::Result
 where
 	W: std::fmt::Write,
 {

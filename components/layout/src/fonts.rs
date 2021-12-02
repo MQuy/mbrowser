@@ -29,8 +29,7 @@ pub fn load_cached_font(family_names: &Vec<String>) -> (&'static str, &'static [
 					_ => FamilyName::Title(family_name.to_string()),
 				};
 				let system_source = SystemSource::new();
-				let handle =
-					system_source.select_best_match(&[font_family], &Properties::default());
+				let handle = system_source.select_best_match(&[font_family], &Properties::default());
 				match handle {
 					Ok(value) => {
 						let bytes = match value {
@@ -40,9 +39,7 @@ pub fn load_cached_font(family_names: &Vec<String>) -> (&'static str, &'static [
 								let _ = reader.read_to_end(&mut buf);
 								buf
 							},
-							font_kit::handle::Handle::Memory { bytes, .. } => {
-								bytes.as_ref().clone()
-							},
+							font_kit::handle::Handle::Memory { bytes, .. } => bytes.as_ref().clone(),
 						};
 						fonts.insert(family_name.to_string(), Arc::new(bytes));
 						matched_font_name = Some(family_name);

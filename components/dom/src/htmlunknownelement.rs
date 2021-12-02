@@ -23,9 +23,7 @@ impl HTMLUnknownElement {
 	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
 		Self {
 			htmlelement: HTMLElement::new_inherited(
-				NodeTypeId::Element(ElementTypeId::HTMLElement(
-					HTMLElementTypeId::HTMLUnknownElement,
-				)),
+				NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLUnknownElement)),
 				local_name,
 				prefix,
 				document,

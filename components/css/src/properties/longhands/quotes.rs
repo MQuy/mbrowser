@@ -14,10 +14,7 @@ pub enum Quotes {
 }
 
 impl Quotes {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Quotes, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Quotes, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -52,10 +49,7 @@ impl ToCss for Quotes {
 			Quotes::Auto => dest.write_str("auto"),
 			Quotes::None => dest.write_str("none"),
 			Quotes::Content(quotes) => {
-				let values: Vec<String> = quotes
-					.iter()
-					.map(|v| std::format!("\"{}\" \"{}\"", v.0, v.1))
-					.collect();
+				let values: Vec<String> = quotes.iter().map(|v| std::format!("\"{}\" \"{}\"", v.0, v.1)).collect();
 				dest.write_str(&values.join(" "))
 			},
 		}

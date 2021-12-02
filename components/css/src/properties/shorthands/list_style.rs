@@ -14,10 +14,7 @@ pub struct Longhands {
 	pub list_style_type: ListStyleType,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -31,14 +28,8 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::ListStylePosition(
-				longhands.list_style_position,
-			));
-			declarations.push(PropertyDeclaration::ListStyleImage(
-				longhands.list_style_image,
-			));
-			declarations.push(PropertyDeclaration::ListStyleType(
-				longhands.list_style_type,
-			));
+			declarations.push(PropertyDeclaration::ListStylePosition(longhands.list_style_position));
+			declarations.push(PropertyDeclaration::ListStyleImage(longhands.list_style_image));
+			declarations.push(PropertyDeclaration::ListStyleType(longhands.list_style_type));
 		})
 }

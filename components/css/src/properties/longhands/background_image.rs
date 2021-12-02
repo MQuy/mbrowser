@@ -12,10 +12,7 @@ pub enum BgImage {
 }
 
 impl BgImage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
@@ -47,10 +44,7 @@ pub struct BackgroundImage {
 }
 
 impl BackgroundImage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let images = input.parse_comma_separated(|input| BgImage::parse(context, input))?;
 		Ok(BackgroundImage { images })
 	}

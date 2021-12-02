@@ -41,11 +41,8 @@ pub fn position_data() -> Vec<(String, String)> {
 		let output = std::format!("{} {}", horizontal_input, vertical_output);
 		data.push((input, output));
 	}
-	for (horizontal, vertical) in permutate(
-		["left 10px", "right 5%"].iter(),
-		["top 0.5%", "bottom 5.5px"].iter(),
-	)
-	.iter()
+	for (horizontal, vertical) in
+		permutate(["left 10px", "right 5%"].iter(), ["top 0.5%", "bottom 5.5px"].iter()).iter()
 	{
 		let value = std::format!("{} {}", horizontal, vertical);
 		data.push((value.to_string(), value.to_string()));
@@ -55,11 +52,7 @@ pub fn position_data() -> Vec<(String, String)> {
 
 pub fn transform_origin_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for horizontal in [
-		"left", "center", "right", "top", "bottom", "10px", "0.25px", "50%",
-	]
-	.iter()
-	{
+	for horizontal in ["left", "center", "right", "top", "bottom", "10px", "0.25px", "50%"].iter() {
 		let input = std::format!("{}", horizontal);
 		let output = std::format!("{} {} {}", horizontal, "center", "0px");
 		data.push((input, output));
@@ -84,20 +77,11 @@ pub fn transform_origin_data() -> Vec<(String, String)> {
 				std::format!(" {}", z)
 			}
 		);
-		let output = std::format!(
-			"{} {} {}",
-			horizontal,
-			vertical,
-			if z.len() == 0 { "0px" } else { z }
-		);
+		let output = std::format!("{} {} {}", horizontal, vertical, if z.len() == 0 { "0px" } else { z });
 		data.push((input, output));
 	}
 	for ((horizontal, vertical), z) in permutate(
-		permutate(
-			["center", "left", "right"].iter(),
-			["center", "top", "bottom"].iter(),
-		)
-		.iter(),
+		permutate(["center", "left", "right"].iter(), ["center", "top", "bottom"].iter()).iter(),
 		["0.5px", ""].iter(),
 	)
 	.iter()
@@ -122,12 +106,7 @@ pub fn transform_origin_data() -> Vec<(String, String)> {
 				std::format!(" {}", z)
 			}
 		);
-		let output = std::format!(
-			"{} {} {}",
-			horizontal,
-			vertical,
-			if z.len() == 0 { "0px" } else { z }
-		);
+		let output = std::format!("{} {} {}", horizontal, vertical, if z.len() == 0 { "0px" } else { z });
 		data.push((input, output.clone()));
 		data.push((reversed_input, output));
 	}

@@ -5,8 +5,8 @@ use crate::properties::declaration::PropertyDeclaration;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
-use crate::values::specified::length::{Length, NonNegativeLength};
 use crate::values::specified::color::Color;
+use crate::values::specified::length::{Length, NonNegativeLength};
 
 #[derive(Clone, Debug)]
 pub struct Shadow {
@@ -16,10 +16,7 @@ pub struct Shadow {
 }
 
 impl Shadow {
-	pub fn parse<'i, 't, 'a>(
-		context: &'a ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't, 'a>(context: &'a ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut color = None;
 		let mut inset = None;
 		let mut length = None;
@@ -29,9 +26,9 @@ impl Shadow {
 			&mut [
 				&mut |input| {
 					parse_item_if_missing(input, &mut inset, &mut |_, input| {
-						input.expect_ident_matching("inset").map_err(|_err| {
-							input.new_custom_error(StyleParseErrorKind::UnspecifiedError)
-						})
+						input
+							.expect_ident_matching("inset")
+							.map_err(|_err| input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 					})
 				},
 				&mut |input| {
@@ -47,11 +44,7 @@ impl Shadow {
 						Ok((horizontal, vertical, blur, spread))
 					})
 				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut color, &mut |_, input| {
-						Color::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(context, input)),
 			],
 		);
 
@@ -80,11 +73,7 @@ impl ToCss for Shadow {
 			self.length.2.to_css_string(),
 			self.length.3.to_css_string(),
 		));
-		let inset = if self.inset {
-			Some("inset".to_string())
-		} else {
-			None
-		};
+		let inset = if self.inset { Some("inset".to_string()) } else { None };
 		dest.write_str(&convert_options_to_string(vec![color, length, inset], " "))
 	}
 }
@@ -97,10 +86,7 @@ pub enum BoxShadow {
 }
 
 impl BoxShadow {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;

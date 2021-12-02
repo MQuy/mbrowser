@@ -1,14 +1,6 @@
 pub fn counter_with_integer_and_none_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
-	for value in [
-		"none",
-		"something",
-		"bla 0",
-		"lalala -10 utopia",
-		"ping pong ping pong",
-	]
-	.iter()
-	{
+	for value in ["none", "something", "bla 0", "lalala -10 utopia", "ping pong ping pong"].iter() {
 		data.push((value.to_string(), value.to_string()))
 	}
 	data

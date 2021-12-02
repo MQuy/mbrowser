@@ -80,11 +80,7 @@ impl ToCss for TextDecorationLine {
 		let none = convert_to(self.bits, TextDecorationLine::NONE.bits, "none");
 		let underline = convert_to(self.bits, TextDecorationLine::UNDERLINE.bits, "underline");
 		let overline = convert_to(self.bits, TextDecorationLine::OVERLINE.bits, "overline");
-		let line_through = convert_to(
-			self.bits,
-			TextDecorationLine::LINE_THROUGH.bits,
-			"line-through",
-		);
+		let line_through = convert_to(self.bits, TextDecorationLine::LINE_THROUGH.bits, "line-through");
 		let blink = convert_to(self.bits, TextDecorationLine::BLINK.bits, "blink");
 		write_elements(dest, &[none, underline, overline, line_through, blink], ' ')
 	}

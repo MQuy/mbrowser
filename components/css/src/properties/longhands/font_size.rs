@@ -3,9 +3,7 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 
 use crate::computed_values::StyleContext;
 use crate::parser::ParseError;
-use crate::properties::declaration::{
-	property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration,
-};
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration};
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::CSSWideKeyword;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
@@ -74,10 +72,7 @@ pub enum FontSize {
 }
 
 impl FontSize {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<FontSize, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<FontSize, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let size = AbsoluteSize::parse(input)?;
@@ -124,10 +119,7 @@ pub fn initial_value() -> FontSize {
 	FontSize::AbsoluteSize(AbsoluteSize::Medium)
 }
 
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_inherited_property!(
 		declaration,
 		context.parent_style.get_font_size(),

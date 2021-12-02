@@ -54,9 +54,7 @@ pub enum Orientation {
 }
 
 #[inline]
-fn unexpected_media_feature_value<'i, 't, T>(
-	input: &mut Parser<'i, 't>,
-) -> Result<T, ParseError<'i>> {
+fn unexpected_media_feature_value<'i, 't, T>(input: &mut Parser<'i, 't>) -> Result<T, ParseError<'i>> {
 	Err(input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureValue))
 }
 
@@ -258,11 +256,7 @@ pub static MEDIA_FEATURES: [MediaFeatureDescription; 24] = [
 	),
 	feature!("device-width", AllowsRanges::Yes, Evaluator::Length,),
 	feature!("device-height", AllowsRanges::Yes, Evaluator::Length,),
-	feature!(
-		"device-aspect-ratio",
-		AllowsRanges::Yes,
-		Evaluator::NumberRatio,
-	),
+	feature!("device-aspect-ratio", AllowsRanges::Yes, Evaluator::NumberRatio,),
 	feature!("resolution", AllowsRanges::Yes, Evaluator::Resolution,),
 	feature!(
 		"display-mode",
@@ -270,11 +264,7 @@ pub static MEDIA_FEATURES: [MediaFeatureDescription; 24] = [
 		Evaluator::Enumerated(Enumerated::DisplayMode),
 	),
 	feature!("grid", AllowsRanges::No, Evaluator::BoolInteger,),
-	feature!(
-		"scan",
-		AllowsRanges::No,
-		Evaluator::Enumerated(Enumerated::Scan),
-	),
+	feature!("scan", AllowsRanges::No, Evaluator::Enumerated(Enumerated::Scan),),
 	feature!("color", AllowsRanges::Yes, Evaluator::Integer,),
 	feature!("color-index", AllowsRanges::Yes, Evaluator::Integer,),
 	feature!("monochrome", AllowsRanges::Yes, Evaluator::Integer,),
@@ -308,24 +298,12 @@ pub static MEDIA_FEATURES: [MediaFeatureDescription; 24] = [
 		AllowsRanges::No,
 		Evaluator::Enumerated(Enumerated::PrefersColorScheme),
 	),
-	feature!(
-		"pointer",
-		AllowsRanges::No,
-		Evaluator::Enumerated(Enumerated::Pointer),
-	),
+	feature!("pointer", AllowsRanges::No, Evaluator::Enumerated(Enumerated::Pointer),),
 	feature!(
 		"any-pointer",
 		AllowsRanges::No,
 		Evaluator::Enumerated(Enumerated::Pointer),
 	),
-	feature!(
-		"hover",
-		AllowsRanges::No,
-		Evaluator::Enumerated(Enumerated::Hover),
-	),
-	feature!(
-		"any-hover",
-		AllowsRanges::No,
-		Evaluator::Enumerated(Enumerated::Hover),
-	),
+	feature!("hover", AllowsRanges::No, Evaluator::Enumerated(Enumerated::Hover),),
+	feature!("any-hover", AllowsRanges::No, Evaluator::Enumerated(Enumerated::Hover),),
 ];

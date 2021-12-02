@@ -5,8 +5,8 @@ use cssparser::{CowRcStr, Parser, ParserState, Token};
 
 use super::media_condition::MediaCondition;
 use super::media_features::{
-	DisplayMode, Enumerated, ForcedColors, Hover, MediaFeatureDescription, OverflowBlock,
-	OverflowInline, Pointer, PrefersColorScheme, PrefersContrast, PrefersReducedMotion, Scan,
+	DisplayMode, Enumerated, ForcedColors, Hover, MediaFeatureDescription, OverflowBlock, OverflowInline, Pointer,
+	PrefersColorScheme, PrefersContrast, PrefersReducedMotion, Scan,
 };
 use crate::css_writer::{CssWriter, ToCss};
 use crate::media_queries::media_features::{Evaluator, Orientation, MEDIA_FEATURES};
@@ -118,26 +118,21 @@ impl MediaFeatureExpression {
 	) -> Result<MediaCondition, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				Ok(MediaCondition::Feature(
-					MediaFeatureExpression::parse_plain(context, input)?,
-				))
+				Ok(MediaCondition::Feature(MediaFeatureExpression::parse_plain(
+					context, input,
+				)?))
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input
 					.try_parse(|input| MediaFeatureExpression::parse_range(context, input))
 					.or_else(|_err: ParseError<'i>| {
-						Ok(MediaCondition::Feature(
-							MediaFeatureExpression::parse_boolean(input)?,
-						))
+						Ok(MediaCondition::Feature(MediaFeatureExpression::parse_boolean(input)?))
 					})
 			})
 	}
 
 	/// https://drafts.csswg.org/mediaqueries-5/#ref-for-typedef-mf-plain
-	fn parse_plain<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse_plain<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let (feature_index, feature, range) = MediaFeatureExpression::parse_feature_name(input)?;
 
 		input.expect_colon()?;
@@ -175,8 +170,7 @@ impl MediaFeatureExpression {
 	) -> Result<MediaCondition, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let (feature_index, feature, range) =
-					MediaFeatureExpression::parse_feature_name(input)?;
+				let (feature_index, feature, range) = MediaFeatureExpression::parse_feature_name(input)?;
 				assert!(range.is_none());
 				let range_operator = MediaFeatureExpression::parse_comparison(input, range)?;
 				let value = MediaExpressionValue::parse(context, input, feature)?;
@@ -190,9 +184,9 @@ impl MediaFeatureExpression {
 				let featurable = MediaFeatureExpression::peek_into_feature_name(input);
 
 				if featurable.is_none() {
-					return Err(input.new_custom_error(
-						StyleParseErrorKind::MediaQueryExpectedFeatureName(CowRcStr::from("")),
-					));
+					return Err(
+						input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureName(CowRcStr::from("")))
+					);
 				}
 				let (feature_range, next_state) = featurable.unwrap();
 				let left_value = MediaExpressionValue::parse(context, input, feature_range.1)?;
@@ -200,8 +194,7 @@ impl MediaFeatureExpression {
 				// -> value = 600px, op = <, name = height
 				// we have to reverse op to keep the expression correct
 				// -> value = 600px, op = >, name = height
-				let left_operator =
-					MediaFeatureExpression::parse_comparison(input, feature_range.2)?;
+				let left_operator = MediaFeatureExpression::parse_comparison(input, feature_range.2)?;
 				let left_media_condition = MediaCondition::Feature(MediaFeatureExpression {
 					value: Some(left_value),
 					feature_index: feature_range.0,
@@ -211,16 +204,13 @@ impl MediaFeatureExpression {
 
 				input
 					.try_parse(|input| {
-						let right_operator =
-							MediaFeatureExpression::parse_comparison(input, feature_range.2)?;
-						let right_value =
-							MediaExpressionValue::parse(context, input, feature_range.1)?;
-						let right_media_condition =
-							MediaCondition::Feature(MediaFeatureExpression {
-								value: Some(right_value),
-								feature_index: feature_range.0,
-								range_or_operator: Some(right_operator),
-							});
+						let right_operator = MediaFeatureExpression::parse_comparison(input, feature_range.2)?;
+						let right_value = MediaExpressionValue::parse(context, input, feature_range.1)?;
+						let right_media_condition = MediaCondition::Feature(MediaFeatureExpression {
+							value: Some(right_value),
+							feature_index: feature_range.0,
+							range_or_operator: Some(right_operator),
+						});
 						Ok(MediaCondition::Operation(
 							vec![left_media_condition.clone(), right_media_condition],
 							super::media_condition::Operator::And,
@@ -242,11 +232,7 @@ impl MediaFeatureExpression {
 				} else {
 					RangeOrOperator::Operator(Operator::LessThanEqual)
 				}),
-				_ => {
-					return Err(
-						input.new_custom_error(StyleParseErrorKind::MediaQueryUnexpectedOperator)
-					)
-				},
+				_ => return Err(input.new_custom_error(StyleParseErrorKind::MediaQueryUnexpectedOperator)),
 			},
 			None => Ok(RangeOrOperator::Operator(operator)),
 		}
@@ -268,18 +254,13 @@ impl MediaFeatureExpression {
 			.iter()
 			.enumerate()
 			.find(|(_index, feature)| feature.name == feature_name)
-			.ok_or_else(|| {
-				input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureName(ident))
-			})?;
+			.ok_or_else(|| input.new_custom_error(StyleParseErrorKind::MediaQueryExpectedFeatureName(ident)))?;
 		Ok((feature_index, feature, range))
 	}
 
 	fn peek_into_feature_name<'i, 't>(
 		input: &mut Parser<'i, 't>,
-	) -> Option<(
-		(usize, &'static MediaFeatureDescription, Option<Range>),
-		ParserState,
-	)> {
+	) -> Option<((usize, &'static MediaFeatureDescription, Option<Range>), ParserState)> {
 		fn peekable<'i, 't>(
 			input: &mut Parser<'i, 't>,
 		) -> Option<(usize, &'static MediaFeatureDescription, Option<Range>)> {
@@ -390,9 +371,9 @@ impl MediaExpressionValue {
 				let resolution = Resolution::parse(context, input)?;
 				MediaExpressionValue::Resolution(resolution)
 			},
-			Evaluator::Enumerated(enumerated) => MediaExpressionValue::Enumerated(
-				MediaExpressionValueEnumerated::parse(input, enumerated)?,
-			),
+			Evaluator::Enumerated(enumerated) => {
+				MediaExpressionValue::Enumerated(MediaExpressionValueEnumerated::parse(input, enumerated)?)
+			},
 			Evaluator::Ident => {
 				let ident = input.expect_ident()?;
 				MediaExpressionValue::Ident(Ident::from(ident.as_ref()))
@@ -407,22 +388,16 @@ impl ToCss for MediaExpressionValue {
 		W: Write,
 	{
 		match self {
-			MediaExpressionValue::Length(length) => {
-				dest.write_str(&cssparser::ToCss::to_css_string(length))
-			},
+			MediaExpressionValue::Length(length) => dest.write_str(&cssparser::ToCss::to_css_string(length)),
 			MediaExpressionValue::Integer(value) => dest.write_str(&std::format!("{}", value)),
 			MediaExpressionValue::BoolInteger(value) => dest.write_str(&std::format!("{}", value)),
 			MediaExpressionValue::Float(value) => dest.write_str(&std::format!("{}", value)),
-			MediaExpressionValue::NumberRatio(ratio) => {
-				dest.write_str(&cssparser::ToCss::to_css_string(ratio))
-			},
+			MediaExpressionValue::NumberRatio(ratio) => dest.write_str(&cssparser::ToCss::to_css_string(ratio)),
 			MediaExpressionValue::Resolution(resolution) => {
 				dest.write_str(&cssparser::ToCss::to_css_string(resolution))
 			},
 			MediaExpressionValue::Enumerated(enumerated) => enumerated.to_css(dest),
-			MediaExpressionValue::Ident(ident) => {
-				dest.write_str(&cssparser::ToCss::to_css_string(ident))
-			},
+			MediaExpressionValue::Ident(ident) => dest.write_str(&cssparser::ToCss::to_css_string(ident)),
 		}
 	}
 }
@@ -445,10 +420,7 @@ pub enum MediaExpressionValueEnumerated {
 }
 
 impl MediaExpressionValueEnumerated {
-	fn parse<'i, 't>(
-		input: &mut Parser<'i, 't>,
-		enumerated: &Enumerated,
-	) -> Result<Self, ParseError<'i>> {
+	fn parse<'i, 't>(input: &mut Parser<'i, 't>, enumerated: &Enumerated) -> Result<Self, ParseError<'i>> {
 		Ok(match enumerated {
 			Enumerated::Orientation => {
 				let orientation = Orientation::parse(input)?;

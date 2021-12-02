@@ -64,12 +64,7 @@ where
 	let mut input = ParserInput::new_with_line_number_offset(text, 0);
 	let mut input = Parser::new(&mut input);
 
-	let context = ParserContext::new(
-		Origin::UserAgent,
-		None,
-		QuirksMode::NoQuirks,
-		Some(&error_reporter),
-	);
+	let context = ParserContext::new(Origin::UserAgent, None, QuirksMode::NoQuirks, Some(&error_reporter));
 	let ret = func(&context, &mut input)?;
 	Ok(ret.to_css_string())
 }

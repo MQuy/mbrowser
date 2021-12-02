@@ -24,10 +24,7 @@ pub struct Longhands {
 	pub animation_play_state: AnimationPlayState,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -42,26 +39,16 @@ pub fn parse_into<'i, 't>(
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
 			declarations.push(PropertyDeclaration::AnimationName(longhands.animation_name));
-			declarations.push(PropertyDeclaration::AnimationDuration(
-				longhands.animation_duration,
-			));
+			declarations.push(PropertyDeclaration::AnimationDuration(longhands.animation_duration));
 			declarations.push(PropertyDeclaration::AnimationTimingFunction(
 				longhands.animation_timing_function,
 			));
-			declarations.push(PropertyDeclaration::AnimationDelay(
-				longhands.animation_delay,
-			));
+			declarations.push(PropertyDeclaration::AnimationDelay(longhands.animation_delay));
 			declarations.push(PropertyDeclaration::AnimationIterationCount(
 				longhands.animation_iteration_count,
 			));
-			declarations.push(PropertyDeclaration::AnimationDirection(
-				longhands.animation_direction,
-			));
-			declarations.push(PropertyDeclaration::AnimationFillMode(
-				longhands.animation_fill_mode,
-			));
-			declarations.push(PropertyDeclaration::AnimationPlayState(
-				longhands.animation_play_state,
-			));
+			declarations.push(PropertyDeclaration::AnimationDirection(longhands.animation_direction));
+			declarations.push(PropertyDeclaration::AnimationFillMode(longhands.animation_fill_mode));
+			declarations.push(PropertyDeclaration::AnimationPlayState(longhands.animation_play_state));
 		})
 }

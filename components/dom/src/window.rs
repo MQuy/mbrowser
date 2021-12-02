@@ -28,10 +28,7 @@ impl Window {
 			error_reporter,
 			document: Rc::downgrade(&document),
 			window_size: WindowSize::new(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_RATIO),
-			viewport: Rect::new(
-				Point2D::new(0.0, 0.0),
-				Size2D::new(DEFAULT_WIDTH, DEFAULT_HEIGHT),
-			),
+			viewport: Rect::new(Point2D::new(0.0, 0.0), Size2D::new(DEFAULT_WIDTH, DEFAULT_HEIGHT)),
 		}
 	}
 

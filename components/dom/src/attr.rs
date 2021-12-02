@@ -109,15 +109,14 @@ pub enum AttrValue {
 
 impl AttrValue {
 	pub fn from_serialized_tokenlist(tokens: String) -> AttrValue {
-		let atoms =
-			split_html_space_chars(&tokens)
-				.map(String::from)
-				.fold(vec![], |mut acc, atom| {
-					if !acc.contains(&atom) {
-						acc.push(atom)
-					}
-					acc
-				});
+		let atoms = split_html_space_chars(&tokens)
+			.map(String::from)
+			.fold(vec![], |mut acc, atom| {
+				if !acc.contains(&atom) {
+					acc.push(atom)
+				}
+				acc
+			});
 		AttrValue::TokenList(tokens, atoms)
 	}
 
@@ -134,11 +133,7 @@ impl AttrValue {
 	// https://html.spec.whatwg.org/multipage/#reflecting-content-attributes-in-idl-attributes:idl-unsigned-long
 	pub fn from_u32(string: String, default: u32) -> AttrValue {
 		let result = parse_unsigned_integer(string.chars()).unwrap_or(default);
-		let result = if result > UNSIGNED_LONG_MAX {
-			default
-		} else {
-			result
-		};
+		let result = if result > UNSIGNED_LONG_MAX { default } else { result };
 		AttrValue::UInt(string, result)
 	}
 
@@ -250,11 +245,7 @@ pub fn parse_legacy_color(mut input: &str) -> Result<RGBA, ()> {
 
 	// Step 12.
 	let mut length = input.len() / 3;
-	let (mut red, mut green, mut blue) = (
-		&input[..length],
-		&input[length..length * 2],
-		&input[length * 2..],
-	);
+	let (mut red, mut green, mut blue) = (&input[..length], &input[length..length * 2], &input[length * 2..]);
 
 	// Step 13.
 	if length > 8 {

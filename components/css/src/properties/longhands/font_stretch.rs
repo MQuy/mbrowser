@@ -39,10 +39,7 @@ pub enum FontStretch {
 }
 
 impl FontStretch {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<FontStretch, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<FontStretch, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = FontStretchKeyword::parse(input)?;

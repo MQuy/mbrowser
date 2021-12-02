@@ -62,27 +62,18 @@ impl NamespaceValue {
 		match input.next()? {
 			Token::UnquotedUrl(ref value) => NamespaceValue::parse_string_to_url(value, &location),
 			Token::QuotedString(ref value) => Ok(NamespaceValue::String(value.to_string())),
-			Token::Function(ref name) if name.eq_ignore_ascii_case("url") => input
-				.parse_nested_block(|input| {
-					let location = input.current_source_location();
-					let url = input.expect_string()?;
-					NamespaceValue::parse_string_to_url(url, &location)
-				}),
-			t => {
-				return Err(location.new_custom_error(
-					StyleParseErrorKind::UnexpectedTokenWithinNamespace(t.clone()),
-				))
-			},
+			Token::Function(ref name) if name.eq_ignore_ascii_case("url") => input.parse_nested_block(|input| {
+				let location = input.current_source_location();
+				let url = input.expect_string()?;
+				NamespaceValue::parse_string_to_url(url, &location)
+			}),
+			t => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedTokenWithinNamespace(t.clone()))),
 		}
 	}
 
-	fn parse_string_to_url<'i>(
-		value: &CowRcStr<'i>,
-		location: &SourceLocation,
-	) -> Result<Self, ParseError<'i>> {
-		let browser_url = BrowserUrl::parse(value).map_err(|_err| {
-			location.new_custom_error(StyleParseErrorKind::UnexpectedValue(value.clone()))
-		})?;
+	fn parse_string_to_url<'i>(value: &CowRcStr<'i>, location: &SourceLocation) -> Result<Self, ParseError<'i>> {
+		let browser_url = BrowserUrl::parse(value)
+			.map_err(|_err| location.new_custom_error(StyleParseErrorKind::UnexpectedValue(value.clone())))?;
 		Ok(NamespaceValue::Url(browser_url))
 	}
 }

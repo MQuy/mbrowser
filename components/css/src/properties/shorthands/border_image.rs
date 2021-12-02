@@ -18,10 +18,7 @@ pub struct Longhands {
 	pub border_image_width: BorderImageWidth,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -35,20 +32,10 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::BorderImageOutset(
-				longhands.border_image_outset,
-			));
-			declarations.push(PropertyDeclaration::BorderImageRepeat(
-				longhands.border_image_repeat,
-			));
-			declarations.push(PropertyDeclaration::BorderImageSlice(
-				longhands.border_image_slice,
-			));
-			declarations.push(PropertyDeclaration::BorderImageSource(
-				longhands.border_image_source,
-			));
-			declarations.push(PropertyDeclaration::BorderImageWidth(
-				longhands.border_image_width,
-			));
+			declarations.push(PropertyDeclaration::BorderImageOutset(longhands.border_image_outset));
+			declarations.push(PropertyDeclaration::BorderImageRepeat(longhands.border_image_repeat));
+			declarations.push(PropertyDeclaration::BorderImageSlice(longhands.border_image_slice));
+			declarations.push(PropertyDeclaration::BorderImageSource(longhands.border_image_source));
+			declarations.push(PropertyDeclaration::BorderImageWidth(longhands.border_image_width));
 		})
 }

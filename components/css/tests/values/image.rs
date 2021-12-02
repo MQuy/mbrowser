@@ -128,22 +128,16 @@ pub fn cross_fade_data() -> Vec<(String, String)> {
 	fade_data.push(("currentColor".to_string(), "currentcolor".to_string()));
 	fade_data.push(("element(#foo)".to_string(), "element(#foo)".to_string()));
 	let mut data = Vec::with_capacity(1);
-	for (index, (percentage, (fade_input, fade_output))) in
-		permutate(["0%", "5.5%", "100%"].iter(), fade_data.iter())
-			.iter()
-			.enumerate()
+	for (index, (percentage, (fade_input, fade_output))) in permutate(["0%", "5.5%", "100%"].iter(), fade_data.iter())
+		.iter()
+		.enumerate()
 	{
 		let input = std::format!("cross-fade({} {})", percentage, fade_input);
 		let output = std::format!("cross-fade({} {})", percentage, fade_output);
 		if index == 0 {
 			data.push((
 				std::format!("cross-fade({} {}, {})", percentage, fade_input, fade_input),
-				std::format!(
-					"cross-fade({} {}, {})",
-					percentage,
-					fade_output,
-					fade_output
-				),
+				std::format!("cross-fade({} {}, {})", percentage, fade_output, fade_output),
 			))
 		}
 		data.push((input, output))
@@ -161,9 +155,7 @@ pub fn element_data() -> Vec<(String, String)> {
 
 fn side_or_corner() -> Vec<String> {
 	let mut data = Vec::with_capacity(1);
-	for (side, corner) in
-		permutate(["left", "right", ""].iter(), ["top", "bottom", ""].iter()).iter()
-	{
+	for (side, corner) in permutate(["left", "right", ""].iter(), ["top", "bottom", ""].iter()).iter() {
 		if side.len() == 0 && corner.len() == 0 {
 			continue;
 		}
@@ -208,23 +200,12 @@ pub fn linear_gradient_data() -> Vec<(String, String)> {
 	)
 	.iter()
 	{
-		let input = std::format!(
-			"{}({})",
-			name,
-			join_strings(vec![direction, color_input], ", ")
-		);
+		let input = std::format!("{}({})", name, join_strings(vec![direction, color_input], ", "));
 		let output = std::format!(
 			"{}({})",
 			name,
 			join_strings(
-				vec![
-					if direction.len() == 0 {
-						"to bottom"
-					} else {
-						direction
-					},
-					color_output
-				],
+				vec![if direction.len() == 0 { "to bottom" } else { direction }, color_output],
 				", "
 			)
 		);
@@ -267,11 +248,7 @@ pub fn radial_gradient_data() -> Vec<(String, String)> {
 	)
 	.iter()
 	{
-		let input = std::format!(
-			"{}({})",
-			name,
-			join_strings(vec![radial_input, color_input], ", ")
-		);
+		let input = std::format!("{}({})", name, join_strings(vec![radial_input, color_input], ", "));
 		let output = std::format!(
 			"{}({})",
 			name,
@@ -349,11 +326,7 @@ pub fn cornic_gradient_data() -> Vec<(String, String)> {
 	)
 	.iter()
 	{
-		let input = std::format!(
-			"{}({})",
-			name,
-			join_strings(vec![cornic_input, color_input], ", ")
-		);
+		let input = std::format!("{}({})", name, join_strings(vec![cornic_input, color_input], ", "));
 		let output = std::format!(
 			"{}({})",
 			name,

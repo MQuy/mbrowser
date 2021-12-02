@@ -1,8 +1,6 @@
 use std::fmt::Write;
 
-use cssparser::{
-	Parser, SourceLocation, _cssparser_internal_to_lowercase, match_ignore_ascii_case,
-};
+use cssparser::{Parser, SourceLocation, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use super::css_rule::CssRule;
 use crate::css_writer::{CssWriter, ToCss};
@@ -130,9 +128,9 @@ impl SupportsCondition {
 				input.try_parse(|input| {
 					input.expect_parenthesis_block()?;
 					input.parse_nested_block(|input| {
-						Ok(SupportsCondition::Parenthesized(Box::new(
-							SupportsCondition::parse(input)?,
-						)))
+						Ok(SupportsCondition::Parenthesized(Box::new(SupportsCondition::parse(
+							input,
+						)?)))
 					})
 				})
 			})

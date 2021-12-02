@@ -14,10 +14,7 @@ pub fn initial_value() -> Color {
 }
 
 /// https://drafts.csswg.org/css-color/#color-syntax
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_inherited_property!(
 		declaration,
 		context.parent_style.get_color().clone(),

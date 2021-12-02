@@ -13,10 +13,7 @@ pub struct Longhands {
 	pub border_left_style: LineStyle,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 
@@ -30,17 +27,9 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::BorderTopStyle(
-				longhands.border_top_style,
-			));
-			declarations.push(PropertyDeclaration::BorderRightStyle(
-				longhands.border_right_style,
-			));
-			declarations.push(PropertyDeclaration::BorderBottomStyle(
-				longhands.border_bottom_style,
-			));
-			declarations.push(PropertyDeclaration::BorderLeftStyle(
-				longhands.border_left_style,
-			));
+			declarations.push(PropertyDeclaration::BorderTopStyle(longhands.border_top_style));
+			declarations.push(PropertyDeclaration::BorderRightStyle(longhands.border_right_style));
+			declarations.push(PropertyDeclaration::BorderBottomStyle(longhands.border_bottom_style));
+			declarations.push(PropertyDeclaration::BorderLeftStyle(longhands.border_left_style));
 		})
 }

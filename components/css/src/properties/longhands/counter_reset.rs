@@ -10,10 +10,7 @@ use crate::values::specified::number::Integer;
 pub type CounterReset = GenericCounterOrNone<GenericReversedCounter<Integer>>;
 
 impl CounterReset {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		GenericCounterOrNone::parse_with(input, |input| {
 			GenericReversedCounter::parse_with(input, |input| Integer::parse(context, input))
 		})

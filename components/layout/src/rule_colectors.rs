@@ -10,8 +10,7 @@ use selectors::matching::{matches_selector, ElementSelectorFlags};
 use crate::applicable_declaration_block::ApplicableDeclarationBlock;
 
 pub fn collect_rules(element: NodeRef, stylist: &Stylist) -> Vec<ApplicableDeclarationBlock> {
-	let mut matching_context =
-		MatchingContext::new(MatchingMode::Normal, None, None, stylist.quirks_mode());
+	let mut matching_context = MatchingContext::new(MatchingMode::Normal, None, None, stylist.quirks_mode());
 
 	// Apply the selector flags. We should be in sequential mode
 	// already, so we can directly apply the parent flags.
@@ -62,14 +61,7 @@ fn collect_from_origin<F>(
 	F: FnMut(&NodeRef, ElementSelectorFlags),
 {
 	for rule in rules {
-		if matches_selector(
-			&rule.selector,
-			0,
-			Some(&rule.hashes),
-			element,
-			context,
-			flags_setter,
-		) {
+		if matches_selector(&rule.selector, 0, Some(&rule.hashes), element, context, flags_setter) {
 			applicable_declarations.push(ApplicableDeclarationBlock::from_rule(rule, origin));
 		}
 	}

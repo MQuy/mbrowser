@@ -14,10 +14,7 @@ pub enum LineWidth {
 }
 
 impl LineWidth {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -48,9 +45,7 @@ impl ToCss for LineWidth {
 			LineWidth::Thin => dest.write_str("thin"),
 			LineWidth::Medium => dest.write_str("medium"),
 			LineWidth::Thick => dest.write_str("thick"),
-			LineWidth::Length(length) => {
-				dest.write_fmt(format_args!("length({})", length.to_css_string()))
-			},
+			LineWidth::Length(length) => dest.write_fmt(format_args!("length({})", length.to_css_string())),
 		}
 	}
 }

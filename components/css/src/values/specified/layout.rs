@@ -63,10 +63,7 @@ pub enum Resolution {
 
 impl Resolution {
 	/// Parse a resolution.
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		match token {
 			cssparser::Token::Dimension { value, unit, .. } if value >= 0.0 => {

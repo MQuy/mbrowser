@@ -2,10 +2,7 @@ use core::fmt;
 use std::fmt::Write;
 use std::io::Cursor;
 
-use cssparser::{
-	CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase,
-	match_ignore_ascii_case,
-};
+use cssparser::{CowRcStr, Parser, SourceLocation, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 use euclid::Length;
 use html5ever::LocalName;
 use murmur3::murmur3_32;
@@ -133,10 +130,7 @@ impl CustomIdent {
 		CustomIdent::from_ident(location, ident, &[])
 	}
 
-	pub fn parse_excluding<'i, 't>(
-		input: &mut Parser<'i, 't>,
-		excluding: &[&str],
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_excluding<'i, 't>(input: &mut Parser<'i, 't>, excluding: &[&str]) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let ident = input.expect_ident()?;
 		CustomIdent::from_ident(location, ident, excluding)
@@ -153,9 +147,7 @@ impl CustomIdent {
 			_ => true
 		};
 		if !valid {
-			return Err(
-				location.new_custom_error(SelectorParseErrorKind::UnexpectedIdent(ident.clone()))
-			);
+			return Err(location.new_custom_error(SelectorParseErrorKind::UnexpectedIdent(ident.clone())));
 		}
 		if excluding.iter().any(|s| ident.eq_ignore_ascii_case(s)) {
 			Err(location.new_custom_error(StyleParseErrorKind::UnspecifiedError))
@@ -238,9 +230,7 @@ impl<'a, Set: string_cache::StaticAtomSet> From<&'a str> for GenericAtomIdent<Se
 	}
 }
 
-impl<Set: string_cache::StaticAtomSet> std::borrow::Borrow<string_cache::Atom<Set>>
-	for GenericAtomIdent<Set>
-{
+impl<Set: string_cache::StaticAtomSet> std::borrow::Borrow<string_cache::Atom<Set>> for GenericAtomIdent<Set> {
 	#[inline]
 	fn borrow(&self) -> &string_cache::Atom<Set> {
 		&self.0

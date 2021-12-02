@@ -28,10 +28,7 @@ pub fn shadows() {
 			"transparent 0.5px 11px 2px inset",
 			"transparent 0.5px 11px 2px 0px inset",
 		),
-		(
-			"transparent 0.5px 11px 2px 100px",
-			"transparent 0.5px 11px 2px 100px",
-		),
+		("transparent 0.5px 11px 2px 100px", "transparent 0.5px 11px 2px 100px"),
 		(
 			"transparent 0.5px 11px 0px 0px, currentColor 2px 100px 0px 0px",
 			"transparent 0.5px 11px 0px 0px, currentcolor 2px 100px 0px 0px",

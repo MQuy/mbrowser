@@ -19,9 +19,7 @@ impl HTMLDivElement {
 	pub fn new(local_name: LocalName, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
 		Self {
 			htmlelement: HTMLElement::new_inherited(
-				NodeTypeId::Element(ElementTypeId::HTMLElement(
-					HTMLElementTypeId::HTMLDivElement,
-				)),
+				NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLDivElement)),
 				local_name,
 				prefix,
 				document,

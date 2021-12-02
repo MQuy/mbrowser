@@ -81,128 +81,130 @@ pub struct TransformOrigin {
 }
 
 impl TransformOrigin {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
-            .try_parse(|input| -> Result<Self, ParseError<'i>> {
-                let x = input
-                    .try_parse(
-                        |input| {
-                            let keyword = OffsetKeyword::parse(
-                                context,
-                                input,
-                                &[
-                                    OffsetKeyword::Left,
-                                    OffsetKeyword::Center,
-                                    OffsetKeyword::Right,
-                                ],
-                            )?;
-                            Ok(LengthPercentageOrKeyword::Keyword(keyword))
-                        },
-                    )
-                    .or_else(|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-                        let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
-                        Ok(LengthPercentageOrKeyword::LengthPercentage(value))
-                    })?;
-                let y = input
-                    .try_parse(
-                        |input| {
-                            let keyword = OffsetKeyword::parse(
-                                context,
-                                input,
-                                &[
-                                    OffsetKeyword::Top,
-                                    OffsetKeyword::Center,
-                                    OffsetKeyword::Bottom,
-                                ],
-                            )?;
-                            Ok(LengthPercentageOrKeyword::Keyword(keyword))
-                        },
-                    )
-                    .or_else(|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-                        let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
-                        Ok(LengthPercentageOrKeyword::LengthPercentage(value))
-                    })?;
-                let z = input.try_parse(|input| LengthPercentage::parse(context, input)).map_or("0px".into(), |v| v);
-                Ok(TransformOrigin {x, y, z: LengthPercentageOrKeyword::LengthPercentage(z)})
-
-            })
-            .or_else(|_err: ParseError<'i>| {
-                input.try_parse(|input| {
-                    let (x, y) = input.try_parse(|input| {
-                        // "center left" matches x-center and fail since y cannot match with left
-                        // it is actually valid cases since x, y can appear in any order
-                        input.expect_ident_matching("center")?;
-                        let x = OffsetKeyword::parse(
-                            context,
-                            input,
-                            &[
-                                OffsetKeyword::Center,
-                                OffsetKeyword::Left,
-                                OffsetKeyword::Right,
-                            ],
-                        )?;
-                        Ok((x, OffsetKeyword::Center))
-                    }).or_else(|_err: ParseError<'i>| {
-                        let mut x = None;
-                        let mut y = None;
-                        parse_in_any_order(
-                            input,
-                            &mut [
-                                &mut |input| {
-                                    parse_item_if_missing(input, &mut x, &mut |_, input| {
-                                        OffsetKeyword::parse(
-                                            context,
-                                            input,
-                                            &[
-                                                OffsetKeyword::Center,
-                                                OffsetKeyword::Left,
-                                                OffsetKeyword::Right,
-                                            ],
-                                        )
-                                    })
-                                },
-                                &mut |input| {
-                                    parse_item_if_missing(input, &mut y, &mut |_, input| {
-                                        OffsetKeyword::parse(
-                                            context,
-                                            input,
-                                            &[
-                                                OffsetKeyword::Center,
-                                                OffsetKeyword::Top,
-                                                OffsetKeyword::Bottom,
-                                            ],
-                                        )
-                                    })
-                                },
-                            ],
-                        );
-                        if let (Some(x), Some(y)) = (x, y) {
-                            Ok((x, y))
-                        } else {
-                            Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
-                        }
-                    })?;
-                    let z = LengthPercentage::parse(context, input).map_or("0px".into(), |v| v);
-                    Ok(TransformOrigin {
-                        x: LengthPercentageOrKeyword::Keyword(x),
-                        y: LengthPercentageOrKeyword::Keyword(y),
-                        z: LengthPercentageOrKeyword::LengthPercentage(z),
-                    })
-                })
-            })
-            .or_else(|_err: ParseError<'i>| {
-                let x = input.try_parse(|input| {
-                    let keyword = OffsetKeyword::parse(context, input, &[OffsetKeyword::Left, OffsetKeyword::Center, OffsetKeyword::Right, OffsetKeyword::Top, OffsetKeyword::Bottom])?;
-                    Ok(LengthPercentageOrKeyword::Keyword(keyword))
-                }).or_else(|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-                    let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
-                    Ok(LengthPercentageOrKeyword::LengthPercentage(value))
-                })?;
-                Ok(TransformOrigin {x, y: LengthPercentageOrKeyword::Keyword(OffsetKeyword::Center), z: LengthPercentageOrKeyword::LengthPercentage("0px".into())})
-            })
+			.try_parse(|input| -> Result<Self, ParseError<'i>> {
+				let x = input
+					.try_parse(|input| {
+						let keyword = OffsetKeyword::parse(
+							context,
+							input,
+							&[OffsetKeyword::Left, OffsetKeyword::Center, OffsetKeyword::Right],
+						)?;
+						Ok(LengthPercentageOrKeyword::Keyword(keyword))
+					})
+					.or_else(
+						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
+							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
+						},
+					)?;
+				let y = input
+					.try_parse(|input| {
+						let keyword = OffsetKeyword::parse(
+							context,
+							input,
+							&[OffsetKeyword::Top, OffsetKeyword::Center, OffsetKeyword::Bottom],
+						)?;
+						Ok(LengthPercentageOrKeyword::Keyword(keyword))
+					})
+					.or_else(
+						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
+							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
+						},
+					)?;
+				let z = input
+					.try_parse(|input| LengthPercentage::parse(context, input))
+					.map_or("0px".into(), |v| v);
+				Ok(TransformOrigin {
+					x,
+					y,
+					z: LengthPercentageOrKeyword::LengthPercentage(z),
+				})
+			})
+			.or_else(|_err: ParseError<'i>| {
+				input.try_parse(|input| {
+					let (x, y) = input
+						.try_parse(|input| {
+							// "center left" matches x-center and fail since y cannot match with left
+							// it is actually valid cases since x, y can appear in any order
+							input.expect_ident_matching("center")?;
+							let x = OffsetKeyword::parse(
+								context,
+								input,
+								&[OffsetKeyword::Center, OffsetKeyword::Left, OffsetKeyword::Right],
+							)?;
+							Ok((x, OffsetKeyword::Center))
+						})
+						.or_else(|_err: ParseError<'i>| {
+							let mut x = None;
+							let mut y = None;
+							parse_in_any_order(
+								input,
+								&mut [
+									&mut |input| {
+										parse_item_if_missing(input, &mut x, &mut |_, input| {
+											OffsetKeyword::parse(
+												context,
+												input,
+												&[OffsetKeyword::Center, OffsetKeyword::Left, OffsetKeyword::Right],
+											)
+										})
+									},
+									&mut |input| {
+										parse_item_if_missing(input, &mut y, &mut |_, input| {
+											OffsetKeyword::parse(
+												context,
+												input,
+												&[OffsetKeyword::Center, OffsetKeyword::Top, OffsetKeyword::Bottom],
+											)
+										})
+									},
+								],
+							);
+							if let (Some(x), Some(y)) = (x, y) {
+								Ok((x, y))
+							} else {
+								Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
+							}
+						})?;
+					let z = LengthPercentage::parse(context, input).map_or("0px".into(), |v| v);
+					Ok(TransformOrigin {
+						x: LengthPercentageOrKeyword::Keyword(x),
+						y: LengthPercentageOrKeyword::Keyword(y),
+						z: LengthPercentageOrKeyword::LengthPercentage(z),
+					})
+				})
+			})
+			.or_else(|_err: ParseError<'i>| {
+				let x = input
+					.try_parse(|input| {
+						let keyword = OffsetKeyword::parse(
+							context,
+							input,
+							&[
+								OffsetKeyword::Left,
+								OffsetKeyword::Center,
+								OffsetKeyword::Right,
+								OffsetKeyword::Top,
+								OffsetKeyword::Bottom,
+							],
+						)?;
+						Ok(LengthPercentageOrKeyword::Keyword(keyword))
+					})
+					.or_else(
+						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
+							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
+						},
+					)?;
+				Ok(TransformOrigin {
+					x,
+					y: LengthPercentageOrKeyword::Keyword(OffsetKeyword::Center),
+					z: LengthPercentageOrKeyword::LengthPercentage("0px".into()),
+				})
+			})
 	}
 }
 

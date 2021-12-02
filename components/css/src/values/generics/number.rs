@@ -75,10 +75,7 @@ pub enum GenericNumberOrAuto<Number> {
 }
 
 impl<L> GenericNumberOrAuto<L> {
-	pub fn parse_with<'i, 't, LP>(
-		input: &mut Parser<'i, 't>,
-		number_parser: LP,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, LP>(input: &mut Parser<'i, 't>, number_parser: LP) -> Result<Self, ParseError<'i>>
 	where
 		LP: FnOnce(&mut Parser<'i, 't>) -> Result<L, ParseError<'i>>,
 	{

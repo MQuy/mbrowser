@@ -21,11 +21,7 @@ pub fn keyword() {
 
 #[test]
 pub fn absolute() {
-	for value in [
-		"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000",
-	]
-	.iter()
-	{
+	for value in ["100", "200", "300", "400", "500", "600", "700", "800", "900", "1000"].iter() {
 		let css = &TEMPLATE.format(&[&value]);
 		let (stylesheet, _) = parse(css);
 		assert_css(&stylesheet, css);

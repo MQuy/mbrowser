@@ -11,10 +11,7 @@ pub enum GenericCounterOrNone<Counter> {
 }
 
 impl<C> GenericCounterOrNone<C> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: for<'a, 'b> Fn(&mut Parser<'a, 'b>) -> Result<C, ParseError<'a>>,
 	{
@@ -52,10 +49,7 @@ pub struct GenericCounter<I> {
 }
 
 impl<I> GenericCounter<I> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: Fn(&mut Parser<'i, 't>) -> Result<I, ParseError<'i>>,
 	{
@@ -84,10 +78,7 @@ pub struct GenericReversedCounter<I> {
 }
 
 impl<I> GenericReversedCounter<I> {
-	pub fn parse_with<'i, 't, F>(
-		input: &mut Parser<'i, 't>,
-		item_parser: F,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
 	where
 		F: Fn(&mut Parser<'i, 't>) -> Result<I, ParseError<'i>>,
 	{
@@ -120,11 +111,7 @@ impl<I: ToCss> ToCss for GenericReversedCounter<I> {
 		W: std::fmt::Write,
 	{
 		let name = if self.reversed {
-			Some(std::format!(
-				"{}({})",
-				"reversed",
-				self.name.to_css_string()
-			))
+			Some(std::format!("{}({})", "reversed", self.name.to_css_string()))
 		} else {
 			Some(self.name.to_css_string())
 		};

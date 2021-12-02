@@ -2,8 +2,7 @@ use std::fmt::Write;
 use std::vec::Drain;
 
 use cssparser::{
-	parse_important, AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Delimiter,
-	Parser, ParserInput,
+	parse_important, AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Delimiter, Parser, ParserInput,
 };
 use selectors::context::QuirksMode;
 use selectors::SelectorList;
@@ -50,9 +49,7 @@ impl PropertyDeclarationBlock {
 	/// and it doesn't exist in the block, and returns false otherwise.
 	#[inline]
 	fn is_definitely_new(&self, decl: &PropertyDeclaration) -> bool {
-		decl.id()
-			.as_longhand()
-			.map_or(false, |id| !self.longhands.contains(id))
+		decl.id().as_longhand().map_or(false, |id| !self.longhands.contains(id))
 	}
 
 	/// Adds or overrides the declaration for a given property in this block.
@@ -101,11 +98,7 @@ impl PropertyDeclarationBlock {
 	///
 	/// See the documentation of `push` to see what impact `source` has when the
 	/// property is already there.
-	pub fn extend(
-		&mut self,
-		mut drain: Drain<PropertyDeclaration>,
-		importance: Importance,
-	) -> bool {
+	pub fn extend(&mut self, mut drain: Drain<PropertyDeclaration>, importance: Importance) -> bool {
 		let push_calls_count = drain.len();
 
 		// With deduplication the actual length increase may be less than this.
@@ -115,9 +108,7 @@ impl PropertyDeclarationBlock {
 		for decl in &mut drain {
 			changed |= self.push(decl, importance);
 		}
-		drain.fold(changed, |changed, decl| {
-			changed | self.push(decl, importance)
-		})
+		drain.fold(changed, |changed, decl| changed | self.push(decl, importance))
 	}
 
 	pub fn clear(&mut self) {
@@ -129,10 +120,7 @@ impl PropertyDeclarationBlock {
 	}
 
 	pub fn properties(&self) -> impl Iterator<Item = (bool, &PropertyDeclaration)> {
-		PropertyIterator {
-			index: 0,
-			source: self,
-		}
+		PropertyIterator { index: 0, source: self }
 	}
 }
 
@@ -258,9 +246,7 @@ fn report_one_css_error<'i>(
 			}
 		}
 		error = match *property {
-			PropertyId::Custom(ref c) => {
-				StyleParseErrorKind::new_invalid(format!("--{}", c), error)
-			},
+			PropertyId::Custom(ref c) => StyleParseErrorKind::new_invalid(format!("--{}", c), error),
 			_ => StyleParseErrorKind::new_invalid(property.non_custom_id().unwrap().name(), error),
 		};
 	}
@@ -275,11 +261,7 @@ fn report_css_errors(
 	context: &ParserContext,
 	block: &PropertyDeclarationBlock,
 	selectors: Option<&SelectorList<Selectors>>,
-	errors: &mut Vec<(
-		cssparser::ParseError<StyleParseErrorKind>,
-		&str,
-		Option<PropertyId>,
-	)>,
+	errors: &mut Vec<(cssparser::ParseError<StyleParseErrorKind>, &str, Option<PropertyId>)>,
 ) {
 	for (error, slice, property) in errors.drain(..) {
 		report_one_css_error(context, Some(block), selectors, error, slice, property)

@@ -58,15 +58,11 @@ impl StyleTree {
 			selectors::context::QuirksMode::NoQuirks,
 			0,
 		);
-		self.stylist
-			.borrow_mut()
-			.add_stylesheet(&stylesheet, Origin::UserAgent);
+		self.stylist.borrow_mut().add_stylesheet(&stylesheet, Origin::UserAgent);
 	}
 
 	pub fn add_stylesheet(&self, stylesheet: &Stylesheet) {
-		self.stylist
-			.borrow_mut()
-			.add_stylesheet(&stylesheet, Origin::Author);
+		self.stylist.borrow_mut().add_stylesheet(&stylesheet, Origin::Author);
 	}
 
 	pub fn match_rules(&self) {
@@ -79,10 +75,7 @@ impl StyleTree {
 
 		let mut dom_child = style_node.dom_node.first_child();
 		while let Some(noderef_child) = &dom_child {
-			let style_child = Rc::new(StyleTreeNode::new(
-				noderef_child.clone(),
-				Some(style_node.clone()),
-			));
+			let style_child = Rc::new(StyleTreeNode::new(noderef_child.clone(), Some(style_node.clone())));
 
 			style_node.append_child(style_child.clone());
 			if noderef_child.node_type_id().is_element() {
@@ -109,26 +102,15 @@ impl StyleTree {
 			for (importance, property) in block.properties() {
 				match declaration.origin {
 					Origin::UserAgent => {
-						cascade_in_origin(
-							&mut useragent_data,
-							property,
-							importance,
-							declaration.specificity,
-						);
+						cascade_in_origin(&mut useragent_data, property, importance, declaration.specificity);
 					},
 					Origin::Author => {
-						cascade_in_origin(
-							&mut author_data,
-							property,
-							importance,
-							declaration.specificity,
-						);
+						cascade_in_origin(&mut author_data, property, importance, declaration.specificity);
 					},
 				}
 			}
 		}
-		let mut computed_values =
-			GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
+		let mut computed_values = GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
 		let mut context = StyleContext {
 			parent_style,
 			author_data,
@@ -152,8 +134,7 @@ impl StyleTree {
 	pub fn log(src: Rc<StyleTreeNode>, depth: usize) {
 		let indent: String = std::iter::repeat("  ").take(depth).collect();
 		println!("{}{:?}", indent, src.dom_node.node_type_id());
-		let iter =
-			SimpleNodeIterator::new(src.first_child(), |n: &Rc<StyleTreeNode>| n.next_sibling());
+		let iter = SimpleNodeIterator::new(src.first_child(), |n: &Rc<StyleTreeNode>| n.next_sibling());
 		for child in iter {
 			StyleTree::log(child, depth + 1);
 		}
@@ -217,24 +198,20 @@ impl StyleTreeNode {
 		fn adjust_current_node(node: Option<Rc<StyleTreeNode>>) -> Option<Rc<StyleTreeNode>> {
 			let mut current = node;
 			while let Some(ref style_node) = current {
-				let computed_values =
-					GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
+				let computed_values = GlobalScope::get_or_init_computed_values(style_node.dom_node.id());
 				match computed_values.get_display() {
-					longhands::display::Display::Box(value)
-						if *value == longhands::display::DisplayBox::None =>
-					{
+					longhands::display::Display::Box(value) if *value == longhands::display::DisplayBox::None => {
 						current = style_node.next_sibling();
 						continue;
-					}
+					},
 					_ => break,
 				}
 			}
 			current
 		}
-		SimpleNodeIterator::new(
-			adjust_current_node(self.first_child()),
-			|n: &Rc<StyleTreeNode>| adjust_current_node(n.next_sibling()),
-		)
+		SimpleNodeIterator::new(adjust_current_node(self.first_child()), |n: &Rc<StyleTreeNode>| {
+			adjust_current_node(n.next_sibling())
+		})
 	}
 
 	pub fn is_contain_all_inline_children(&self) -> bool {
@@ -253,13 +230,8 @@ impl StyleTreeNode {
 			let computed_values = GlobalScope::get_or_init_computed_values(self.dom_node.id());
 			match computed_values.get_display() {
 				longhands::display::Display::Basic(DisplayBasic { outside, inside }) => (
-					outside
-						.as_ref()
-						.map_or(DisplayOutside::Block, |v| v.clone()),
-					inside
-						.as_ref()
-						.clone()
-						.map_or(DisplayInside::Flow, |v| v.clone()),
+					outside.as_ref().map_or(DisplayOutside::Block, |v| v.clone()),
+					inside.as_ref().clone().map_or(DisplayInside::Flow, |v| v.clone()),
 				),
 				longhands::display::Display::Box(value) => match value {
 					longhands::display::DisplayBox::Contents => not_supported!(),
@@ -304,9 +276,7 @@ fn get_declaration_from_useragent<'a>(
 	longhand_id: &LonghandId,
 	unset: &'a PropertyDeclaration,
 ) -> Option<&'a PropertyDeclaration> {
-	let useragent_property = cascade_data
-		.get(longhand_id)
-		.map(|cascade| cascade.property);
+	let useragent_property = cascade_data.get(longhand_id).map(|cascade| cascade.property);
 	if let Some(property) = useragent_property {
 		Some(match property {
 			PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { keyword, .. })
@@ -327,10 +297,7 @@ fn apply_properties<'a>(longhands_iter: LonghandIdPhaseIterator, context: &'a mu
 			id: longhand_id,
 			keyword: CSSWideKeyword::Unset,
 		});
-		let author_property = context
-			.author_data
-			.get(&longhand_id)
-			.map(|cascade| cascade.property);
+		let author_property = context.author_data.get(&longhand_id).map(|cascade| cascade.property);
 		let declaration = if let Some(property) = author_property {
 			match property {
 				PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration { keyword, .. })

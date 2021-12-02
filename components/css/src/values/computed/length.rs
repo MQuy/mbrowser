@@ -24,11 +24,9 @@ impl LengthPercentageOrAuto {
 	#[inline]
 	pub fn to_used_value(&self, base_value: Pixel, fallback_value: Pixel) -> Pixel {
 		match self {
-			LengthPercentageOrAuto::LengthPercentage(length_percentage) => {
-				match length_percentage {
-					LengthPercentage::AbsoluteLength(value) => Pixel::new(*value),
-					LengthPercentage::Percentage(value) => base_value * value.to_value(&(0.0..1.0)),
-				}
+			LengthPercentageOrAuto::LengthPercentage(length_percentage) => match length_percentage {
+				LengthPercentage::AbsoluteLength(value) => Pixel::new(*value),
+				LengthPercentage::Percentage(value) => base_value * value.to_value(&(0.0..1.0)),
 			},
 			LengthPercentageOrAuto::Auto => fallback_value,
 		}
@@ -37,11 +35,9 @@ impl LengthPercentageOrAuto {
 	#[inline]
 	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
 		match self {
-			GenericLengthPercentageOrAuto::LengthPercentage(length_percentage) => {
-				match length_percentage {
-					LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(*length)),
-					_ => None,
-				}
+			GenericLengthPercentageOrAuto::LengthPercentage(length_percentage) => match length_percentage {
+				LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(*length)),
+				_ => None,
 			},
 			_ => None,
 		}

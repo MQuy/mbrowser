@@ -14,10 +14,7 @@ pub enum OutlineStyle {
 }
 
 impl OutlineStyle {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<OutlineStyle, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<OutlineStyle, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("auto")?;
@@ -26,8 +23,7 @@ impl OutlineStyle {
 			.or_else(|_err: ParseError<'i>| {
 				let style = LineStyle::parse(input)?;
 				if style == LineStyle::Hidden {
-					return Err(input
-						.new_custom_error(StyleParseErrorKind::UnexpectedValue("hidden".into())));
+					return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedValue("hidden".into())));
 				}
 				Ok(OutlineStyle::BorderStyle(style))
 			})

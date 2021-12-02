@@ -14,26 +14,18 @@ pub struct SingleTextShadow {
 }
 
 impl SingleTextShadow {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut color = None;
 		let mut shadow = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut color, &mut |_, input| {
-						Color::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(context, input)),
 				&mut |input| {
 					parse_item_if_missing(input, &mut shadow, &mut |_, input| {
 						let horizontal = Length::parse(context, input)?;
 						let vertical = Length::parse(context, input)?;
-						let blur = NonNegativeLength::parse(context, input)
-							.map_or("0px".into(), |value| value);
+						let blur = NonNegativeLength::parse(context, input).map_or("0px".into(), |value| value);
 						Ok((horizontal, vertical, blur))
 					})
 				},
@@ -72,18 +64,14 @@ impl ToCss for SingleTextShadow {
 pub struct TextShadow(Vec<SingleTextShadow>);
 
 impl TextShadow {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(TextShadow(vec![]))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let values =
-					input.parse_comma_separated(|input| SingleTextShadow::parse(context, input))?;
+				let values = input.parse_comma_separated(|input| SingleTextShadow::parse(context, input))?;
 				Ok(TextShadow(values))
 			})
 	}

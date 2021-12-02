@@ -13,10 +13,7 @@ pub enum LeaderType {
 }
 
 impl LeaderType {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		Ok(match token {
@@ -27,11 +24,7 @@ impl LeaderType {
 				_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
 			},
 			Token::QuotedString(text) => LeaderType::String(text.to_string()),
-			_ => {
-				return Err(
-					location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
-				)
-			},
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))),
 		})
 	}
 }
@@ -55,10 +48,7 @@ impl ToCss for LeaderType {
 pub struct Leader(LeaderType);
 
 impl Leader {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("leader")?;
 		input.parse_nested_block(|input| {
 			let style = LeaderType::parse(context, input)?;

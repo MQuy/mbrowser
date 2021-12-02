@@ -25,10 +25,7 @@ impl Number {
 	}
 
 	/// Parse a float.
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_number()?;
 		Ok(Number { value })
 	}
@@ -128,10 +125,7 @@ impl Integer {
 		Ok(Integer(value))
 	}
 
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_integer()?;
 		Ok(Integer(value))
 	}
@@ -183,10 +177,7 @@ impl NonNegativeNumber {
 		NonNegative::<Number>(Number::new(val.max(0.)))
 	}
 
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = Number::parse_non_negative(context, input)?;
 		Ok(NonNegative::<Number>(value))
 	}
@@ -247,10 +238,7 @@ impl PartialOrd<f32> for NonNegativeNumber {
 pub type IntegerAuto = GenericNumberOrAuto<Integer>;
 
 impl IntegerAuto {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		Self::parse_with(input, |input| Integer::parse(context, input))
 	}
 }
@@ -258,10 +246,7 @@ impl IntegerAuto {
 pub type NumberOrPercentage = GenericNumberOrPercentage<Number>;
 
 impl NumberOrPercentage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		Self::parse_with(context, input, |input| Number::parse(context, input))
 	}
 
@@ -296,13 +281,8 @@ impl From<&str> for NumberOrPercentage {
 pub type NonNegativeNumberOrPercentage = GenericNumberOrPercentage<NonNegativeNumber>;
 
 impl NonNegativeNumberOrPercentage {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		Self::parse_with(context, input, |input| {
-			NonNegativeNumber::parse(context, input)
-		})
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		Self::parse_with(context, input, |input| NonNegativeNumber::parse(context, input))
 	}
 }
 
@@ -322,10 +302,7 @@ impl From<&str> for NonNegativeNumberOrPercentage {
 pub struct Zero;
 
 impl Zero {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_number()?;
 		if value == 0.0 {
 			Ok(Zero)

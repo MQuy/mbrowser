@@ -11,10 +11,7 @@ pub struct Longhands {
 	pub margin_block_end: LengthPercentageOrAuto,
 }
 
-pub fn parse_value<'i, 't>(
-	context: &ParserContext,
-	input: &mut Parser<'i, 't>,
-) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	let first = LengthPercentageOrAuto::parse(context, input)?;
 	if let Ok(second) = LengthPercentageOrAuto::parse(context, input) {
 		Ok(Longhands {
@@ -39,11 +36,7 @@ pub fn parse_into<'i, 't>(
 	input
 		.parse_entirely(|input| parse_value(context, input))
 		.map(|longhands| {
-			declarations.push(PropertyDeclaration::MarginBlockStart(
-				longhands.margin_block_start,
-			));
-			declarations.push(PropertyDeclaration::MarginBlockEnd(
-				longhands.margin_block_end,
-			));
+			declarations.push(PropertyDeclaration::MarginBlockStart(longhands.margin_block_start));
+			declarations.push(PropertyDeclaration::MarginBlockEnd(longhands.margin_block_end));
 		})
 }

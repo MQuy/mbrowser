@@ -124,10 +124,7 @@ pub fn rgb_data() -> Vec<(String, String)> {
 				"".to_string()
 			},
 		);
-		let output = std::format!(
-			"rgb(25 178 1 / {})",
-			if alpha.len() > 0 { "0.25" } else { "1" }
-		);
+		let output = std::format!("rgb(25 178 1 / {})", if alpha.len() > 0 { "0.25" } else { "1" });
 		data.push((input, output));
 	}
 	data
@@ -141,11 +138,8 @@ pub fn hsl_or_hwb_data() -> Vec<(String, String)> {
 			.map(|(value, unit)| std::format!("{}{}", value, unit))
 			.collect::<Vec<String>>();
 		let hues = [&angles[..], &["5".to_string(), "0.25".to_string()][..]].concat();
-		for ((hue, alpha), fname) in permutate(
-			permutate(hues.iter(), ["25%", "0.25", ""].iter()).iter(),
-			iter.clone(),
-		)
-		.iter()
+		for ((hue, alpha), fname) in
+			permutate(permutate(hues.iter(), ["25%", "0.25", ""].iter()).iter(), iter.clone()).iter()
 		{
 			let input = std::format!(
 				"{}({} 12% 0.25%{})",

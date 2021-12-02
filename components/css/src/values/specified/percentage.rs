@@ -19,10 +19,7 @@ impl Percentage {
 		Percentage { value }
 	}
 
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		match token {
 			Token::Percentage { unit_value, .. } => Ok(Percentage { value: unit_value }),
@@ -50,10 +47,7 @@ pub struct Ratio(pub NonNegativeNumber, pub NonNegativeNumber);
 
 impl Ratio {
 	/// Parse a ratio.
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let first_value = NonNegativeNumber::parse(context, input)?;
 		input
 			.try_parse(|input| {

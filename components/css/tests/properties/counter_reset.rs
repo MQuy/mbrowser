@@ -12,10 +12,7 @@ const TEMPLATE: &str = r#"
 	counter-reset: {};
 }}"#;
 
-test_property!(
-	counter_with_integer_and_none,
-	counter_with_integer_and_none_data
-);
+test_property!(counter_with_integer_and_none, counter_with_integer_and_none_data);
 
 test_property!(
 	reversed_counter_with_integer_and_none,

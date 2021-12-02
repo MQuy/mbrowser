@@ -21,12 +21,7 @@ pub fn keyword() {
 
 #[test]
 pub fn oblique() {
-	for (input, output) in [
-		("oblique", "oblique 14deg"),
-		("oblique 2.5deg", "oblique 2.5deg"),
-	]
-	.iter()
-	{
+	for (input, output) in [("oblique", "oblique 14deg"), ("oblique 2.5deg", "oblique 2.5deg")].iter() {
 		let cin = &TEMPLATE.format(&[&input]);
 		let cout = &TEMPLATE.format(&[&output]);
 		let (stylesheet, _) = parse(cin);

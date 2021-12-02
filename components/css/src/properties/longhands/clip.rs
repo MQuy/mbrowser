@@ -15,10 +15,7 @@ pub struct Clip {
 }
 
 impl Clip {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("rect")?;
 		input.parse_nested_block(|input| {
 			let top = LengthOrAuto::parse(context, input)?;

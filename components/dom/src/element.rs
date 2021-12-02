@@ -52,12 +52,7 @@ impl crate::inheritance::Castable for Element {}
 impl crate::inheritance::DerivedFrom<Node> for Element {}
 
 impl Element {
-	pub fn new(
-		local_name: LocalName,
-		namespace: Namespace,
-		prefix: Option<Prefix>,
-		document: Rc<Document>,
-	) -> Self {
+	pub fn new(local_name: LocalName, namespace: Namespace, prefix: Option<Prefix>, document: Rc<Document>) -> Self {
 		Element::new_inherited(
 			NodeTypeId::Element(ElementTypeId::Element),
 			local_name,
@@ -155,12 +150,7 @@ impl Element {
 		self.attrs.clone()
 	}
 
-	pub fn parse_attribute(
-		&self,
-		namespace: &Namespace,
-		local_name: &LocalName,
-		value: String,
-	) -> AttrValue {
+	pub fn parse_attribute(&self, namespace: &Namespace, local_name: &LocalName, value: String) -> AttrValue {
 		if *namespace == ns!() {
 			vtable_for(self.upcast()).parse_plain_attribute(local_name, value)
 		} else {
@@ -220,10 +210,7 @@ impl VirtualMethods for Element {
 			&local_name!("id") => AttrValue::String(value),
 			&local_name!("name") => AttrValue::String(value),
 			&local_name!("class") => AttrValue::from_serialized_tokenlist(value),
-			_ => self
-				.super_type()
-				.unwrap()
-				.parse_plain_attribute(name, value),
+			_ => self.super_type().unwrap().parse_plain_attribute(name, value),
 		}
 	}
 
@@ -260,11 +247,7 @@ macro_rules! make_element(
         })
     );
 
-fn create_svg_element(
-	name: QualName,
-	prefix: Option<Prefix>,
-	document: Rc<Document>,
-) -> Rc<Element> {
+fn create_svg_element(name: QualName, prefix: Option<Prefix>, document: Rc<Document>) -> Rc<Element> {
 	assert_eq!(name.ns, ns!(svg));
 
 	match name.local {
@@ -291,11 +274,7 @@ fn create_html_element(
 	result
 }
 
-fn create_native_html_element(
-	name: QualName,
-	prefix: Option<Prefix>,
-	document: Rc<Document>,
-) -> Rc<Element> {
+fn create_native_html_element(name: QualName, prefix: Option<Prefix>, document: Rc<Document>) -> Rc<Element> {
 	assert_eq!(name.ns, ns!(html));
 
 	// This is a big match, and the IDs for inline-interned atoms are not very structured.
@@ -306,48 +285,12 @@ fn create_native_html_element(
 		local_name!("body") => make_element!(HTMLBodyElement, name.local, prefix, document),
 		local_name!("div") => make_element!(HTMLDivElement, name.local, prefix, document),
 		local_name!("footer") => make_element!(HTMLElement, name.local, prefix, document),
-		local_name!("h1") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading1
-		),
-		local_name!("h2") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading2
-		),
-		local_name!("h3") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading3
-		),
-		local_name!("h4") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading4
-		),
-		local_name!("h5") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading5
-		),
-		local_name!("h6") => make_element!(
-			HTMLHeadingElement,
-			name.local,
-			prefix,
-			document,
-			HeadingLevel::Heading6
-		),
+		local_name!("h1") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading1),
+		local_name!("h2") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading2),
+		local_name!("h3") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading3),
+		local_name!("h4") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading4),
+		local_name!("h5") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading5),
+		local_name!("h6") => make_element!(HTMLHeadingElement, name.local, prefix, document, HeadingLevel::Heading6),
 		local_name!("head") => make_element!(HTMLHeadElement, name.local, prefix, document),
 		local_name!("header") => make_element!(HTMLElement, name.local, prefix, document),
 		local_name!("html") => make_element!(HTMLHtmlElement, name.local, prefix, document),
@@ -509,9 +452,11 @@ impl selectors::Element for NodeRef {
 			NamespaceConstraint::Specific(ref ns) => self
 				.get_attribute(&ns.0, &local_name.0)
 				.map_or(false, |attr| attr.value().eval_selector(operation)),
-			NamespaceConstraint::Any => self.attrs().borrow().iter().any(|attr| {
-				*attr.local_name() == *local_name.0 && attr.value().eval_selector(operation)
-			}),
+			NamespaceConstraint::Any => self
+				.attrs()
+				.borrow()
+				.iter()
+				.any(|attr| *attr.local_name() == *local_name.0 && attr.value().eval_selector(operation)),
 		}
 	}
 
@@ -551,12 +496,8 @@ impl selectors::Element for NodeRef {
 			NonTSPseudoClass::ReadOnly => self.state().contains(pseudo_class.state_flag()),
 
 			NonTSPseudoClass::AnyLink => self.is_link(),
-			NonTSPseudoClass::Link => {
-				self.is_link() && context.visited_handling().matches_unvisited()
-			},
-			NonTSPseudoClass::Visited => {
-				self.is_link() && context.visited_handling().matches_visited()
-			},
+			NonTSPseudoClass::Link => self.is_link() && context.visited_handling().matches_unvisited(),
+			NonTSPseudoClass::Visited => self.is_link() && context.visited_handling().matches_visited(),
 		}
 	}
 
@@ -571,9 +512,7 @@ impl selectors::Element for NodeRef {
 	fn is_link(&self) -> bool {
 		match self.node_type_id() {
 			// https://html.spec.whatwg.org/multipage/#selector-link
-			NodeTypeId::Element(ElementTypeId::HTMLElement(
-				HTMLElementTypeId::HTMLAnchorElement,
-			))
+			NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLAnchorElement))
 			| NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLAreaElement))
 			| NodeTypeId::Element(ElementTypeId::HTMLElement(HTMLElementTypeId::HTMLLinkElement)) => {
 				self.has_attribute(&local_name!("href"))
@@ -595,14 +534,13 @@ impl selectors::Element for NodeRef {
 	}
 
 	fn has_class(&self, name: &Ident, case_sensitivity: CaseSensitivity) -> bool {
-		self.get_attribute(&ns!(), &local_name!("class"))
-			.map_or(false, |attr| {
-				attr.as_tokens().map_or(false, |values| {
-					values.iter().any(|class_name| {
-						case_sensitivity.eq(name.0.as_bytes(), class_name.as_bytes())
-					})
-				})
+		self.get_attribute(&ns!(), &local_name!("class")).map_or(false, |attr| {
+			attr.as_tokens().map_or(false, |values| {
+				values
+					.iter()
+					.any(|class_name| case_sensitivity.eq(name.0.as_bytes(), class_name.as_bytes()))
 			})
+		})
 	}
 
 	fn imported_part(&self, _name: &Ident) -> Option<Ident> {

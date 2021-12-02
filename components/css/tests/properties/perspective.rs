@@ -12,7 +12,4 @@ const TEMPLATE: &str = r#"
 	perspective: {};
 }}"#;
 
-test_property!(
-	non_negative_length_or_none,
-	non_negative_length_or_none_data
-);
+test_property!(non_negative_length_or_none, non_negative_length_or_none_data);

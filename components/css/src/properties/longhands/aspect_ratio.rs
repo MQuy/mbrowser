@@ -15,10 +15,7 @@ pub struct AspectRatio {
 }
 
 impl AspectRatio {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<AspectRatio, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<AspectRatio, ParseError<'i>> {
 		let mut auto = None;
 		let mut ratio = None;
 		parse_in_any_order(
@@ -30,11 +27,7 @@ impl AspectRatio {
 						Ok(())
 					})
 				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut ratio, &mut |_, input| {
-						Ratio::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut ratio, &mut |_, input| Ratio::parse(context, input)),
 			],
 		);
 		if auto.is_none() && ratio.is_none() {

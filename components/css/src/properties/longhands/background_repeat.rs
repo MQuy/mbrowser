@@ -30,10 +30,7 @@ pub struct BackgroundRepeat {
 }
 
 impl BackgroundRepeat {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let repeat = input.parse_comma_separated(|input| {
 			input
 				.try_parse(|input| {

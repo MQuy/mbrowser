@@ -1,8 +1,8 @@
 use std::fmt::Write;
 
 use cssparser::{
-	AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Parser, ParserState,
-	QualifiedRuleParser, RuleListParser, SourceLocation, Token,
+	AtRuleParser, CowRcStr, DeclarationListParser, DeclarationParser, Parser, ParserState, QualifiedRuleParser,
+	RuleListParser, SourceLocation, Token,
 };
 
 use super::css_rule::CssRuleType;
@@ -85,13 +85,10 @@ impl KeyframeSelector {
 				let location = input.current_source_location();
 				let token = input.next()?.clone();
 				match token {
-					Token::Ident(ref ident) if ident.as_ref().eq_ignore_ascii_case("from") => {
-						Ok(0.)
-					},
+					Token::Ident(ref ident) if ident.as_ref().eq_ignore_ascii_case("from") => Ok(0.),
 					Token::Ident(ref ident) if ident.as_ref().eq_ignore_ascii_case("to") => Ok(1.),
 					Token::Percentage {
-						unit_value: percentage,
-						..
+						unit_value: percentage, ..
 					} if percentage >= 0. && percentage <= 1. => Ok(percentage),
 					_ => Err(location.new_unexpected_token_error(token.clone())),
 				}
@@ -137,17 +134,11 @@ impl<'a, 'i> QualifiedRuleParser<'i> for KeyframeListParser<'a> {
 	type Prelude = KeyframeSelector;
 	type QualifiedRule = Keyframe;
 
-	fn parse_prelude<'t>(
-		&mut self,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self::Prelude, ParseError<'i>> {
+	fn parse_prelude<'t>(&mut self, input: &mut Parser<'i, 't>) -> Result<Self::Prelude, ParseError<'i>> {
 		let start_position = input.position();
 		KeyframeSelector::parse(input).map_err(|e| {
 			let location = e.location;
-			let error = ContextualParseError::InvalidKeyframeRule(
-				input.slice_from(start_position),
-				e.clone(),
-			);
+			let error = ContextualParseError::InvalidKeyframeRule(input.slice_from(start_position), e.clone());
 			self.context.log_css_error(location, error);
 			e
 		})
@@ -159,11 +150,8 @@ impl<'a, 'i> QualifiedRuleParser<'i> for KeyframeListParser<'a> {
 		start: &ParserState,
 		input: &mut Parser<'i, 't>,
 	) -> Result<Self::QualifiedRule, ParseError<'i>> {
-		let context = ParserContext::new_with_rule_type(
-			self.context,
-			CssRuleType::Keyframe,
-			self.context.namespaces.unwrap(),
-		);
+		let context =
+			ParserContext::new_with_rule_type(self.context, CssRuleType::Keyframe, self.context.namespaces.unwrap());
 
 		let parser = KeyframeDeclarationParser {
 			context: &context,
@@ -179,8 +167,7 @@ impl<'a, 'i> QualifiedRuleParser<'i> for KeyframeListParser<'a> {
 				Err((error, slice)) => {
 					iter.parser.declarations.clear();
 					let location = error.location;
-					let error =
-						ContextualParseError::UnsupportedKeyframePropertyDeclaration(slice, error);
+					let error = ContextualParseError::UnsupportedKeyframePropertyDeclaration(slice, error);
 					context.log_css_error(location, error);
 				},
 			}
@@ -211,11 +198,7 @@ impl<'a, 'b, 'i> DeclarationParser<'i> for KeyframeDeclarationParser<'a, 'b> {
 	type Declaration = ();
 	type Error = StyleParseErrorKind<'i>;
 
-	fn parse_value<'t>(
-		&mut self,
-		name: CowRcStr<'i>,
-		input: &mut Parser<'i, 't>,
-	) -> Result<(), ParseError<'i>> {
+	fn parse_value<'t>(&mut self, name: CowRcStr<'i>, input: &mut Parser<'i, 't>) -> Result<(), ParseError<'i>> {
 		let id = match PropertyId::parse(&name, self.context) {
 			Ok(id) => id,
 			Err(()) => {

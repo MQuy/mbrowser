@@ -13,10 +13,7 @@ pub fn initial_value() -> NonNegativeLengthPercentage {
 	NonNegativeLengthPercentage::zero()
 }
 
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_non_inherited_property!(
 		declaration,
 		context.parent_style.get_padding_left().clone(),

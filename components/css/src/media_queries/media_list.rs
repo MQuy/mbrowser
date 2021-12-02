@@ -37,10 +37,7 @@ impl MediaList {
 				Err(err) => {
 					media_queries.push(MediaQuery::never_matching());
 					let location = err.location;
-					let error = ContextualParseError::InvalidMediaRule(
-						input.slice_from(start_position),
-						err,
-					);
+					let error = ContextualParseError::InvalidMediaRule(input.slice_from(start_position), err);
 					context.log_css_error(location, error);
 				},
 			}
@@ -56,9 +53,7 @@ impl MediaList {
 
 	/// Create an empty MediaList.
 	pub fn empty() -> Self {
-		MediaList {
-			media_queries: vec![],
-		}
+		MediaList { media_queries: vec![] }
 	}
 
 	/// Whether this `MediaList` contains no media queries.

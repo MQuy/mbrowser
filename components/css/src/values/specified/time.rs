@@ -30,14 +30,10 @@ pub struct Time {
 }
 
 impl Time {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		macro_rules! return_unexpected_token {
 			($location:tt, $token:tt) => {
-				return Err($location
-					.new_custom_error(StyleParseErrorKind::UnexpectedToken($token.clone())))
+				return Err($location.new_custom_error(StyleParseErrorKind::UnexpectedToken($token.clone())))
 			};
 		}
 

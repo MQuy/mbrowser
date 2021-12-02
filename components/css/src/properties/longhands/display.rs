@@ -3,9 +3,7 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 use crate::computed_values::StyleContext;
 use crate::css_writer::write_elements;
 use crate::parser::{parse_in_any_order, parse_item_if_missing, ParseError};
-use crate::properties::declaration::{
-	property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration,
-};
+use crate::properties::declaration::{property_keywords_impl, PropertyDeclaration, WideKeywordDeclaration};
 use crate::properties::longhand_id::LonghandId;
 use crate::properties::property_id::CSSWideKeyword;
 use crate::str::convert_options_to_string;
@@ -43,25 +41,14 @@ pub struct DisplayBasic {
 }
 
 impl DisplayBasic {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut outside = None;
 		let mut inside = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut outside, &mut |_, input| {
-						DisplayOutside::parse(input)
-					})
-				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut inside, &mut |_, input| {
-						DisplayInside::parse(input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut outside, &mut |_, input| DisplayOutside::parse(input)),
+				&mut |input| parse_item_if_missing(input, &mut inside, &mut |_, input| DisplayInside::parse(input)),
 			],
 		);
 		if outside.is_none() && inside.is_none() {
@@ -98,21 +85,14 @@ pub struct DisplayListItem {
 }
 
 impl DisplayListItem {
-	pub fn parse<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut outside = None;
 		let mut inside = None;
 		let mut item = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut outside, &mut |_, input| {
-						DisplayOutside::parse(input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut outside, &mut |_, input| DisplayOutside::parse(input)),
 				&mut |input| {
 					parse_item_if_missing(input, &mut inside, &mut |_, input| {
 						let location = input.current_source_location();
@@ -221,10 +201,7 @@ pub enum Display {
 }
 
 impl Display {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let item = DisplayListItem::parse(context, input)?;
@@ -277,10 +254,7 @@ pub fn initial_value() -> Display {
 	})
 }
 
-pub fn cascade_property<'a>(
-	declaration: Option<&PropertyDeclaration>,
-	context: &'a mut StyleContext,
-) {
+pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 	let computed_value = computed::from_non_inherited_property!(
 		declaration,
 		context.parent_style.get_display().clone(),

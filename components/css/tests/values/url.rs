@@ -18,13 +18,7 @@ pub fn url_data() -> Vec<(String, String)> {
 			[r#""http://www.example.com/pinkish.gif""#].iter(),
 		)
 		.iter(),
-		[
-			"",
-			" prefetch",
-			" var(--foo)",
-			" defer toggle(italic, normal)",
-		]
-		.iter(),
+		["", " prefetch", " var(--foo)", " defer toggle(italic, normal)"].iter(),
 	)
 	.iter()
 	{

@@ -12,10 +12,7 @@ pub struct AnimationDelay {
 }
 
 impl AnimationDelay {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let times = input.parse_comma_separated(|input| Time::parse(context, input))?;
 		Ok(AnimationDelay { times })
 	}

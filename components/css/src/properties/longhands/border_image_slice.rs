@@ -14,21 +14,12 @@ pub struct BorderImageSlice {
 }
 
 impl BorderImageSlice {
-	pub fn parse<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		let mut fill = input
-			.try_parse(|input| input.expect_ident_matching("fill"))
-			.is_ok();
-		let offsets = Rect::parse_with(input, |input| {
-			NonNegativeNumberOrPercentage::parse(context, input)
-		})?;
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let mut fill = input.try_parse(|input| input.expect_ident_matching("fill")).is_ok();
+		let offsets = Rect::parse_with(input, |input| NonNegativeNumberOrPercentage::parse(context, input))?;
 
 		if !fill {
-			fill = input
-				.try_parse(|input| input.expect_ident_matching("fill"))
-				.is_ok();
+			fill = input.try_parse(|input| input.expect_ident_matching("fill")).is_ok();
 		}
 
 		Ok(BorderImageSlice { fill, offsets })
