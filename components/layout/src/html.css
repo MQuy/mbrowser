@@ -2,6 +2,8 @@ html {
   display: block;
   font-family: system-ui;
   font-size: medium;
+  background-color: white;
+  color: black;
 }
 
 /* children of the <head> element all have display:none */

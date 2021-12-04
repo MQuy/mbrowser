@@ -75,6 +75,7 @@ impl Default for Sides {
 	}
 }
 
+#[derive(Debug)]
 pub struct IntrinsicSize {
 	pub preferred_width: Pixel,
 	pub preferred_height: Pixel,
@@ -91,6 +92,7 @@ impl Default for IntrinsicSize {
 	}
 }
 
+#[derive(Debug)]
 pub struct LayoutInfo {
 	pub width: Pixel,
 	pub height: Pixel,
@@ -188,13 +190,13 @@ impl LayoutInfo {
 	}
 
 	pub fn compute_intrinsic(&mut self, node: &dyn Box) {
-		let mut preferred_minimum_width = PIXEL_ZERO;
-		let mut preferred_width = PIXEL_ZERO;
+		let mut preferred_minimum_width = self.intrinsic_size.preferred_minimum_width;
+		let mut preferred_width = self.intrinsic_size.preferred_width;
 		match node.formatting_context_type() {
 			FormattingContextType::BlockFormattingContext => {
 				for child in node.children() {
 					let child_layout_info = child.layout_info();
-					preferred_minimum_width = preferred_minimum_width.max(
+					preferred_minimum_width = self.width.max(
 						child_layout_info.intrinsic_size.preferred_minimum_width + child_layout_info.horizontal_sides(),
 					);
 					preferred_width = preferred_width.max(child_layout_info.intrinsic_size.preferred_width)

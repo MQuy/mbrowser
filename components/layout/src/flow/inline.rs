@@ -234,7 +234,10 @@ impl Box for InlineLevelBox {
 					fragment.set_x(parent_current_width);
 
 					let fragment = Rc::new(RefCell::new(fragment));
-					self.add_fragment(fragment.clone());
+					// for inline-block, there is only one fragment which has the same as layout
+					// -> simply adding fragment to its fragments
+					self.fragments.borrow_mut().clear();
+					self.fragments.borrow_mut().push(fragment.clone());
 					parent.add_child_fragment(fragment.clone());
 
 					if parent.id() == establisher.id() {
@@ -244,7 +247,10 @@ impl Box for InlineLevelBox {
 					BoxClass::update_ancestors_width(fragment.clone(), establisher.clone(), self.ancestors());
 				} else {
 					let fragment = Rc::new(RefCell::new(fragment));
-					self.add_fragment(fragment.clone());
+					// for inline-block, there is only one fragment which has the same as layout
+					// -> simply adding fragment to its fragments
+					self.fragments.borrow_mut().clear();
+					self.fragments.borrow_mut().push(fragment.clone());
 					BoxClass::update_ancestors_with_newline(
 						fragment.clone(),
 						establisher.clone(),

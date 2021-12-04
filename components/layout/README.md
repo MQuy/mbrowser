@@ -219,13 +219,17 @@ enum StyleSource {
 #### Implementation
 
 ```rs
+pub struct IntrinsicSize {
+	pub preferred_width: Pixel,
+  pub preferred_minimum_width: Pixel,
+  pub preferred_height: Pixel,
+}
 pub struct LayoutInfo {
   pub width: Pixel,
   pub height: Pixel,
   pub margin: Sides,
   pub padding: Sides,
-	pub preferred_width: Pixel,
-  pub preferred_minimum_width: Pixel,
+  pub intrinsic_size: IntrinsicSize,
 }
 
 pub struct BlockLevelBox {
