@@ -1114,6 +1114,8 @@ impl LonghandId {
 			LonghandId::MarginTop => longhands::margin_top::cascade_property,
 			LonghandId::MinWidth => longhands::min_width::cascade_property,
 			LonghandId::MinHeight => longhands::min_height::cascade_property,
+			LonghandId::MaxWidth => longhands::max_width::cascade_property,
+			LonghandId::MaxHeight => longhands::max_height::cascade_property,
 			LonghandId::PaddingBottom => longhands::padding_bottom::cascade_property,
 			LonghandId::PaddingLeft => longhands::padding_left::cascade_property,
 			LonghandId::PaddingRight => longhands::padding_right::cascade_property,

@@ -5,7 +5,7 @@ use crate::properties::longhand_id::LonghandId;
 use crate::properties::longhands;
 use crate::properties::longhands::display::Display;
 use crate::properties::longhands::font_size::DEFAULT_FONT_SIZE;
-use crate::values::computed::length::{LengthPercentageOrAuto, NonNegativeLengthPercentage, Size};
+use crate::values::computed::length::{LengthPercentageOrAuto, MaxSize, NonNegativeLengthPercentage, Size};
 use crate::values::specified::color::RGBA;
 use crate::values::CSSFloat;
 
@@ -14,18 +14,22 @@ pub struct Box {
 	pub display: Display,
 	pub width: Size,
 	pub min_width: Size,
+	pub max_width: MaxSize,
 	pub height: Size,
 	pub min_height: Size,
+	pub max_height: MaxSize,
 }
 
 impl Default for Box {
 	fn default() -> Self {
 		Self {
 			display: longhands::display::initial_value(),
+			width: Size::Auto,
+			min_width: Size::Auto,
+			max_width: MaxSize::None,
 			height: Size::Auto,
 			min_height: Size::Auto,
-			min_width: Size::Auto,
-			width: Size::Auto,
+			max_height: MaxSize::None,
 		}
 	}
 }
@@ -144,6 +148,14 @@ impl ComputedValues {
 		self.box_.min_width = value;
 	}
 
+	pub fn get_max_width(&self) -> &MaxSize {
+		&self.box_.max_width
+	}
+
+	pub fn set_max_width(&mut self, value: MaxSize) {
+		self.box_.max_width = value;
+	}
+
 	pub fn get_height(&self) -> &Size {
 		&self.box_.height
 	}
@@ -158,6 +170,14 @@ impl ComputedValues {
 
 	pub fn set_min_height(&mut self, value: Size) {
 		self.box_.min_height = value;
+	}
+
+	pub fn get_max_height(&self) -> &MaxSize {
+		&self.box_.max_height
+	}
+
+	pub fn set_max_height(&mut self, value: MaxSize) {
+		self.box_.max_height = value;
 	}
 
 	pub fn get_color(&self) -> &RGBA {

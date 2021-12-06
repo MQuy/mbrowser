@@ -100,6 +100,22 @@ pub fn size_data() -> Vec<(String, String)> {
 	data
 }
 
+pub fn max_size_data() -> Vec<(String, String)> {
+	let mut data = length_percentage_data();
+	for value in [
+		"none",
+		"min-content",
+		"max-content",
+		"fit-content(10px)",
+		"fit-content(5.5%)",
+	]
+	.iter()
+	{
+		data.push((value.to_string(), value.to_string()));
+	}
+	data
+}
+
 pub fn non_negative_length_or_number_rect_data() -> Vec<(String, String)> {
 	let mut data = Vec::with_capacity(1);
 	for (input, output) in length_data().iter() {

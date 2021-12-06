@@ -1,6 +1,6 @@
 use common::not_supported;
 
-use crate::values::generics::length::{GenericLengthPercentageOrAuto, GenericSize};
+use crate::values::generics::length::{GenericLengthPercentageOrAuto, GenericMaxSize, GenericSize};
 use crate::values::generics::number::NonNegative;
 use crate::values::specified::percentage::Percentage;
 use crate::values::{CSSFloat, Pixel};
@@ -77,12 +77,28 @@ impl Size {
 	#[inline]
 	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
 		match self {
-			Size::Auto => None,
-			Size::LengthPercentage(length_percentage) => match length_percentage.0 {
+			Self::Auto => None,
+			Self::LengthPercentage(length_percentage) => match length_percentage.0 {
 				LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(length)),
 				_ => None,
 			},
-			Size::ExtremumLength(_) => not_supported!(),
+			Self::ExtremumLength(_) => not_supported!(),
+		}
+	}
+}
+
+pub type MaxSize = GenericMaxSize<NonNegativeLengthPercentage>;
+
+impl MaxSize {
+	#[inline]
+	pub fn to_fixed_used_value(&self) -> Option<Pixel> {
+		match self {
+			Self::None => None,
+			Self::LengthPercentage(length_percentage) => match length_percentage.0 {
+				LengthPercentage::AbsoluteLength(length) => Some(Pixel::new(length)),
+				_ => None,
+			},
+			Self::ExtremumLength(_) => not_supported!(),
 		}
 	}
 }

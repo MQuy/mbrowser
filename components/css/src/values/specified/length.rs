@@ -13,7 +13,7 @@ use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::generics::length::{
 	GenericLengthOrAuto, GenericLengthOrNone, GenericLengthOrNumber, GenericLengthPercentageNumberOrAuto,
 	GenericLengthPercentageNumberOrNormal, GenericLengthPercentageOrAuto, GenericLengthPercentageOrNormal,
-	GenericRectOrAuto, GenericSize, Rect,
+	GenericMaxSize, GenericRectOrAuto, GenericSize, Rect,
 };
 use crate::values::generics::number::NonNegative;
 use crate::values::{computed, generics, AllowedNumericType, CSSFloat};
@@ -469,11 +469,9 @@ impl Size {
 
 	pub fn to_computed_value(&self, context: &StyleContext) -> computed::length::Size {
 		match self {
-			GenericSize::Auto => computed::length::Size::Auto,
-			GenericSize::LengthPercentage(value) => {
-				computed::length::Size::LengthPercentage(value.to_computed_value(context))
-			},
-			GenericSize::ExtremumLength(value) => match value {
+			Self::Auto => computed::length::Size::Auto,
+			Self::LengthPercentage(value) => computed::length::Size::LengthPercentage(value.to_computed_value(context)),
+			Self::ExtremumLength(value) => match value {
 				generics::length::ExtremumLength::MaxContent => {
 					computed::length::Size::ExtremumLength(generics::length::ExtremumLength::MaxContent)
 				},
@@ -481,6 +479,34 @@ impl Size {
 					computed::length::Size::ExtremumLength(generics::length::ExtremumLength::MinContent)
 				},
 				generics::length::ExtremumLength::FitContent(value) => computed::length::Size::ExtremumLength(
+					generics::length::ExtremumLength::FitContent(value.to_computed_value(context)),
+				),
+			},
+		}
+	}
+}
+
+pub type MaxSize = GenericMaxSize<NonNegativeLengthPercentage>;
+
+impl MaxSize {
+	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		Self::parse_with(input, |input| NonNegativeLengthPercentage::parse(context, input))
+	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> computed::length::MaxSize {
+		match self {
+			Self::None => computed::length::MaxSize::None,
+			Self::LengthPercentage(value) => {
+				computed::length::MaxSize::LengthPercentage(value.to_computed_value(context))
+			},
+			Self::ExtremumLength(value) => match value {
+				generics::length::ExtremumLength::MaxContent => {
+					computed::length::MaxSize::ExtremumLength(generics::length::ExtremumLength::MaxContent)
+				},
+				generics::length::ExtremumLength::MinContent => {
+					computed::length::MaxSize::ExtremumLength(generics::length::ExtremumLength::MinContent)
+				},
+				generics::length::ExtremumLength::FitContent(value) => computed::length::MaxSize::ExtremumLength(
 					generics::length::ExtremumLength::FitContent(value.to_computed_value(context)),
 				),
 			},

@@ -246,11 +246,11 @@ pub enum PropertyDeclaration {
 	/// `max-block-size`
 	MaxBlockSize(values::specified::length::Size),
 	/// `max-height`
-	MaxHeight(values::specified::length::Size),
+	MaxHeight(values::specified::length::MaxSize),
 	/// `max-inline-size`
 	MaxInlineSize(values::specified::length::Size),
 	/// `max-width`
-	MaxWidth(values::specified::length::Size),
+	MaxWidth(values::specified::length::MaxSize),
 	/// `border-bottom-left-radius`
 	BorderBottomLeftRadius(values::specified::border::BorderCornerRadius),
 	/// `border-bottom-right-radius`

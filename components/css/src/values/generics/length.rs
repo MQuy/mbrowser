@@ -171,6 +171,28 @@ pub enum ExtremumLength<LengthPercent> {
 	FitContent(LengthPercent),
 }
 
+impl<LP> ExtremumLength<LP> {
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
+	where
+		F: for<'ii, 'tt> Fn(&mut Parser<'ii, 'tt>) -> Result<LP, ParseError<'ii>>,
+	{
+		let location = input.current_source_location();
+		let token = input.next()?.clone();
+		match &token {
+			Token::Ident(ident) => Ok(match_ignore_ascii_case! { ident,
+				"max-content" => ExtremumLength::MaxContent,
+				"min-content" => ExtremumLength::MinContent,
+				_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
+			}),
+			Token::Function(name) if name.eq_ignore_ascii_case("fit-content") => input.parse_nested_block(|input| {
+				let length_percentage = item_parser(input)?;
+				Ok(ExtremumLength::FitContent(length_percentage))
+			}),
+			_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))),
+		}
+	}
+}
+
 impl<LP: ToCss> ToCss for ExtremumLength<LP> {
 	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
 	where
@@ -208,25 +230,8 @@ impl<LP> GenericSize<LP> {
 						Ok(Self::LengthPercentage(length_percentage))
 					})
 					.or_else(|_err: ParseError<'i>| {
-						let location = input.current_source_location();
-						let token = input.next()?.clone();
-						match &token {
-							Token::Ident(ident) => Ok(Self::ExtremumLength(match_ignore_ascii_case! { ident,
-								"max-content" => ExtremumLength::MaxContent,
-								"min-content" => ExtremumLength::MinContent,
-								_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
-							})),
-							Token::Function(name) if name.eq_ignore_ascii_case("fit-content") => input
-								.parse_nested_block(|input| {
-									let length_percentage = item_parser(input)?;
-									Ok(Self::ExtremumLength(ExtremumLength::FitContent(length_percentage)))
-								}),
-							_ => {
-								return Err(
-									location.new_custom_error(StyleParseErrorKind::UnexpectedToken(token.clone()))
-								)
-							},
-						}
+						let extremum_length = ExtremumLength::parse_with(input, item_parser)?;
+						Ok(Self::ExtremumLength(extremum_length))
 					})
 			})
 	}
@@ -241,6 +246,50 @@ impl<LP: ToCss> ToCss for GenericSize<LP> {
 			GenericSize::Auto => dest.write_str("auto"),
 			GenericSize::LengthPercentage(value) => value.to_css(dest),
 			GenericSize::ExtremumLength(value) => value.to_css(dest),
+		}
+	}
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum GenericMaxSize<LengthPercent> {
+	None,
+	LengthPercentage(LengthPercent),
+	ExtremumLength(ExtremumLength<LengthPercent>),
+}
+
+impl<LP> GenericMaxSize<LP> {
+	pub fn parse_with<'i, 't, F>(input: &mut Parser<'i, 't>, item_parser: F) -> Result<Self, ParseError<'i>>
+	where
+		F: for<'ii, 'tt> Fn(&mut Parser<'ii, 'tt>) -> Result<LP, ParseError<'ii>>,
+	{
+		input
+			.try_parse(|input| {
+				input.expect_ident_matching("none")?;
+				Ok(Self::None)
+			})
+			.or_else(|_err: ParseError<'i>| {
+				input
+					.try_parse(|input| {
+						let length_percentage = item_parser(input)?;
+						Ok(Self::LengthPercentage(length_percentage))
+					})
+					.or_else(|_err: ParseError<'i>| {
+						let extremum_length = ExtremumLength::parse_with(input, item_parser)?;
+						Ok(Self::ExtremumLength(extremum_length))
+					})
+			})
+	}
+}
+
+impl<LP: ToCss> ToCss for GenericMaxSize<LP> {
+	fn to_css<W>(&self, dest: &mut W) -> std::fmt::Result
+	where
+		W: std::fmt::Write,
+	{
+		match self {
+			Self::None => dest.write_str("none"),
+			Self::LengthPercentage(value) => value.to_css(dest),
+			Self::ExtremumLength(value) => value.to_css(dest),
 		}
 	}
 }

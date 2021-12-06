@@ -1,4 +1,4 @@
-use length::size_data;
+use length::max_size_data;
 use setup::assert_property;
 
 #[path = "../values/length.rs"]
@@ -12,4 +12,4 @@ const TEMPLATE: &str = r#"
 	max-height: {};
 }}"#;
 
-test_property!(size, size_data);
+test_property!(max_size, max_size_data);

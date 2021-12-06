@@ -68,26 +68,17 @@ fn main() {
 	let mut parser = driver::parse_document(sink, Default::default());
 	parser.process(StrTendril::from(
 		r#"
-<div class="a">
-  <div class="b">
-    <div class="c">
-      <div class="d">
-        <div class="e">
-          <div class="f">
-            <div class="g">
-                <div style="color: black; background-color: white; width: 150px">
-                    Hello darkness my old friend
-                    <div id="hello" style="display: inline-block; height: 40px; padding-left: 4px">
-                        <div>bla bla bla bla</div>
-                    </div>
-                    <p><span>mBrowser here</span></p>
-                </div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div style="display: inline-block; padding: 0 50%;">
+    <div>
+        <span>echo12</span>
+        <span>
+            echo echo echo echo echo echo echo echo echo echo echo echo
+            echo echo
+        </span>
     </div>
-  </div>
+    <div style="width: 200px;">
+        he
+    </div>
 </div>
 "#,
 	));
