@@ -259,3 +259,68 @@ impl<Set: string_cache::StaticAtomSet> GenericAtomIdent<Set> {
 		unsafe { &*ptr }
 	}
 }
+
+macro_rules! shortcut_for_four_values {
+	($input:tt, $top:tt, $right:tt, $bottom:tt, $left:tt, $type:tt) => {
+		impl $input {
+			pub fn from_value(value: $type) -> Self {
+				Self {
+					$top: value.clone(),
+					$right: value.clone(),
+					$bottom: value.clone(),
+					$left: value,
+				}
+			}
+
+			pub fn from_two_values(first: $type, second: $type) -> Self {
+				Self {
+					$top: first.clone(),
+					$bottom: first,
+					$left: second.clone(),
+					$right: second,
+				}
+			}
+
+			pub fn from_three_values(first: $type, second: $type, third: $type) -> Self {
+				Longhands {
+					$top: first,
+					$left: second.clone(),
+					$right: second,
+					$bottom: third,
+				}
+			}
+
+			pub fn from_four_values(first: $type, second: $type, third: $type, forth: $type) -> Self {
+				Longhands {
+					$top: first,
+					$right: second,
+					$bottom: third,
+					$left: forth,
+				}
+			}
+
+			pub fn parse_values<'i, 't>(
+				context: &ParserContext,
+				input: &mut Parser<'i, 't>,
+			) -> Result<Self, ParseError<'i>> {
+				let first = $type::parse(context, input)?;
+				let second = if let Ok(value) = $type::parse(context, input) {
+					value
+				} else {
+					return Ok(Self::from_value(first));
+				};
+				let third = if let Ok(value) = $type::parse(context, input) {
+					value
+				} else {
+					return Ok(Self::from_two_values(first, second));
+				};
+				Ok(if let Ok(value) = $type::parse(context, input) {
+					Self::from_four_values(first, second, third, value)
+				} else {
+					Self::from_three_values(first, second, third)
+				})
+			}
+		}
+	};
+}
+pub(crate) use shortcut_for_four_values;
