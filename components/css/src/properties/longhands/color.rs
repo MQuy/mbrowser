@@ -26,10 +26,10 @@ pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: 
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	let color = Color::parse(context, input)?;
+	let color = Color::parse(input)?;
 	Ok(match color {
 		Color::CurrentColor => PropertyDeclaration::CSSWideKeyword(WideKeywordDeclaration {
 			id: LonghandId::Color,

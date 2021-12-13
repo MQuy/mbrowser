@@ -299,22 +299,19 @@ macro_rules! shortcut_for_four_values {
 				}
 			}
 
-			pub fn parse_values<'i, 't>(
-				context: &ParserContext,
-				input: &mut Parser<'i, 't>,
-			) -> Result<Self, ParseError<'i>> {
-				let first = $type::parse(context, input)?;
-				let second = if let Ok(value) = $type::parse(context, input) {
+			pub fn parse_values<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+				let first = $type::parse(input)?;
+				let second = if let Ok(value) = $type::parse(input) {
 					value
 				} else {
 					return Ok(Self::from_value(first));
 				};
-				let third = if let Ok(value) = $type::parse(context, input) {
+				let third = if let Ok(value) = $type::parse(input) {
 					value
 				} else {
 					return Ok(Self::from_two_values(first, second));
 				};
-				Ok(if let Ok(value) = $type::parse(context, input) {
+				Ok(if let Ok(value) = $type::parse(input) {
 					Self::from_four_values(first, second, third, value)
 				} else {
 					Self::from_three_values(first, second, third)

@@ -26,8 +26,8 @@ pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: 
 
 /// https://drafts.csswg.org/css-box-4/#propdef-margin-right
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::MarginRight)
+	LengthPercentageOrAuto::parse(input).map(PropertyDeclaration::MarginRight)
 }

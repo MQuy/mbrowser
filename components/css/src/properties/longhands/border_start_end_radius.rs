@@ -7,8 +7,8 @@ use crate::values::specified::border::BorderCornerRadius;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-start-end-radius
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BorderCornerRadius::parse(context, input).map(PropertyDeclaration::BorderStartEndRadius)
+	BorderCornerRadius::parse(input).map(PropertyDeclaration::BorderStartEndRadius)
 }

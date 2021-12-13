@@ -13,14 +13,14 @@ pub enum OutlineColor {
 }
 
 impl OutlineColor {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("invert")?;
 				Ok(OutlineColor::Invert)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let color = Color::parse(context, input)?;
+				let color = Color::parse(input)?;
 				Ok(OutlineColor::Color(color))
 			})
 	}
@@ -39,8 +39,8 @@ impl ToCss for OutlineColor {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	OutlineColor::parse(context, input).map(PropertyDeclaration::OutlineColor)
+	OutlineColor::parse(input).map(PropertyDeclaration::OutlineColor)
 }

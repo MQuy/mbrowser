@@ -338,25 +338,25 @@ pub enum MediaExpressionValue {
 
 impl MediaExpressionValue {
 	fn parse<'i, 't>(
-		context: &ParserContext,
+		_context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 		description_value: &MediaFeatureDescription,
 	) -> Result<Self, ParseError<'i>> {
 		Ok(match &description_value.evaluator {
 			Evaluator::Length => {
-				let length = Length::parse_non_negative(context, input)?;
+				let length = Length::parse_non_negative(input)?;
 				MediaExpressionValue::Length(length)
 			},
 			Evaluator::Integer => {
-				let integer = Integer::parse_non_negative(context, input)?;
+				let integer = Integer::parse_non_negative(input)?;
 				MediaExpressionValue::Integer(integer.get() as u32)
 			},
 			Evaluator::Float => {
-				let number = Number::parse(context, input)?;
+				let number = Number::parse(input)?;
 				MediaExpressionValue::Float(number.get())
 			},
 			Evaluator::BoolInteger => {
-				let integer = Integer::parse_non_negative(context, input)?;
+				let integer = Integer::parse_non_negative(input)?;
 				let value = integer.get();
 				if value > 1 {
 					return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
@@ -364,11 +364,11 @@ impl MediaExpressionValue {
 				MediaExpressionValue::BoolInteger(value == 1)
 			},
 			Evaluator::NumberRatio => {
-				let ratio = Ratio::parse(context, input)?;
+				let ratio = Ratio::parse(input)?;
 				MediaExpressionValue::NumberRatio(ratio)
 			},
 			Evaluator::Resolution => {
-				let resolution = Resolution::parse(context, input)?;
+				let resolution = Resolution::parse(input)?;
 				MediaExpressionValue::Resolution(resolution)
 			},
 			Evaluator::Enumerated(enumerated) => {

@@ -26,8 +26,8 @@ pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: 
 
 /// https://drafts.csswg.org/css-box-4/#propdef-padding-left
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingLeft)
+	NonNegativeLengthPercentage::parse(input).map(PropertyDeclaration::PaddingLeft)
 }

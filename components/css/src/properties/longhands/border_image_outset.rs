@@ -7,8 +7,8 @@ use crate::values::specified::length::NonNegativeLengthOrNumberRect;
 
 /// https://drafts.csswg.org/css-backgrounds/#the-border-image-outset
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	NonNegativeLengthOrNumberRect::parse(context, input).map(PropertyDeclaration::BorderImageOutset)
+	NonNegativeLengthOrNumberRect::parse(input).map(PropertyDeclaration::BorderImageOutset)
 }

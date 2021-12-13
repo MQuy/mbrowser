@@ -10,8 +10,8 @@ use crate::values::specified::easing::EasingFunction;
 pub struct TransitionTimingFunction(Vec<EasingFunction>);
 
 impl TransitionTimingFunction {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let values = input.parse_comma_separated(|input| EasingFunction::parse(context, input))?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let values = input.parse_comma_separated(|input| EasingFunction::parse(input))?;
 		Ok(TransitionTimingFunction(values))
 	}
 }
@@ -27,8 +27,8 @@ impl ToCss for TransitionTimingFunction {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	TransitionTimingFunction::parse(context, input).map(PropertyDeclaration::TransitionTimingFunction)
+	TransitionTimingFunction::parse(input).map(PropertyDeclaration::TransitionTimingFunction)
 }

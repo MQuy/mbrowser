@@ -7,8 +7,8 @@ use crate::values::specified::line::LineWidth;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-inline-start-width
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	LineWidth::parse(context, input).map(PropertyDeclaration::BorderBlockStartWidth)
+	LineWidth::parse(input).map(PropertyDeclaration::BorderBlockStartWidth)
 }

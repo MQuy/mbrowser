@@ -26,8 +26,8 @@ pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: 
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	MaxSize::parse(context, input).map(PropertyDeclaration::MaxWidth)
+	MaxSize::parse(input).map(PropertyDeclaration::MaxWidth)
 }

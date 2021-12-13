@@ -15,7 +15,7 @@ pub enum TextOverflowSide {
 }
 
 impl TextOverflowSide {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -36,7 +36,7 @@ impl TextOverflowSide {
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.expect_function_matching("fade")?;
-				let arg = input.parse_nested_block(|input| LengthPercentage::parse(context, input))?;
+				let arg = input.parse_nested_block(|input| LengthPercentage::parse(input))?;
 				Ok(TextOverflowSide::Fade(Some(arg)))
 			})
 	}
@@ -70,9 +70,9 @@ pub struct TextOverflow {
 }
 
 impl TextOverflow {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<TextOverflow, ParseError<'i>> {
-		let first = TextOverflowSide::parse(context, input)?;
-		let second = TextOverflowSide::parse(context, input).ok();
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<TextOverflow, ParseError<'i>> {
+		let first = TextOverflowSide::parse(input)?;
+		let second = TextOverflowSide::parse(input).ok();
 		Ok(TextOverflow { first, second })
 	}
 }
@@ -92,8 +92,8 @@ impl ToCss for TextOverflow {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	TextOverflow::parse(context, input).map(PropertyDeclaration::TextOverflow)
+	TextOverflow::parse(input).map(PropertyDeclaration::TextOverflow)
 }

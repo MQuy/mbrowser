@@ -13,14 +13,14 @@ pub enum ListStyleImage {
 }
 
 impl ListStyleImage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(ListStyleImage::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let image = input.try_parse(|input| Image::parse(context, input))?;
+				let image = input.try_parse(|input| Image::parse(input))?;
 				Ok(ListStyleImage::Image(image))
 			})
 	}
@@ -39,8 +39,8 @@ impl ToCss for ListStyleImage {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	ListStyleImage::parse(context, input).map(PropertyDeclaration::ListStyleImage)
+	ListStyleImage::parse(input).map(PropertyDeclaration::ListStyleImage)
 }

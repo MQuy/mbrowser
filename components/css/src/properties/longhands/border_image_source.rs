@@ -13,14 +13,14 @@ pub enum BorderImageSource {
 }
 
 impl BorderImageSource {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(BorderImageSource::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let image = Image::parse(context, input)?;
+				let image = Image::parse(input)?;
 				Ok(BorderImageSource::Image(image))
 			})
 	}
@@ -39,8 +39,8 @@ impl ToCss for BorderImageSource {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BorderImageSource::parse(context, input).map(PropertyDeclaration::BorderImageSource)
+	BorderImageSource::parse(input).map(PropertyDeclaration::BorderImageSource)
 }

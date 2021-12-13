@@ -27,11 +27,11 @@ shortcut_for_four_values!(
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
 	declarations: &mut SourcePropertyDeclaration,
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
 	input
-		.parse_entirely(|input| Longhands::parse_values(context, input))
+		.parse_entirely(|input| Longhands::parse_values(input))
 		.map(|longhands| {
 			declarations.push(PropertyDeclaration::BorderTopColor(longhands.border_top_color));
 			declarations.push(PropertyDeclaration::BorderRightColor(longhands.border_right_color));

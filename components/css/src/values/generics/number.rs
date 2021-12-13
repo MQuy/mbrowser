@@ -1,7 +1,6 @@
 use cssparser::{Parser, ToCss};
 
 use crate::parser::ParseError;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::specified::percentage::Percentage;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -11,17 +10,13 @@ pub enum GenericNumberOrPercentage<Number> {
 }
 
 impl<N> GenericNumberOrPercentage<N> {
-	pub fn parse_with<'i, 't, NP>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		number_parser: NP,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse_with<'i, 't, NP>(input: &mut Parser<'i, 't>, number_parser: NP) -> Result<Self, ParseError<'i>>
 	where
 		NP: FnOnce(&mut Parser<'i, 't>) -> Result<N, ParseError<'i>>,
 	{
 		input
 			.try_parse(|input| {
-				let value = Percentage::parse(context, input)?;
+				let value = Percentage::parse(input)?;
 				Ok(Self::Percentage(value))
 			})
 			.or_else(|_err: ParseError<'i>| {

@@ -43,14 +43,14 @@ pub enum StringOrImage {
 }
 
 impl StringOrImage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let value = input.expect_string()?.to_string();
 				Ok(StringOrImage::String(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let image = Image::parse(context, input)?;
+				let image = Image::parse(input)?;
 				Ok(StringOrImage::Image(image))
 			})
 	}
@@ -75,11 +75,11 @@ pub struct Symbols {
 }
 
 impl Symbols {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("symbols")?;
 		input.parse_nested_block(|input| {
 			let symbols_type = input.try_parse(|input| SymbolsType::parse(input)).ok();
-			let idents = parse_repeated(input, &mut |input| StringOrImage::parse(context, input), 1)?;
+			let idents = parse_repeated(input, &mut |input| StringOrImage::parse(input), 1)?;
 			Ok(Symbols { symbols_type, idents })
 		})
 	}
@@ -111,14 +111,14 @@ pub enum CounterStyle {
 }
 
 impl CounterStyle {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let name = CustomIdent::parse(input)?;
 				Ok(CounterStyle::Name(name))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let symbols = Symbols::parse(context, input)?;
+				let symbols = Symbols::parse(input)?;
 				Ok(CounterStyle::Symbols(symbols))
 			})
 	}
@@ -143,12 +143,12 @@ pub struct InnerMostCounter {
 }
 
 impl InnerMostCounter {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
 		let style = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				CounterStyle::parse(context, input)
+				CounterStyle::parse(input)
 			})
 			.ok();
 		Ok(InnerMostCounter { name, style })
@@ -178,14 +178,14 @@ pub struct AllCounters {
 }
 
 impl AllCounters {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = CustomIdent::parse_excluding(input, &["none"])?;
 		input.expect_comma()?;
 		let str = input.expect_string()?.to_string();
 		let style = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				CounterStyle::parse(context, input)
+				CounterStyle::parse(input)
 			})
 			.ok();
 		Ok(AllCounters {
@@ -220,13 +220,13 @@ pub enum Counter {
 }
 
 impl Counter {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {
 			Ok(match_ignore_ascii_case! { &name,
-				"counter" => Counter::Counter(InnerMostCounter::parse(context, input)?),
-				"counters" => Counter::Counters(AllCounters::parse(context, input)?),
+				"counter" => Counter::Counter(InnerMostCounter::parse(input)?),
+				"counters" => Counter::Counters(AllCounters::parse(input)?),
 				_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
 			})
 		})

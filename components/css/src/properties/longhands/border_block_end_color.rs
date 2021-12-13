@@ -7,8 +7,8 @@ use crate::values::specified::color::Color;
 
 /// https://drafts.csswg.org/css-logical/#propdef-border-block-end-color
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Color::parse(context, input).map(PropertyDeclaration::BorderBlockEndColor)
+	Color::parse(input).map(PropertyDeclaration::BorderBlockEndColor)
 }

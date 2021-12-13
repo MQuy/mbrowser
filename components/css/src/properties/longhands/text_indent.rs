@@ -16,18 +16,14 @@ pub struct TextIndent {
 }
 
 impl TextIndent {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut indent = None;
 		let mut hanging = None;
 		let mut each_line = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut indent, &mut |_, input| {
-						LengthPercentage::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut indent, &mut |_, input| LengthPercentage::parse(input)),
 				&mut |input| {
 					parse_item_if_missing(input, &mut hanging, &mut |_, input| {
 						input.expect_ident_matching("hanging")?;
@@ -66,8 +62,8 @@ impl ToCss for TextIndent {
 	}
 }
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	TextIndent::parse(context, input).map(PropertyDeclaration::TextIndent)
+	TextIndent::parse(input).map(PropertyDeclaration::TextIndent)
 }

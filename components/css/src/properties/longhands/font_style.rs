@@ -15,7 +15,7 @@ pub enum FontStyle {
 }
 
 impl FontStyle {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.try_parse(|input| {
 			let location = input.current_source_location();
 			let ident = input.expect_ident()?;
@@ -24,7 +24,7 @@ impl FontStyle {
 				"italic" => FontStyle::Italic,
 				"oblique" => {
 					let angle = input
-						.try_parse(|input| Angle::parse(context, input))
+						.try_parse(|input| Angle::parse(input))
 						.map_or("14deg".into(), |angle| angle);
 					FontStyle::Oblique(angle)
 				},
@@ -51,8 +51,8 @@ impl ToCss for FontStyle {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	FontStyle::parse(context, input).map(PropertyDeclaration::FontStyle)
+	FontStyle::parse(input).map(PropertyDeclaration::FontStyle)
 }

@@ -16,14 +16,14 @@ pub struct DropShadow {
 }
 
 impl DropShadow {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let color = input
-			.try_parse(|input| Color::parse(context, input))
+			.try_parse(|input| Color::parse(input))
 			.map_or(Color::Transparent, |color| color);
-		let horizontal = Length::parse(context, input)?;
-		let vertical = Length::parse(context, input)?;
+		let horizontal = Length::parse(input)?;
+		let vertical = Length::parse(input)?;
 		let blur = input
-			.try_parse(|input| Length::parse(context, input))
+			.try_parse(|input| Length::parse(input))
 			.map_or("0px".into(), |length| length);
 		Ok(DropShadow {
 			color,
@@ -62,12 +62,12 @@ pub enum FilterFunction {
 }
 
 impl FilterFunction {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let length = FilterFunction::parse_argugment(
 					input,
-					|input| NonNegativeLength::parse(context, input),
+					|input| NonNegativeLength::parse(input),
 					"blur",
 					"0px".into(),
 				)?;
@@ -77,7 +77,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"brightness",
 						"1".into(),
 					)
@@ -88,7 +88,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"contrast",
 						"1".into(),
 					)
@@ -98,7 +98,7 @@ impl FilterFunction {
 			.or_else(|_err: ParseError<'i>| {
 				let value = input.try_parse(|input| {
 					input.expect_function_matching("drop-shadow")?;
-					input.parse_nested_block(|input| DropShadow::parse(context, input))
+					input.parse_nested_block(|input| DropShadow::parse(input))
 				})?;
 				Ok(FilterFunction::DropShadow(value))
 			})
@@ -106,7 +106,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"grayscale",
 						"1".into(),
 					)
@@ -118,8 +118,8 @@ impl FilterFunction {
 					FilterFunction::parse_argugment(
 						input,
 						|input| {
-							input.try_parse(|input| Angle::parse(context, input)).or_else(|_err| {
-								Zero::parse(context, input)?;
+							input.try_parse(|input| Angle::parse(input)).or_else(|_err| {
+								Zero::parse(input)?;
 								Ok(Angle::Deg(0.0))
 							})
 						},
@@ -133,7 +133,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"invert",
 						"1".into(),
 					)
@@ -144,7 +144,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"opacity",
 						"1".into(),
 					)
@@ -155,7 +155,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"saturate",
 						"1".into(),
 					)
@@ -166,7 +166,7 @@ impl FilterFunction {
 				let value = input.try_parse(|input| {
 					FilterFunction::parse_argugment(
 						input,
-						|input| NonNegativeNumberOrPercentage::parse(context, input),
+						|input| NonNegativeNumberOrPercentage::parse(input),
 						"sepia",
 						"1".into(),
 					)
@@ -221,14 +221,14 @@ pub enum FilterFunctionOrUrl {
 }
 
 impl FilterFunctionOrUrl {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let url = CssUrl::parse(context, input)?;
+				let url = CssUrl::parse(input)?;
 				Ok(FilterFunctionOrUrl::Url(url))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let function = FilterFunction::parse(context, input)?;
+				let function = FilterFunction::parse(input)?;
 				Ok(FilterFunctionOrUrl::Function(function))
 			})
 	}
@@ -254,14 +254,14 @@ pub enum Filter {
 }
 
 impl Filter {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(Filter::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let filters = parse_repeated(input, &mut |input| FilterFunctionOrUrl::parse(context, input), 1)?;
+				let filters = parse_repeated(input, &mut |input| FilterFunctionOrUrl::parse(input), 1)?;
 				Ok(Filter::List(filters))
 			})
 	}
@@ -288,8 +288,8 @@ impl ToCss for Filter {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Filter::parse(context, input).map(PropertyDeclaration::Filter)
+	Filter::parse(input).map(PropertyDeclaration::Filter)
 }

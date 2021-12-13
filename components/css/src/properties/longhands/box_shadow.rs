@@ -16,7 +16,7 @@ pub struct Shadow {
 }
 
 impl Shadow {
-	pub fn parse<'i, 't, 'a>(context: &'a ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't, 'a>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut color = None;
 		let mut inset = None;
 		let mut length = None;
@@ -33,18 +33,18 @@ impl Shadow {
 				},
 				&mut |input| {
 					parse_item_if_missing(input, &mut length, &mut |_, input| {
-						let horizontal = Length::parse(context, input)?;
-						let vertical = Length::parse(context, input)?;
+						let horizontal = Length::parse(input)?;
+						let vertical = Length::parse(input)?;
 						let blur = input
-							.try_parse(|input| NonNegativeLength::parse(context, input))
+							.try_parse(|input| NonNegativeLength::parse(input))
 							.map_or("0px".into(), |length| length);
 						let spread = input
-							.try_parse(|input| Length::parse(context, input))
+							.try_parse(|input| Length::parse(input))
 							.map_or("0px".into(), |length| length);
 						Ok((horizontal, vertical, blur, spread))
 					})
 				},
-				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(context, input)),
+				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(input)),
 			],
 		);
 
@@ -86,7 +86,7 @@ pub enum BoxShadow {
 }
 
 impl BoxShadow {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
@@ -94,7 +94,7 @@ impl BoxShadow {
 			})
 			.or_else(|_err: ParseError<'i>| {
 				let shadows = input.parse_comma_separated(|input| {
-					let value = Shadow::parse(context, input)?;
+					let value = Shadow::parse(input)?;
 					Ok(value)
 				})?;
 				Ok(BoxShadow::Shadow(shadows))
@@ -121,8 +121,8 @@ impl ToCss for BoxShadow {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BoxShadow::parse(context, input).map(PropertyDeclaration::BoxShadow)
+	BoxShadow::parse(input).map(PropertyDeclaration::BoxShadow)
 }

@@ -7,8 +7,8 @@ use crate::values::specified::length::NonNegativeLengthPercentage;
 
 /// https://drafts.csswg.org/css-logical/#propdef-padding-inline-start
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	NonNegativeLengthPercentage::parse(context, input).map(PropertyDeclaration::PaddingInlineStart)
+	NonNegativeLengthPercentage::parse(input).map(PropertyDeclaration::PaddingInlineStart)
 }

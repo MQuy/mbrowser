@@ -46,19 +46,19 @@ impl Longhands {
 	}
 }
 
-pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
-	let first = NonNegativeLengthPercentage::parse(context, input)?;
-	let second = if let Ok(second) = NonNegativeLengthPercentage::parse(context, input) {
+pub fn parse_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
+	let first = NonNegativeLengthPercentage::parse(input)?;
+	let second = if let Ok(second) = NonNegativeLengthPercentage::parse(input) {
 		second
 	} else {
 		return Ok(Longhands::from_single_value(first));
 	};
-	let third = if let Ok(third) = NonNegativeLengthPercentage::parse(context, input) {
+	let third = if let Ok(third) = NonNegativeLengthPercentage::parse(input) {
 		third
 	} else {
 		return Ok(Longhands::from_two_values(first, second));
 	};
-	let forth = if let Ok(forth) = NonNegativeLengthPercentage::parse(context, input) {
+	let forth = if let Ok(forth) = NonNegativeLengthPercentage::parse(input) {
 		forth
 	} else {
 		return Ok(Longhands::from_three_values(first, second, third));
@@ -75,15 +75,13 @@ pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) 
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
 	declarations: &mut SourcePropertyDeclaration,
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
-	input
-		.parse_entirely(|input| parse_value(context, input))
-		.map(|longhands| {
-			declarations.push(PropertyDeclaration::PaddingTop(longhands.padding_top));
-			declarations.push(PropertyDeclaration::PaddingRight(longhands.padding_right));
-			declarations.push(PropertyDeclaration::PaddingBottom(longhands.padding_bottom));
-			declarations.push(PropertyDeclaration::PaddingLeft(longhands.padding_left));
-		})
+	input.parse_entirely(|input| parse_value(input)).map(|longhands| {
+		declarations.push(PropertyDeclaration::PaddingTop(longhands.padding_top));
+		declarations.push(PropertyDeclaration::PaddingRight(longhands.padding_right));
+		declarations.push(PropertyDeclaration::PaddingBottom(longhands.padding_bottom));
+		declarations.push(PropertyDeclaration::PaddingLeft(longhands.padding_left));
+	})
 }

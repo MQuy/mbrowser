@@ -33,7 +33,7 @@ pub enum HorizontalPosition {
 }
 
 impl HorizontalPosition {
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		Ok(match token {
@@ -47,22 +47,19 @@ impl HorizontalPosition {
 		})
 	}
 
-	pub fn parse_with_length<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_with_length<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
-			.try_parse(|input| HorizontalPosition::parse(context, input))
+			.try_parse(|input| HorizontalPosition::parse(input))
 			.or_else(|_err: ParseError<'i>| {
-				let length = LengthPercentage::parse(context, input)?;
+				let length = LengthPercentage::parse(input)?;
 				Ok(HorizontalPosition::Length(length))
 			})
 	}
 
-	pub fn parse_side<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse_side<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.try_parse(|input| {
 			let keyword = LeftOrRight::parse(input)?;
-			let length = LengthPercentage::parse(context, input).ok();
+			let length = LengthPercentage::parse(input).ok();
 			Ok(HorizontalPosition::Side(keyword, length))
 		})
 	}
@@ -109,7 +106,7 @@ pub enum VerticalPosition {
 }
 
 impl VerticalPosition {
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		Ok(match token {
@@ -123,22 +120,19 @@ impl VerticalPosition {
 		})
 	}
 
-	pub fn parse_with_length<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_with_length<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
-			.try_parse(|input| VerticalPosition::parse(context, input))
+			.try_parse(|input| VerticalPosition::parse(input))
 			.or_else(|_err: ParseError<'i>| {
-				let length = LengthPercentage::parse(context, input)?;
+				let length = LengthPercentage::parse(input)?;
 				Ok(VerticalPosition::Length(length))
 			})
 	}
 
-	pub fn parse_side<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse_side<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.try_parse(|input| {
 			let keyword = TopOrBottom::parse(input)?;
-			let length = LengthPercentage::parse(context, input).ok();
+			let length = LengthPercentage::parse(input).ok();
 			Ok(VerticalPosition::Side(keyword, length))
 		})
 	}
@@ -176,18 +170,17 @@ impl Position {
 		Self { horizontal, vertical }
 	}
 
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let horizontal = HorizontalPosition::parse_side(context, input)?;
-				let vertical = VerticalPosition::parse_side(context, input)?;
+				let horizontal = HorizontalPosition::parse_side(input)?;
+				let vertical = VerticalPosition::parse_side(input)?;
 				Ok(Position { horizontal, vertical })
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let horizontal = HorizontalPosition::parse_with_length(context, input)?;
-					let vertical =
-						VerticalPosition::parse_with_length(context, input).map_or(VerticalPosition::Center, |v| v);
+					let horizontal = HorizontalPosition::parse_with_length(input)?;
+					let vertical = VerticalPosition::parse_with_length(input).map_or(VerticalPosition::Center, |v| v);
 					Ok(Position { horizontal, vertical })
 				})
 			})
@@ -199,13 +192,11 @@ impl Position {
 					&mut [
 						&mut |input| {
 							parse_item_if_missing(input, &mut horizontal, &mut |_, input| {
-								HorizontalPosition::parse(context, input)
+								HorizontalPosition::parse(input)
 							})
 						},
 						&mut |input| {
-							parse_item_if_missing(input, &mut vertical, &mut |_, input| {
-								VerticalPosition::parse(context, input)
-							})
+							parse_item_if_missing(input, &mut vertical, &mut |_, input| VerticalPosition::parse(input))
 						},
 					],
 				);

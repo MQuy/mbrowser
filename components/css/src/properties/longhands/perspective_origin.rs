@@ -7,8 +7,8 @@ use crate::values::specified::position::Position;
 
 /// https://drafts.csswg.org/css-transforms-2/#perspective-origin-property
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Position::parse(context, input).map(PropertyDeclaration::PerspectiveOrigin)
+	Position::parse(input).map(PropertyDeclaration::PerspectiveOrigin)
 }

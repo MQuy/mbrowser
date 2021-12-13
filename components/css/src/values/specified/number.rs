@@ -25,16 +25,13 @@ impl Number {
 	}
 
 	/// Parse a float.
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_number()?;
 		Ok(Number { value })
 	}
 
-	pub fn parse_non_negative<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		let value = Number::parse(context, input)?;
+	pub fn parse_non_negative<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let value = Number::parse(input)?;
 		if value < 0 {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 		} else {
@@ -42,13 +39,8 @@ impl Number {
 		}
 	}
 
-	pub fn parse_in_range<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		from: f32,
-		to: f32,
-	) -> Result<Self, ParseError<'i>> {
-		let value = Number::parse(context, input)?;
+	pub fn parse_in_range<'i, 't>(input: &mut Parser<'i, 't>, from: f32, to: f32) -> Result<Self, ParseError<'i>> {
+		let value = Number::parse(input)?;
 		if from <= value.get() && value.get() <= to {
 			Ok(value)
 		} else {
@@ -114,10 +106,7 @@ pub struct Integer(i32);
 
 impl Integer {
 	/// Parse a non-negative integer.
-	pub fn parse_non_negative<'i, 't>(
-		_context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
+	pub fn parse_non_negative<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_integer()?;
 		if value < 0 {
 			return Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError));
@@ -177,18 +166,13 @@ impl NonNegativeNumber {
 		NonNegative::<Number>(Number::new(val.max(0.)))
 	}
 
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let value = Number::parse_non_negative(context, input)?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let value = Number::parse_non_negative(input)?;
 		Ok(NonNegative::<Number>(value))
 	}
 
-	pub fn parse_in_range<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		from: f32,
-		to: f32,
-	) -> Result<Self, ParseError<'i>> {
-		let value = Number::parse_in_range(context, input, from, to)?;
+	pub fn parse_in_range<'i, 't>(input: &mut Parser<'i, 't>, from: f32, to: f32) -> Result<Self, ParseError<'i>> {
+		let value = Number::parse_in_range(input, from, to)?;
 		Ok(NonNegative::<Number>(value))
 	}
 
@@ -246,17 +230,16 @@ impl IntegerAuto {
 pub type NumberOrPercentage = GenericNumberOrPercentage<Number>;
 
 impl NumberOrPercentage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		Self::parse_with(context, input, |input| Number::parse(context, input))
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		Self::parse_with(input, |input| Number::parse(input))
 	}
 
 	pub fn parse_in_range<'i, 't>(
-		context: &ParserContext,
 		input: &mut Parser<'i, 't>,
 		number_range: &Range<f32>,
 	) -> Result<Self, ParseError<'i>> {
-		Self::parse_with(context, input, |input| {
-			let value = Number::parse(context, input)?;
+		Self::parse_with(input, |input| {
+			let value = Number::parse(input)?;
 			if value.get() >= number_range.start && value.get() <= number_range.end {
 				Ok(value)
 			} else {
@@ -281,8 +264,8 @@ impl From<&str> for NumberOrPercentage {
 pub type NonNegativeNumberOrPercentage = GenericNumberOrPercentage<NonNegativeNumber>;
 
 impl NonNegativeNumberOrPercentage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		Self::parse_with(context, input, |input| NonNegativeNumber::parse(context, input))
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		Self::parse_with(input, |input| NonNegativeNumber::parse(input))
 	}
 }
 
@@ -302,7 +285,7 @@ impl From<&str> for NonNegativeNumberOrPercentage {
 pub struct Zero;
 
 impl Zero {
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let value = input.expect_number()?;
 		if value == 0.0 {
 			Ok(Zero)

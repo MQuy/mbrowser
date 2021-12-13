@@ -10,7 +10,6 @@ use crate::parser::{parse_in_any_order, parse_item_if_missing, parse_repeated_wi
 use crate::properties::declaration::property_keywords_impl;
 use crate::str::convert_options_to_string;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::url::CssUrl;
 use crate::values::Ident;
 
@@ -33,20 +32,20 @@ pub struct Annotation {
 }
 
 impl Annotation {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let tag = input
 			.try_parse(|input| ImageDirection::parse(input))
 			.map_or(None, |v| Some(v));
 		let src = input
-			.try_parse(|input| CssUrl::parse(context, input))
-			.or_else(|_err: ParseError<'i>| input.try_parse(|input| CssUrl::parse_string(context, input)))
+			.try_parse(|input| CssUrl::parse(input))
+			.or_else(|_err: ParseError<'i>| input.try_parse(|input| CssUrl::parse_string(input)))
 			.ok();
 		let color = input
 			.try_parse(|input| {
 				if src.is_some() {
 					input.expect_comma()?;
 				}
-				Color::parse(context, input)
+				Color::parse(input)
 			})
 			.ok();
 		Ok(Annotation { tag, src, color })
@@ -82,14 +81,14 @@ pub enum ImageReference {
 }
 
 impl ImageReference {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let image = Image::parse(context, input)?;
+				let image = Image::parse(input)?;
 				Ok(ImageReference::Image(image))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let url = CssUrl::parse_string(context, input)?;
+				let url = CssUrl::parse_string(input)?;
 				Ok(ImageReference::String(url))
 			})
 	}
@@ -115,18 +114,14 @@ pub struct ImageSetOption {
 }
 
 impl ImageSetOption {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let reference = ImageReference::parse(context, input)?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let reference = ImageReference::parse(input)?;
 		let mut resolution = None;
 		let mut mime = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut resolution, &mut |_, input| {
-						Resolution::parse(context, input)
-					})
-				},
+				&mut |input| parse_item_if_missing(input, &mut resolution, &mut |_, input| Resolution::parse(input)),
 				&mut |input| {
 					parse_item_if_missing(input, &mut mime, &mut |_, input| {
 						input.expect_function_matching("type")?;
@@ -173,14 +168,14 @@ pub enum ImageOrColor {
 }
 
 impl ImageOrColor {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let image = Image::parse(context, input)?;
+				let image = Image::parse(input)?;
 				Ok(ImageOrColor::Image(image))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let color = Color::parse(context, input)?;
+				let color = Color::parse(input)?;
 				Ok(ImageOrColor::Color(color))
 			})
 	}
@@ -205,20 +200,14 @@ pub struct CFImage {
 }
 
 impl CFImage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut percentage = None;
 		let mut fade = None;
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| {
-					parse_item_if_missing(input, &mut percentage, &mut |_, input| {
-						Percentage::parse(context, input)
-					})
-				},
-				&mut |input| {
-					parse_item_if_missing(input, &mut fade, &mut |_, input| ImageOrColor::parse(context, input))
-				},
+				&mut |input| parse_item_if_missing(input, &mut percentage, &mut |_, input| Percentage::parse(input)),
+				&mut |input| parse_item_if_missing(input, &mut fade, &mut |_, input| ImageOrColor::parse(input)),
 			],
 		);
 
@@ -274,10 +263,10 @@ pub enum LineDirection {
 }
 
 impl LineDirection {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let angle = Angle::parse(context, input)?;
+				let angle = Angle::parse(input)?;
 				Ok(LineDirection::Angle(angle))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -324,11 +313,7 @@ pub struct LinearColorStop<T> {
 }
 
 impl<T> LinearColorStop<T> {
-	pub fn parse<'i, 't, P>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		item_parser: &mut P,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse<'i, 't, P>(input: &mut Parser<'i, 't>, item_parser: &mut P) -> Result<Self, ParseError<'i>>
 	where
 		P: FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{
@@ -337,7 +322,7 @@ impl<T> LinearColorStop<T> {
 		parse_in_any_order(
 			input,
 			&mut [
-				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(context, input)),
+				&mut |input| parse_item_if_missing(input, &mut color, &mut |_, input| Color::parse(input)),
 				&mut |input| parse_item_if_missing(input, &mut length, &mut |_, input| item_parser(input)),
 			],
 		);
@@ -372,11 +357,7 @@ pub struct LinearColorHint<T> {
 }
 
 impl<T> LinearColorHint<T> {
-	pub fn parse<'i, 't, P>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		item_parser: &mut P,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse<'i, 't, P>(input: &mut Parser<'i, 't>, item_parser: &mut P) -> Result<Self, ParseError<'i>>
 	where
 		P: FnMut(&mut Parser<'i, 't>) -> Result<T, ParseError<'i>>,
 	{
@@ -384,7 +365,7 @@ impl<T> LinearColorHint<T> {
 		if hint.is_some() {
 			input.expect_comma()?;
 		}
-		let color = LinearColorStop::parse(context, input, item_parser)?;
+		let color = LinearColorStop::parse(input, item_parser)?;
 		Ok(LinearColorHint { hint, color })
 	}
 }
@@ -412,19 +393,15 @@ pub struct ColorStopList<T> {
 }
 
 impl<T> ColorStopList<T> {
-	pub fn parse<'i, 't, P>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		item_parser: &mut P,
-	) -> Result<Self, ParseError<'i>>
+	pub fn parse<'i, 't, P>(input: &mut Parser<'i, 't>, item_parser: &mut P) -> Result<Self, ParseError<'i>>
 	where
 		P: for<'tt> Fn(&mut Parser<'i, 'tt>) -> Result<T, ParseError<'i>>,
 	{
-		let starting = LinearColorStop::parse(context, input, item_parser)?;
+		let starting = LinearColorStop::parse(input, item_parser)?;
 		input.expect_comma()?;
 		let ending = parse_repeated_with_delimitor(
 			input,
-			&mut |input| LinearColorHint::parse(context, input, item_parser),
+			&mut |input| LinearColorHint::parse(input, item_parser),
 			&mut |input| {
 				input.expect_comma()?;
 				Ok(())
@@ -460,15 +437,15 @@ pub struct LinearGradient {
 }
 
 impl LinearGradient {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let direction = input.try_parse(|input| LineDirection::parse(context, input));
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let direction = input.try_parse(|input| LineDirection::parse(input));
 		let direction = if direction.is_ok() {
 			input.expect_comma()?;
 			direction?
 		} else {
 			LineDirection::Keyword(None, Some(Corner::Bottom))
 		};
-		let color_stop = ColorStopList::parse(context, input, &mut |input| LengthPercentage::parse(context, input))?;
+		let color_stop = ColorStopList::parse(input, &mut |input| LengthPercentage::parse(input))?;
 		Ok(LinearGradient {
 			direction,
 			color_stop,
@@ -517,13 +494,11 @@ pub enum RadialSize {
 }
 
 impl RadialSize {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let horizontal = NonNegativeLengthPercentage::parse(context, input)?;
-				let veritical = input
-					.try_parse(|input| NonNegativeLengthPercentage::parse(context, input))
-					.ok();
+				let horizontal = NonNegativeLengthPercentage::parse(input)?;
+				let veritical = input.try_parse(|input| NonNegativeLengthPercentage::parse(input)).ok();
 				Ok(RadialSize::Length(horizontal, veritical))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -571,26 +546,26 @@ pub struct RadialGradient {
 }
 
 impl RadialGradient {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut end_shape = None;
 		let mut size = None;
 		parse_in_any_order(
 			input,
 			&mut [
 				&mut |input| parse_item_if_missing(input, &mut end_shape, &mut |_, input| EndingShape::parse(input)),
-				&mut |input| parse_item_if_missing(input, &mut size, &mut |_, input| RadialSize::parse(context, input)),
+				&mut |input| parse_item_if_missing(input, &mut size, &mut |_, input| RadialSize::parse(input)),
 			],
 		);
 		let position = input
 			.try_parse(|input| {
 				input.expect_ident_matching("at")?;
-				Position::parse(context, input)
+				Position::parse(input)
 			})
 			.ok();
 		if end_shape.is_some() || size.is_some() || position.is_some() {
 			input.expect_comma()?;
 		}
-		let color_stop = ColorStopList::parse(context, input, &mut |input| LengthPercentage::parse(context, input))?;
+		let color_stop = ColorStopList::parse(input, &mut |input| LengthPercentage::parse(input))?;
 		let size = size.map_or(RadialSize::FarthestCorner, |v| v);
 		let end_shape = if let Some(end_shape) = end_shape {
 			end_shape
@@ -643,24 +618,24 @@ pub struct ConicRadient {
 }
 
 impl ConicRadient {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let angle = input
 			.try_parse(|input| {
 				input.expect_ident_matching("from")?;
-				Angle::parse(context, input)
+				Angle::parse(input)
 			})
 			.ok();
 		let position = input
 			.try_parse(|input| {
 				input.expect_ident_matching("at")?;
-				Position::parse(context, input)
+				Position::parse(input)
 			})
 			.ok();
 
 		if angle.is_some() || position.is_some() {
 			input.expect_comma()?;
 		}
-		let color_stop = ColorStopList::parse(context, input, &mut |input| AnglePercentage::parse(context, input))?;
+		let color_stop = ColorStopList::parse(input, &mut |input| AnglePercentage::parse(input))?;
 		Ok(ConicRadient {
 			color_stop,
 			angle: angle.map_or("0deg".into(), |v| v),
@@ -725,10 +700,10 @@ pub enum Image {
 }
 
 impl Image {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let url = CssUrl::parse(context, input)?;
+				let url = CssUrl::parse(input)?;
 				Ok(Image::Url(url))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -736,29 +711,29 @@ impl Image {
 				let name = input.expect_function()?.clone();
 				input.parse_nested_block(|input| {
 					match_ignore_ascii_case! { &name,
-						"image" => Image::parse_image(context, input),
-						"image-set" => Image::parse_set(context, input),
-						"cross-fade" => Image::parse_cross_fade(context, input),
-						"element" => Image::parse_element(context, input),
-						"linear-gradient" => Image::parse_linear_gradient(context, input, false),
-						"repeating-linear-gradient" => Image::parse_linear_gradient(context, input, true),
-						"radial-gradient" => Image::parse_radial_gradient(context, input, false),
-						"repeating-radial-gradient" => Image::parse_radial_gradient(context, input, true),
-						"conic-gradient" => Image::parse_conic_gradient(context, input, false),
-						"repeating-conic-gradient" => Image::parse_conic_gradient(context, input, true),
+						"image" => Image::parse_image(input),
+						"image-set" => Image::parse_set(input),
+						"cross-fade" => Image::parse_cross_fade(input),
+						"element" => Image::parse_element(input),
+						"linear-gradient" => Image::parse_linear_gradient(input, false),
+						"repeating-linear-gradient" => Image::parse_linear_gradient(input, true),
+						"radial-gradient" => Image::parse_radial_gradient(input, false),
+						"repeating-radial-gradient" => Image::parse_radial_gradient(input, true),
+						"conic-gradient" => Image::parse_conic_gradient(input, false),
+						"repeating-conic-gradient" => Image::parse_conic_gradient(input, true),
 						_ => return Err(location.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 					}
 				})
 			})
 	}
 
-	pub fn parse_image<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let value = Annotation::parse(context, input)?;
+	pub fn parse_image<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let value = Annotation::parse(input)?;
 		Ok(Image::Image(value))
 	}
 
-	pub fn parse_set<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let value = input.parse_comma_separated(|input| ImageSetOption::parse(context, input))?;
+	pub fn parse_set<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let value = input.parse_comma_separated(|input| ImageSetOption::parse(input))?;
 		if value.len() == 0 {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 		} else {
@@ -766,11 +741,8 @@ impl Image {
 		}
 	}
 
-	pub fn parse_cross_fade<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Self, ParseError<'i>> {
-		let value = input.parse_comma_separated(|input| CFImage::parse(context, input))?;
+	pub fn parse_cross_fade<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let value = input.parse_comma_separated(|input| CFImage::parse(input))?;
 		if value.len() == 0 {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 		} else {
@@ -778,7 +750,7 @@ impl Image {
 		}
 	}
 
-	pub fn parse_element<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse_element<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let token = input.next()?;
 		let id = match token {
@@ -788,32 +760,20 @@ impl Image {
 		Ok(Image::Element(id))
 	}
 
-	pub fn parse_linear_gradient<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		repeating: bool,
-	) -> Result<Self, ParseError<'i>> {
-		let mut value = LinearGradient::parse(context, input)?;
+	pub fn parse_linear_gradient<'i, 't>(input: &mut Parser<'i, 't>, repeating: bool) -> Result<Self, ParseError<'i>> {
+		let mut value = LinearGradient::parse(input)?;
 		value.repeating = repeating;
 		Ok(Image::Gradient(Gradient::Linear(value)))
 	}
 
-	pub fn parse_radial_gradient<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		repeating: bool,
-	) -> Result<Self, ParseError<'i>> {
-		let mut value = RadialGradient::parse(context, input)?;
+	pub fn parse_radial_gradient<'i, 't>(input: &mut Parser<'i, 't>, repeating: bool) -> Result<Self, ParseError<'i>> {
+		let mut value = RadialGradient::parse(input)?;
 		value.repeating = repeating;
 		Ok(Image::Gradient(Gradient::Radial(value)))
 	}
 
-	pub fn parse_conic_gradient<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-		repeating: bool,
-	) -> Result<Self, ParseError<'i>> {
-		let mut value = ConicRadient::parse(context, input)?;
+	pub fn parse_conic_gradient<'i, 't>(input: &mut Parser<'i, 't>, repeating: bool) -> Result<Self, ParseError<'i>> {
+		let mut value = ConicRadient::parse(input)?;
 		value.repeating = repeating;
 		Ok(Image::Gradient(Gradient::Conic(value)))
 	}

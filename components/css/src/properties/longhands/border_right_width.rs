@@ -7,8 +7,8 @@ use crate::values::specified::line::LineWidth;
 
 /// https://drafts.csswg.org/css-backgrounds-3/#propdef-border-right-width
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	LineWidth::parse(context, input).map(PropertyDeclaration::BorderRightWidth)
+	LineWidth::parse(input).map(PropertyDeclaration::BorderRightWidth)
 }

@@ -17,7 +17,7 @@ pub enum FontWeight {
 }
 
 impl FontWeight {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -35,7 +35,7 @@ impl FontWeight {
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = NonNegativeNumber::parse_in_range(context, input, 0.0, 1000.0)?;
+				let value = NonNegativeNumber::parse_in_range(input, 0.0, 1000.0)?;
 				Ok(FontWeight::Weight(value))
 			})
 	}
@@ -57,8 +57,8 @@ impl ToCss for FontWeight {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	FontWeight::parse(context, input).map(PropertyDeclaration::FontWeight)
+	FontWeight::parse(input).map(PropertyDeclaration::FontWeight)
 }

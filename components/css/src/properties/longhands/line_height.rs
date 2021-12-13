@@ -9,8 +9,8 @@ use crate::values::specified::length::NonNegativeLengthPercentageNumberOrNormal;
 pub type LineHeight = NonNegativeLengthPercentageNumberOrNormal;
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	LineHeight::parse(context, input).map(PropertyDeclaration::LineHeight)
+	LineHeight::parse(input).map(PropertyDeclaration::LineHeight)
 }

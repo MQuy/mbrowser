@@ -20,7 +20,7 @@ property_keywords_impl! { OverflowWrap,
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
 	OverflowWrap::parse(input).map(PropertyDeclaration::OverflowWrap)

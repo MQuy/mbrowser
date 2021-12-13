@@ -17,11 +17,11 @@ pub enum BgSize {
 }
 
 impl BgSize {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let width = LengthPercentageOrAuto::parse(context, input)?;
-				let height = LengthPercentageOrAuto::parse(context, input);
+				let width = LengthPercentageOrAuto::parse(input)?;
+				let height = LengthPercentageOrAuto::parse(input);
 
 				Ok(if let Ok(height) = height {
 					BgSize::ExplicitSize { width, height }
@@ -68,8 +68,8 @@ pub struct BackgroundSize {
 }
 
 impl BackgroundSize {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let size = input.parse_comma_separated(|input| BgSize::parse(context, input))?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let size = input.parse_comma_separated(|input| BgSize::parse(input))?;
 		Ok(BackgroundSize { size })
 	}
 }
@@ -85,8 +85,8 @@ impl ToCss for BackgroundSize {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BackgroundSize::parse(context, input).map(PropertyDeclaration::BackgroundSize)
+	BackgroundSize::parse(input).map(PropertyDeclaration::BackgroundSize)
 }

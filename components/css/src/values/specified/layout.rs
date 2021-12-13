@@ -3,7 +3,6 @@ use cssparser::{match_ignore_ascii_case, Parser, ToCss, Token, _cssparser_intern
 use crate::parser::ParseError;
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CSSFloat;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -63,7 +62,7 @@ pub enum Resolution {
 
 impl Resolution {
 	/// Parse a resolution.
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		match token {
 			cssparser::Token::Dimension { value, unit, .. } if value >= 0.0 => {

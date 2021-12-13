@@ -7,8 +7,8 @@ use crate::values::specified::length::LengthPercentageOrAuto;
 
 /// https://drafts.csswg.org/css-logical/#propdef-inset-block-end
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	LengthPercentageOrAuto::parse(context, input).map(PropertyDeclaration::InsetBlockEnd)
+	LengthPercentageOrAuto::parse(input).map(PropertyDeclaration::InsetBlockEnd)
 }

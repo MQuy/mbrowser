@@ -46,19 +46,19 @@ impl Longhands {
 	}
 }
 
-pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
-	let first = LengthPercentageOrAuto::parse(context, input)?;
-	let second = if let Ok(second) = LengthPercentageOrAuto::parse(context, input) {
+pub fn parse_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
+	let first = LengthPercentageOrAuto::parse(input)?;
+	let second = if let Ok(second) = LengthPercentageOrAuto::parse(input) {
 		second
 	} else {
 		return Ok(Longhands::from_single_value(first));
 	};
-	let third = if let Ok(third) = LengthPercentageOrAuto::parse(context, input) {
+	let third = if let Ok(third) = LengthPercentageOrAuto::parse(input) {
 		third
 	} else {
 		return Ok(Longhands::from_two_values(first, second));
 	};
-	let forth = if let Ok(forth) = LengthPercentageOrAuto::parse(context, input) {
+	let forth = if let Ok(forth) = LengthPercentageOrAuto::parse(input) {
 		forth
 	} else {
 		return Ok(Longhands::from_three_values(first, second, third));
@@ -75,15 +75,13 @@ pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) 
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
 	declarations: &mut SourcePropertyDeclaration,
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
-	input
-		.parse_entirely(|input| parse_value(context, input))
-		.map(|longhands| {
-			declarations.push(PropertyDeclaration::MarginTop(longhands.margin_top));
-			declarations.push(PropertyDeclaration::MarginRight(longhands.margin_right));
-			declarations.push(PropertyDeclaration::MarginBottom(longhands.margin_bottom));
-			declarations.push(PropertyDeclaration::MarginLeft(longhands.margin_left));
-		})
+	input.parse_entirely(|input| parse_value(input)).map(|longhands| {
+		declarations.push(PropertyDeclaration::MarginTop(longhands.margin_top));
+		declarations.push(PropertyDeclaration::MarginRight(longhands.margin_right));
+		declarations.push(PropertyDeclaration::MarginBottom(longhands.margin_bottom));
+		declarations.push(PropertyDeclaration::MarginLeft(longhands.margin_left));
+	})
 }

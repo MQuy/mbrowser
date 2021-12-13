@@ -95,12 +95,12 @@ pub struct CursorImage {
 }
 
 impl CursorImage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let url = CssUrl::parse(context, input)?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let url = CssUrl::parse(input)?;
 		let coordinate = input
 			.try_parse(|input| -> Result<(Number, Number), ParseError<'i>> {
-				let x = Number::parse(context, input)?;
-				let y = Number::parse(context, input)?;
+				let x = Number::parse(input)?;
+				let y = Number::parse(input)?;
 				Ok((x, y))
 			})
 			.map_or(None, |(x, y)| Some((x, y)));
@@ -129,10 +129,10 @@ pub struct Cursor {
 }
 
 impl Cursor {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Cursor, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Cursor, ParseError<'i>> {
 		let images = parse_repeated_with_delimitor(
 			input,
-			&mut |input| CursorImage::parse(context, input),
+			&mut |input| CursorImage::parse(input),
 			&mut |input| {
 				input.expect_comma()?;
 				Ok(())
@@ -158,8 +158,8 @@ impl ToCss for Cursor {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Cursor::parse(context, input).map(PropertyDeclaration::Cursor)
+	Cursor::parse(input).map(PropertyDeclaration::Cursor)
 }

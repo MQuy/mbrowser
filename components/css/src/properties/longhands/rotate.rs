@@ -16,7 +16,7 @@ pub enum NumberOrKeyword {
 }
 
 impl NumberOrKeyword {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -34,9 +34,9 @@ impl NumberOrKeyword {
 				}
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let x = Number::parse(context, input)?;
-				let y = Number::parse(context, input)?;
-				let z = Number::parse(context, input)?;
+				let x = Number::parse(input)?;
+				let y = Number::parse(input)?;
+				let z = Number::parse(input)?;
 				Ok(NumberOrKeyword::Number(x, y, z))
 			})
 	}
@@ -65,7 +65,7 @@ pub enum Rotate {
 }
 
 impl Rotate {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Rotate, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Rotate, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
@@ -73,7 +73,7 @@ impl Rotate {
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let angle = Angle::parse(context, input)?;
+					let angle = Angle::parse(input)?;
 					Ok(Rotate::Rotate(angle))
 				})
 			})
@@ -83,13 +83,9 @@ impl Rotate {
 				parse_in_any_order(
 					input,
 					&mut [
+						&mut |input| parse_item_if_missing(input, &mut angle, &mut |_, input| Angle::parse(input)),
 						&mut |input| {
-							parse_item_if_missing(input, &mut angle, &mut |_, input| Angle::parse(context, input))
-						},
-						&mut |input| {
-							parse_item_if_missing(input, &mut coordinate, &mut |_, input| {
-								NumberOrKeyword::parse(context, input)
-							})
+							parse_item_if_missing(input, &mut coordinate, &mut |_, input| NumberOrKeyword::parse(input))
 						},
 					],
 				);
@@ -120,8 +116,8 @@ impl ToCss for Rotate {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Rotate::parse(context, input).map(PropertyDeclaration::Rotate)
+	Rotate::parse(input).map(PropertyDeclaration::Rotate)
 }

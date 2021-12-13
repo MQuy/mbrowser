@@ -5,7 +5,6 @@ use cssparser::{Parser, ToCss, Token};
 use super::number::NonNegativeNumber;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CSSFloat;
 
 /// https://drafts.csswg.org/css-values/#percentages
@@ -19,7 +18,7 @@ impl Percentage {
 		Percentage { value }
 	}
 
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let token = input.next()?.clone();
 		match token {
 			Token::Percentage { unit_value, .. } => Ok(Percentage { value: unit_value }),
@@ -47,12 +46,12 @@ pub struct Ratio(pub NonNegativeNumber, pub NonNegativeNumber);
 
 impl Ratio {
 	/// Parse a ratio.
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let first_value = NonNegativeNumber::parse(context, input)?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let first_value = NonNegativeNumber::parse(input)?;
 		input
 			.try_parse(|input| {
 				input.expect_delim('/')?;
-				let second_value = NonNegativeNumber::parse(context, input)?;
+				let second_value = NonNegativeNumber::parse(input)?;
 				Ok(Ratio(first_value.clone(), second_value))
 			})
 			.or_else(|_err: ParseError<'i>| Ok(Ratio(first_value, NonNegativeNumber::new(1.0))))

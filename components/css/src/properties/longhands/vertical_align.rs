@@ -38,14 +38,14 @@ pub enum VerticalAlign {
 }
 
 impl VerticalAlign {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<VerticalAlign, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<VerticalAlign, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = VerticalAlignKeyword::parse(input)?;
 				Ok(VerticalAlign::Keyword(keyword))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = LengthPercentage::parse(context, input)?;
+				let value = LengthPercentage::parse(input)?;
 				Ok(VerticalAlign::LengthPercentage(value))
 			})
 	}
@@ -64,8 +64,8 @@ impl ToCss for VerticalAlign {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	VerticalAlign::parse(context, input).map(PropertyDeclaration::VerticalAlign)
+	VerticalAlign::parse(input).map(PropertyDeclaration::VerticalAlign)
 }

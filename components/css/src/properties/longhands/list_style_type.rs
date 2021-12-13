@@ -13,7 +13,7 @@ pub enum ListStyleType {
 }
 
 impl ListStyleType {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
@@ -26,7 +26,7 @@ impl ListStyleType {
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let style = CounterStyle::parse(context, input)?;
+				let style = CounterStyle::parse(input)?;
 				Ok(ListStyleType::Style(style))
 			})
 	}
@@ -46,8 +46,8 @@ impl ToCss for ListStyleType {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	ListStyleType::parse(context, input).map(PropertyDeclaration::ListStyleType)
+	ListStyleType::parse(input).map(PropertyDeclaration::ListStyleType)
 }

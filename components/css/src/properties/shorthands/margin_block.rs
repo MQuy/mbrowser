@@ -11,9 +11,9 @@ pub struct Longhands {
 	pub margin_block_end: LengthPercentageOrAuto,
 }
 
-pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
-	let first = LengthPercentageOrAuto::parse(context, input)?;
-	if let Ok(second) = LengthPercentageOrAuto::parse(context, input) {
+pub fn parse_value<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
+	let first = LengthPercentageOrAuto::parse(input)?;
+	if let Ok(second) = LengthPercentageOrAuto::parse(input) {
 		Ok(Longhands {
 			margin_block_start: first,
 			margin_block_end: second,
@@ -30,13 +30,11 @@ pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) 
 /// `declarations` vector.
 pub fn parse_into<'i, 't>(
 	declarations: &mut SourcePropertyDeclaration,
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<(), ParseError<'i>> {
-	input
-		.parse_entirely(|input| parse_value(context, input))
-		.map(|longhands| {
-			declarations.push(PropertyDeclaration::MarginBlockStart(longhands.margin_block_start));
-			declarations.push(PropertyDeclaration::MarginBlockEnd(longhands.margin_block_end));
-		})
+	input.parse_entirely(|input| parse_value(input)).map(|longhands| {
+		declarations.push(PropertyDeclaration::MarginBlockStart(longhands.margin_block_start));
+		declarations.push(PropertyDeclaration::MarginBlockEnd(longhands.margin_block_end));
+	})
 }

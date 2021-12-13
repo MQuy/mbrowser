@@ -39,14 +39,14 @@ pub enum FontStretch {
 }
 
 impl FontStretch {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<FontStretch, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<FontStretch, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = FontStretchKeyword::parse(input)?;
 				Ok(FontStretch::Keyword(keyword))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let percentage = Percentage::parse(context, input)?;
+				let percentage = Percentage::parse(input)?;
 				Ok(FontStretch::Stretch(percentage))
 			})
 	}
@@ -65,8 +65,8 @@ impl ToCss for FontStretch {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	FontStretch::parse(context, input).map(PropertyDeclaration::FontStretch)
+	FontStretch::parse(input).map(PropertyDeclaration::FontStretch)
 }

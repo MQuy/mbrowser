@@ -15,16 +15,16 @@ pub struct Clip {
 }
 
 impl Clip {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input.expect_function_matching("rect")?;
 		input.parse_nested_block(|input| {
-			let top = LengthOrAuto::parse(context, input)?;
+			let top = LengthOrAuto::parse(input)?;
 			input.expect_comma()?;
-			let right = LengthOrAuto::parse(context, input)?;
+			let right = LengthOrAuto::parse(input)?;
 			input.expect_comma()?;
-			let bottom = LengthOrAuto::parse(context, input)?;
+			let bottom = LengthOrAuto::parse(input)?;
 			input.expect_comma()?;
-			let left = LengthOrAuto::parse(context, input)?;
+			let left = LengthOrAuto::parse(input)?;
 			Ok(Clip {
 				top,
 				right,
@@ -51,8 +51,8 @@ impl ToCss for Clip {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Clip::parse(context, input).map(PropertyDeclaration::Clip)
+	Clip::parse(input).map(PropertyDeclaration::Clip)
 }

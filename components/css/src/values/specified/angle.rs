@@ -6,7 +6,6 @@ use regex::Regex;
 use super::percentage::Percentage;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::CSSFloat;
 
 /// https://drafts.csswg.org/css-values-4/#angle-value
@@ -19,7 +18,7 @@ pub enum Angle {
 }
 
 impl Angle {
-	pub fn parse<'i, 't>(_context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		macro_rules! return_unexpected_token {
 			($location:tt, $token:tt) => {
 				return Err($location.new_custom_error(StyleParseErrorKind::UnexpectedToken($token.clone())))
@@ -89,14 +88,14 @@ pub enum AnglePercentage {
 }
 
 impl AnglePercentage {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let angle = Angle::parse(context, input)?;
+				let angle = Angle::parse(input)?;
 				Ok(AnglePercentage::Angle(angle))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let percentage = Percentage::parse(context, input)?;
+				let percentage = Percentage::parse(input)?;
 				Ok(AnglePercentage::Percentage(percentage))
 			})
 	}

@@ -13,19 +13,19 @@ pub enum Scale {
 }
 
 impl Scale {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Scale, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Scale, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(Scale::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let x = NumberOrPercentage::parse(context, input)?;
+				let x = NumberOrPercentage::parse(input)?;
 				let y = input
-					.try_parse(|input| NumberOrPercentage::parse(context, input))
+					.try_parse(|input| NumberOrPercentage::parse(input))
 					.map_or(x.clone(), |value| value);
 				let z = input
-					.try_parse(|input| NumberOrPercentage::parse(context, input))
+					.try_parse(|input| NumberOrPercentage::parse(input))
 					.map_or("1".into(), |value| value);
 				Ok(Scale::Scale(x, y, z))
 			})
@@ -51,8 +51,8 @@ impl ToCss for Scale {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Scale::parse(context, input).map(PropertyDeclaration::Scale)
+	Scale::parse(input).map(PropertyDeclaration::Scale)
 }

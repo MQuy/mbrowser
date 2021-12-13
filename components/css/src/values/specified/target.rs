@@ -4,7 +4,6 @@ use super::counter::CounterStyle;
 use crate::parser::ParseError;
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::url::CssUrl;
 use crate::values::CustomIdent;
 
@@ -16,16 +15,16 @@ pub struct TargetCounter {
 }
 
 impl TargetCounter {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
-			.try_parse(|input| CssUrl::parse(context, input))
-			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
+			.try_parse(|input| CssUrl::parse(input))
+			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(input))?;
 		input.expect_comma()?;
 		let ident = CustomIdent::parse(input)?;
 		let style = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				CounterStyle::parse(context, input)
+				CounterStyle::parse(input)
 			})
 			.ok();
 		Ok(TargetCounter { url, ident, style })
@@ -57,10 +56,10 @@ pub struct TargetCounters {
 }
 
 impl TargetCounters {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
-			.try_parse(|input| CssUrl::parse(context, input))
-			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
+			.try_parse(|input| CssUrl::parse(input))
+			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(input))?;
 		input.expect_comma()?;
 		let ident = CustomIdent::parse(input)?;
 		input.expect_comma()?;
@@ -68,7 +67,7 @@ impl TargetCounters {
 		let style = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				CounterStyle::parse(context, input)
+				CounterStyle::parse(input)
 			})
 			.ok();
 		Ok(TargetCounters {
@@ -119,10 +118,10 @@ pub struct TargetText {
 }
 
 impl TargetText {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let url = input
-			.try_parse(|input| CssUrl::parse(context, input))
-			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(context, input))?;
+			.try_parse(|input| CssUrl::parse(input))
+			.or_else(|_err: ParseError<'i>| CssUrl::parse_string(input))?;
 		let keyword = input
 			.try_parse(|input| {
 				input.expect_comma()?;
@@ -157,31 +156,31 @@ pub enum Target {
 
 impl Target {
 	/// https://drafts.csswg.org/css-content/#typedef-target
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let location = input.current_source_location();
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {
 			match_ignore_ascii_case! { &name,
-				"target-counter" => Target::parse_counter(context, input),
-				"target-counters" => Target::parse_counters(context, input),
-				"target-text" => Target::parse_text(context, input),
+				"target-counter" => Target::parse_counter(input),
+				"target-counters" => Target::parse_counters(input),
+				"target-text" => Target::parse_text(input),
 				_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(name.clone())))
 			}
 		})
 	}
 
-	fn parse_counter<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let counter = TargetCounter::parse(context, input)?;
+	fn parse_counter<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let counter = TargetCounter::parse(input)?;
 		Ok(Target::Counter(counter))
 	}
 
-	fn parse_counters<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let counters = TargetCounters::parse(context, input)?;
+	fn parse_counters<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let counters = TargetCounters::parse(input)?;
 		Ok(Target::Counters(counters))
 	}
 
-	fn parse_text<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let text = TargetText::parse(context, input)?;
+	fn parse_text<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let text = TargetText::parse(input)?;
 		Ok(Target::Text(text))
 	}
 }

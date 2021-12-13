@@ -13,20 +13,20 @@ pub enum Translate {
 }
 
 impl Translate {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(Translate::None)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let x = input.try_parse(|input| LengthPercentage::parse(context, input))?;
-				let y = if let Ok(y) = input.try_parse(|input| LengthPercentage::parse(context, input)) {
+				let x = input.try_parse(|input| LengthPercentage::parse(input))?;
+				let y = if let Ok(y) = input.try_parse(|input| LengthPercentage::parse(input)) {
 					y
 				} else {
 					return Ok(Translate::LengthPercentage(x, "0px".into(), "0px".into()));
 				};
-				let z = if let Ok(z) = input.try_parse(|input| Length::parse(context, input)) {
+				let z = if let Ok(z) = input.try_parse(|input| Length::parse(input)) {
 					z
 				} else {
 					return Ok(Translate::LengthPercentage(x, y, "0px".into()));
@@ -55,8 +55,8 @@ impl ToCss for Translate {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Translate::parse(context, input).map(PropertyDeclaration::Translate)
+	Translate::parse(input).map(PropertyDeclaration::Translate)
 }

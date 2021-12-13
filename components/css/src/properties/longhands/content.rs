@@ -36,13 +36,13 @@ impl ContentList {
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let image = Image::parse(context, input)?;
+					let image = Image::parse(input)?;
 					Ok(ContentList::Image(image))
 				})
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let counter = Counter::parse(context, input)?;
+					let counter = Counter::parse(input)?;
 					Ok(ContentList::Counter(counter))
 				})
 			})
@@ -54,7 +54,7 @@ impl ContentList {
 			})
 			.or_else(|_err: ParseError<'i>| {
 				input.try_parse(|input| {
-					let target = Target::parse(context, input)?;
+					let target = Target::parse(input)?;
 					Ok(ContentList::Target(target))
 				})
 			})
@@ -94,7 +94,7 @@ impl ContentReplacementOrList {
 	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let image = Image::parse(context, input)?;
+				let image = Image::parse(input)?;
 				Ok(ContentReplacementOrList::Replacement(image))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -129,10 +129,10 @@ pub enum CounterOrString {
 }
 
 impl CounterOrString {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let value = Counter::parse(context, input)?;
+				let value = Counter::parse(input)?;
 				Ok(CounterOrString::Counter(value))
 			})
 			.or_else(|_err: ParseError<'i>| {
@@ -166,7 +166,7 @@ impl ContentData {
 		let alt = input
 			.try_parse(|input| -> Result<Vec<CounterOrString>, ParseError<'i>> {
 				input.expect_delim('/')?;
-				let value = parse_repeated(input, &mut |input| CounterOrString::parse(context, input), 1)?;
+				let value = parse_repeated(input, &mut |input| CounterOrString::parse(input), 1)?;
 				Ok(value)
 			})
 			.map_or(vec![], |alt| alt);

@@ -19,7 +19,7 @@ pub struct Longhands {
 	pub background_clip: longhands::background_clip::BackgroundClip,
 }
 
-pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
+pub fn parse_value<'i, 't>(_context: &ParserContext, _input: &mut Parser<'i, 't>) -> Result<Longhands, ParseError<'i>> {
 	todo!()
 }
 /// Parse the given shorthand and fill the result into the

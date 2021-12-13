@@ -14,9 +14,9 @@ pub struct BorderImageSlice {
 }
 
 impl BorderImageSlice {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let mut fill = input.try_parse(|input| input.expect_ident_matching("fill")).is_ok();
-		let offsets = Rect::parse_with(input, |input| NonNegativeNumberOrPercentage::parse(context, input))?;
+		let offsets = Rect::parse_with(input, |input| NonNegativeNumberOrPercentage::parse(input))?;
 
 		if !fill {
 			fill = input.try_parse(|input| input.expect_ident_matching("fill")).is_ok();
@@ -40,8 +40,8 @@ impl ToCss for BorderImageSlice {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BorderImageSlice::parse(context, input).map(PropertyDeclaration::BorderImageSlice)
+	BorderImageSlice::parse(input).map(PropertyDeclaration::BorderImageSlice)
 }

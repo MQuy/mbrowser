@@ -3,7 +3,6 @@ use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_as
 use super::length::NonNegativeLength;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone, Debug)]
 pub enum LineWidth {
@@ -14,7 +13,7 @@ pub enum LineWidth {
 }
 
 impl LineWidth {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -29,7 +28,7 @@ impl LineWidth {
 			.or_else(|_err: ParseError<'i>| {
 				input.expect_function_matching("length")?;
 				input.parse_nested_block(|input| {
-					let length = NonNegativeLength::parse(context, input)?;
+					let length = NonNegativeLength::parse(input)?;
 					Ok(LineWidth::Length(length))
 				})
 			})

@@ -95,7 +95,7 @@ impl TransformOrigin {
 					})
 					.or_else(
 						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							let value = input.try_parse(|input| LengthPercentage::parse(input))?;
 							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
 						},
 					)?;
@@ -110,12 +110,12 @@ impl TransformOrigin {
 					})
 					.or_else(
 						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							let value = input.try_parse(|input| LengthPercentage::parse(input))?;
 							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
 						},
 					)?;
 				let z = input
-					.try_parse(|input| LengthPercentage::parse(context, input))
+					.try_parse(|input| LengthPercentage::parse(input))
 					.map_or("0px".into(), |v| v);
 				Ok(TransformOrigin {
 					x,
@@ -169,7 +169,7 @@ impl TransformOrigin {
 								Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
 							}
 						})?;
-					let z = LengthPercentage::parse(context, input).map_or("0px".into(), |v| v);
+					let z = LengthPercentage::parse(input).map_or("0px".into(), |v| v);
 					Ok(TransformOrigin {
 						x: LengthPercentageOrKeyword::Keyword(x),
 						y: LengthPercentageOrKeyword::Keyword(y),
@@ -195,7 +195,7 @@ impl TransformOrigin {
 					})
 					.or_else(
 						|_err: ParseError<'i>| -> Result<LengthPercentageOrKeyword, ParseError<'i>> {
-							let value = input.try_parse(|input| LengthPercentage::parse(context, input))?;
+							let value = input.try_parse(|input| LengthPercentage::parse(input))?;
 							Ok(LengthPercentageOrKeyword::LengthPercentage(value))
 						},
 					)?;

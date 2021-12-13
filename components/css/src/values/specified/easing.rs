@@ -4,7 +4,6 @@ use super::number::{NonNegativeNumber, Number};
 use crate::parser::ParseError;
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone, Debug)]
 #[repr(u8)]
@@ -62,7 +61,7 @@ pub enum EasingFunction {
 }
 
 impl EasingFunction {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let keyword = EasingKeyword::parse(input)?;
@@ -72,13 +71,13 @@ impl EasingFunction {
 				input.try_parse(|input| {
 					input.expect_function_matching("cubic-bezier")?;
 					input.parse_nested_block(|input| {
-						let x1 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
+						let x1 = Number::parse_in_range(input, 0.0.into(), 1.0.into())?;
 						input.expect_comma()?;
-						let y1 = Number::parse(context, input)?;
+						let y1 = Number::parse(input)?;
 						input.expect_comma()?;
-						let x2 = Number::parse_in_range(context, input, 0.0.into(), 1.0.into())?;
+						let x2 = Number::parse_in_range(input, 0.0.into(), 1.0.into())?;
 						input.expect_comma()?;
-						let y2 = Number::parse(context, input)?;
+						let y2 = Number::parse(input)?;
 						Ok(EasingFunction::CubicBezier { x1, y1, x2, y2 })
 					})
 				})
@@ -86,7 +85,7 @@ impl EasingFunction {
 			.or_else(|_err: ParseError<'i>| {
 				input.expect_function_matching("steps")?;
 				input.parse_nested_block(|input| {
-					let intervals = NonNegativeNumber::parse(context, input)?;
+					let intervals = NonNegativeNumber::parse(input)?;
 					let position = input
 						.try_parse(|input| {
 							input.expect_comma()?;

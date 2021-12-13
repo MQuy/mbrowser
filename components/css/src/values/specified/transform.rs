@@ -5,7 +5,6 @@ use super::length::LengthPercentage;
 use super::number::{Number, Zero};
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 
 #[derive(Clone, Debug)]
 pub enum AngleOrZero {
@@ -14,14 +13,14 @@ pub enum AngleOrZero {
 }
 
 impl AngleOrZero {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let angle = Angle::parse(context, input)?;
+				let angle = Angle::parse(input)?;
 				Ok(AngleOrZero::Angle(angle))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				Zero::parse(context, input)?;
+				Zero::parse(input)?;
 				Ok(AngleOrZero::Zero)
 			})
 	}
@@ -56,101 +55,101 @@ pub enum TransformFunction {
 }
 
 impl TransformFunction {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let name = input.expect_function()?.clone();
 		input.parse_nested_block(|input| {
 			match_ignore_ascii_case! { &name,
-				"matrix" => TransformFunction::parse_matrix(context, input),
-				"translate" => TransformFunction::parse_translate(context, input),
-				"translatex" => TransformFunction::parse_translate_x(context, input),
-				"translatey" => TransformFunction::parse_translate_y(context, input),
-				"scale" => TransformFunction::parse_scale(context, input),
-				"scalex" => TransformFunction::parse_scale_x(context, input),
-				"scaley" => TransformFunction::parse_scale_y(context, input),
-				"rotate" => TransformFunction::parse_rotate(context, input),
-				"skew" => TransformFunction::parse_skew(context, input),
-				"skewx" => TransformFunction::parse_skew_x(context, input),
-				"skewy" => TransformFunction::parse_skew_y(context, input),
+				"matrix" => TransformFunction::parse_matrix(input),
+				"translate" => TransformFunction::parse_translate(input),
+				"translatex" => TransformFunction::parse_translate_x(input),
+				"translatey" => TransformFunction::parse_translate_y(input),
+				"scale" => TransformFunction::parse_scale(input),
+				"scalex" => TransformFunction::parse_scale_x(input),
+				"scaley" => TransformFunction::parse_scale_y(input),
+				"rotate" => TransformFunction::parse_rotate(input),
+				"skew" => TransformFunction::parse_skew(input),
+				"skewx" => TransformFunction::parse_skew_x(input),
+				"skewy" => TransformFunction::parse_skew_y(input),
 				_ => return Err(input.new_custom_error(StyleParseErrorKind::UnexpectedFunction(name.clone())))
 			}
 		})
 	}
 
-	fn parse_matrix<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let a = Number::parse(context, input)?;
-		let b = Number::parse(context, input)?;
-		let c = Number::parse(context, input)?;
-		let d = Number::parse(context, input)?;
-		let e = Number::parse(context, input)?;
-		let f = Number::parse(context, input)?;
+	fn parse_matrix<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let a = Number::parse(input)?;
+		let b = Number::parse(input)?;
+		let c = Number::parse(input)?;
+		let d = Number::parse(input)?;
+		let e = Number::parse(input)?;
+		let f = Number::parse(input)?;
 		Ok(TransformFunction::Matrix(a, b, c, d, e, f))
 	}
 
-	fn parse_translate<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let tx = LengthPercentage::parse(context, input)?;
+	fn parse_translate<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let tx = LengthPercentage::parse(input)?;
 		let ty = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				LengthPercentage::parse(context, input)
+				LengthPercentage::parse(input)
 			})
 			.map_or(LengthPercentage::Length("0px".into()), |v| v);
 		Ok(TransformFunction::Translate(tx, ty))
 	}
 
-	fn parse_translate_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let x = LengthPercentage::parse(context, input)?;
+	fn parse_translate_x<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let x = LengthPercentage::parse(input)?;
 		Ok(TransformFunction::TranslateX(x))
 	}
 
-	fn parse_translate_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let y = LengthPercentage::parse(context, input)?;
+	fn parse_translate_y<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let y = LengthPercentage::parse(input)?;
 		Ok(TransformFunction::TranslateY(y))
 	}
 
-	fn parse_scale<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let sx = Number::parse(context, input)?;
+	fn parse_scale<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let sx = Number::parse(input)?;
 		let sy = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				Number::parse(context, input)
+				Number::parse(input)
 			})
 			.map_or(sx.clone(), |v| v);
 		Ok(TransformFunction::Scale(sx, sy))
 	}
 
-	fn parse_scale_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let sx = Number::parse(context, input)?;
+	fn parse_scale_x<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let sx = Number::parse(input)?;
 		Ok(TransformFunction::ScaleX(sx))
 	}
 
-	fn parse_scale_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let sy = Number::parse(context, input)?;
+	fn parse_scale_y<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let sy = Number::parse(input)?;
 		Ok(TransformFunction::ScaleY(sy))
 	}
 
-	fn parse_rotate<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let angle = AngleOrZero::parse(context, input)?;
+	fn parse_rotate<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let angle = AngleOrZero::parse(input)?;
 		Ok(TransformFunction::Rotate(angle))
 	}
 
-	fn parse_skew<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let ax = AngleOrZero::parse(context, input)?;
+	fn parse_skew<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let ax = AngleOrZero::parse(input)?;
 		let ay = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				AngleOrZero::parse(context, input)
+				AngleOrZero::parse(input)
 			})
 			.map_or(AngleOrZero::Zero, |v| v);
 		Ok(TransformFunction::Skew(ax, ay))
 	}
 
-	fn parse_skew_x<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let ax = AngleOrZero::parse(context, input)?;
+	fn parse_skew_x<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let ax = AngleOrZero::parse(input)?;
 		Ok(TransformFunction::SkewX(ax))
 	}
 
-	fn parse_skew_y<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let ay = AngleOrZero::parse(context, input)?;
+	fn parse_skew_y<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let ay = AngleOrZero::parse(input)?;
 		Ok(TransformFunction::SkewY(ay))
 	}
 }

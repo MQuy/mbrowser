@@ -10,14 +10,14 @@ use crate::values::specified::transform::TransformFunction;
 pub struct Transform(Vec<TransformFunction>);
 
 impl Transform {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Transform, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Transform, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("none")?;
 				Ok(Transform(vec![]))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let transforms = parse_repeated(input, &mut |input| TransformFunction::parse(context, input), 1)?;
+				let transforms = parse_repeated(input, &mut |input| TransformFunction::parse(input), 1)?;
 				Ok(Transform(transforms))
 			})
 	}
@@ -39,8 +39,8 @@ impl ToCss for Transform {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Transform::parse(context, input).map(PropertyDeclaration::Transform)
+	Transform::parse(input).map(PropertyDeclaration::Transform)
 }

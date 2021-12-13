@@ -12,8 +12,8 @@ pub struct AnimationTimingFunction {
 }
 
 impl AnimationTimingFunction {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let timing = input.parse_comma_separated(|input| EasingFunction::parse(context, input))?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let timing = input.parse_comma_separated(|input| EasingFunction::parse(input))?;
 		Ok(AnimationTimingFunction { timing })
 	}
 }
@@ -29,8 +29,8 @@ impl ToCss for AnimationTimingFunction {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	AnimationTimingFunction::parse(context, input).map(PropertyDeclaration::AnimationTimingFunction)
+	AnimationTimingFunction::parse(input).map(PropertyDeclaration::AnimationTimingFunction)
 }

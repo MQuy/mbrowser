@@ -29,9 +29,9 @@ pub struct HorizontalPosition {
 }
 
 impl HorizontalPosition {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		let keyword_parser_ret = input.try_parse(|input| HorizontalPositionKeyword::parse(input));
-		let length_parser_ret = input.try_parse(|input| LengthPercentage::parse(context, input));
+		let length_parser_ret = input.try_parse(|input| LengthPercentage::parse(input));
 
 		if keyword_parser_ret.is_err() && length_parser_ret.is_err() {
 			Err(input.new_custom_error(StyleParseErrorKind::UnspecifiedError))
@@ -74,14 +74,14 @@ impl ToCss for HorizontalPositionComponent {
 }
 
 impl HorizontalPositionComponent {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				input.expect_ident_matching("center")?;
 				Ok(HorizontalPositionComponent::Center)
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let position = HorizontalPosition::parse(context, input)?;
+				let position = HorizontalPosition::parse(input)?;
 				Ok(HorizontalPositionComponent::PositionX(position))
 			})
 	}
@@ -94,8 +94,8 @@ pub struct BackgroundPositionX {
 }
 
 impl BackgroundPositionX {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let positions = input.parse_comma_separated(|input| HorizontalPositionComponent::parse(context, input))?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let positions = input.parse_comma_separated(|input| HorizontalPositionComponent::parse(input))?;
 		Ok(BackgroundPositionX { positions })
 	}
 }
@@ -111,8 +111,8 @@ impl ToCss for BackgroundPositionX {
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	BackgroundPositionX::parse(context, input).map(PropertyDeclaration::BackgroundPositionX)
+	BackgroundPositionX::parse(input).map(PropertyDeclaration::BackgroundPositionX)
 }

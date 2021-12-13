@@ -72,7 +72,7 @@ pub enum FontSize {
 }
 
 impl FontSize {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<FontSize, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<FontSize, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let size = AbsoluteSize::parse(input)?;
@@ -83,7 +83,7 @@ impl FontSize {
 				Ok(FontSize::RelativeSize(size))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let value = LengthPercentage::parse(context, input)?;
+				let value = LengthPercentage::parse(input)?;
 				Ok(FontSize::LengthPercentage(value))
 			})
 	}
@@ -131,8 +131,8 @@ pub fn cascade_property<'a>(declaration: Option<&PropertyDeclaration>, context: 
 }
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	FontSize::parse(context, input).map(PropertyDeclaration::FontSize)
+	FontSize::parse(input).map(PropertyDeclaration::FontSize)
 }

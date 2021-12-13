@@ -10,7 +10,6 @@ use crate::computed_values::StyleContext;
 use crate::parser::{parse_repeated, ParseError};
 use crate::properties::declaration::property_keywords_impl;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
-use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::{CSSFloat, Ident};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -188,11 +187,11 @@ pub struct CMYK {
 }
 
 impl CMYK {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
-		let cyan = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
-		let magenta = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
-		let yellow = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
-		let black = NumberOrPercentage::parse_in_range(context, input, &(0.0..1.0))?;
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+		let cyan = NumberOrPercentage::parse_in_range(input, &(0.0..1.0))?;
+		let magenta = NumberOrPercentage::parse_in_range(input, &(0.0..1.0))?;
+		let yellow = NumberOrPercentage::parse_in_range(input, &(0.0..1.0))?;
+		let black = NumberOrPercentage::parse_in_range(input, &(0.0..1.0))?;
 		Ok(CMYK {
 			cyan,
 			magenta,
@@ -249,14 +248,14 @@ pub enum Hue {
 }
 
 impl Hue {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i>> {
 		input
 			.try_parse(|input| {
-				let number = Number::parse_in_range(context, input, 0.0, 360.0)?;
+				let number = Number::parse_in_range(input, 0.0, 360.0)?;
 				Ok(Hue::Number(number))
 			})
 			.or_else(|_err: ParseError<'i>| {
-				let angle = Angle::parse(context, input)?;
+				let angle = Angle::parse(input)?;
 				Ok(Hue::Angle(angle))
 			})
 	}
@@ -533,7 +532,7 @@ pub enum Color {
 }
 
 impl Color {
-	pub fn parse<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+	pub fn parse<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
 		input
 			.try_parse(|input| {
 				let location = input.current_source_location();
@@ -566,13 +565,13 @@ impl Color {
 				let ident = input.expect_function()?.clone();
 				input.parse_nested_block(|input| {
 					match_ignore_ascii_case! { &ident,
-						"rgb" | "rgba" => Color::parse_rgb(context, input),
-						"hsl" | "hsla" => Color::parse_hsl(context, input),
-						"hwb" => Color::parse_hwb(context, input),
-						"lab" => Color::parse_lab(context, input),
-						"lch" => Color::parse_lch(context, input),
-						"color" => Color::parse_color(context, input),
-						"device-cmyk" => Color::parse_device_cmyk(context, input),
+						"rgb" | "rgba" => Color::parse_rgb(input),
+						"hsl" | "hsla" => Color::parse_hsl(input),
+						"hwb" => Color::parse_hwb(input),
+						"lab" => Color::parse_lab(input),
+						"lch" => Color::parse_lch(input),
+						"color" => Color::parse_color(input),
+						"device-cmyk" => Color::parse_device_cmyk(input),
 						_ => return Err(location.new_custom_error(StyleParseErrorKind::UnexpectedValue(ident.clone())))
 					}
 				})
@@ -586,30 +585,30 @@ impl Color {
 		}
 	}
 
-	pub fn parse_rgb<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+	pub fn parse_rgb<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
 		let (red, green, blue) = input
 			.try_parse(|input| -> Result<(f32, f32, f32), ParseError<'i>> {
-				let red = Percentage::parse(context, input)?;
+				let red = Percentage::parse(input)?;
 				Color::consume_comma_if_having(input);
-				let green = Percentage::parse(context, input)?;
+				let green = Percentage::parse(input)?;
 				Color::consume_comma_if_having(input);
-				let blue = Percentage::parse(context, input)?;
+				let blue = Percentage::parse(input)?;
 				let range = 0.0..255.0;
 				Ok((red.to_value(&range), green.to_value(&range), blue.to_value(&range)))
 			})
 			.or_else(|_err: ParseError<'i>| -> Result<(f32, f32, f32), ParseError<'i>> {
 				input.try_parse(|input| {
-					let red = Number::parse_in_range(context, input, 0.0, 255.0)?;
+					let red = Number::parse_in_range(input, 0.0, 255.0)?;
 					Color::consume_comma_if_having(input);
-					let green = Number::parse_in_range(context, input, 0.0, 255.0)?;
+					let green = Number::parse_in_range(input, 0.0, 255.0)?;
 					Color::consume_comma_if_having(input);
-					let blue = Number::parse_in_range(context, input, 0.0, 255.0)?;
+					let blue = Number::parse_in_range(input, 0.0, 255.0)?;
 					Ok((red.get(), green.get(), blue.get()))
 				})
 			})
 			.map(|(red, green, blue)| (red as u8, green as u8, blue as u8))?;
 
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::RGB(RGBA {
 			red,
 			green,
@@ -618,61 +617,58 @@ impl Color {
 		}))
 	}
 
-	pub fn parse_hsl<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
-		let hue = Hue::parse(context, input)?;
-		let saturation = Percentage::parse(context, input)?;
-		let lightness = Percentage::parse(context, input)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+	pub fn parse_hsl<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+		let hue = Hue::parse(input)?;
+		let saturation = Percentage::parse(input)?;
+		let lightness = Percentage::parse(input)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::HSL(hue, saturation, lightness, alpha))
 	}
 
-	pub fn parse_hwb<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
-		let hue = Hue::parse(context, input)?;
-		let saturation = Percentage::parse(context, input)?;
-		let lightness = Percentage::parse(context, input)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+	pub fn parse_hwb<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+		let hue = Hue::parse(input)?;
+		let saturation = Percentage::parse(input)?;
+		let lightness = Percentage::parse(input)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::HWB(hue, saturation, lightness, alpha))
 	}
 
-	pub fn parse_lab<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
-		let lightness = Percentage::parse(context, input)?;
-		let a = Number::parse_in_range(context, input, -160.0, 160.0)?;
-		let b = Number::parse_in_range(context, input, -160.0, 160.0)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+	pub fn parse_lab<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+		let lightness = Percentage::parse(input)?;
+		let a = Number::parse_in_range(input, -160.0, 160.0)?;
+		let b = Number::parse_in_range(input, -160.0, 160.0)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::LAB(lightness, a, b, alpha))
 	}
 
-	pub fn parse_lch<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
-		let lightness = Percentage::parse(context, input)?;
-		let chroma = Number::parse_in_range(context, input, 0.0, 230.0)?;
-		let hue = Hue::parse(context, input)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+	pub fn parse_lch<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+		let lightness = Percentage::parse(input)?;
+		let chroma = Number::parse_in_range(input, 0.0, 230.0)?;
+		let hue = Hue::parse(input)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::LCH(lightness, chroma, hue, alpha))
 	}
 
-	pub fn parse_color<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+	pub fn parse_color<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
 		let ident = input.expect_ident()?.to_string();
-		let values = parse_repeated(input, &mut |input| NumberOrPercentage::parse(context, input), 1)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+		let values = parse_repeated(input, &mut |input| NumberOrPercentage::parse(input), 1)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		Ok(Color::Color(Ident(ident), values, alpha))
 	}
 
-	pub fn parse_device_cmyk<'i, 't>(
-		context: &ParserContext,
-		input: &mut Parser<'i, 't>,
-	) -> Result<Color, ParseError<'i>> {
-		let cmyk = CMYK::parse(context, input)?;
-		let alpha = Color::parse_alpha_value_with_delimitor(context, input);
+	pub fn parse_device_cmyk<'i, 't>(input: &mut Parser<'i, 't>) -> Result<Color, ParseError<'i>> {
+		let cmyk = CMYK::parse(input)?;
+		let alpha = Color::parse_alpha_value_with_delimitor(input);
 		let color = input
 			.try_parse(|input| {
 				input.expect_comma()?;
-				Color::parse(context, input)
+				Color::parse(input)
 			})
 			.map_or_else(|_err| Color::RGB(cmyk.to_rgb()), |v| v);
 		Ok(Color::DeviceCMYK(cmyk, alpha, Box::new(color)))
 	}
 
-	fn parse_alpha_value_with_delimitor<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>) -> f32 {
+	fn parse_alpha_value_with_delimitor<'i, 't>(input: &mut Parser<'i, 't>) -> f32 {
 		input
 			.try_parse(|input| -> Result<f32, ParseError<'i>> {
 				let delimitor = input.next()?.clone();
@@ -683,12 +679,12 @@ impl Color {
 				};
 				input
 					.try_parse(|input| -> Result<f32, ParseError<'i>> {
-						let number = Number::parse_in_range(context, input, 0.0, 1.0)?;
+						let number = Number::parse_in_range(input, 0.0, 1.0)?;
 						Ok(number.get())
 					})
 					.or_else(|_err: ParseError<'i>| -> Result<f32, ParseError<'i>> {
 						input.try_parse(|input| {
-							let value = Percentage::parse(context, input)?;
+							let value = Percentage::parse(input)?;
 							Ok(value.to_value(&(0.0..1.0)))
 						})
 					})

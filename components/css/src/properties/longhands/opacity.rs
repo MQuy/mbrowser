@@ -9,8 +9,8 @@ use crate::values::specified::number::NumberOrPercentage;
 pub type Opacity = NumberOrPercentage;
 
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Opacity::parse(context, input).map(PropertyDeclaration::Opacity)
+	Opacity::parse(input).map(PropertyDeclaration::Opacity)
 }

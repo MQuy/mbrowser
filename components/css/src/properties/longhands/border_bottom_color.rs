@@ -7,8 +7,8 @@ use crate::values::specified::color::Color;
 
 /// https://drafts.csswg.org/css-backgrounds/#propdef-border-bottom-color
 pub fn parse_declared<'i, 't>(
-	context: &ParserContext,
+	_context: &ParserContext,
 	input: &mut Parser<'i, 't>,
 ) -> Result<PropertyDeclaration, ParseError<'i>> {
-	Color::parse(context, input).map(PropertyDeclaration::BorderBottomColor)
+	Color::parse(input).map(PropertyDeclaration::BorderBottomColor)
 }
