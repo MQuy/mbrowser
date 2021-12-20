@@ -6,7 +6,9 @@ use crate::properties::longhands;
 use crate::properties::longhands::display::Display;
 use crate::properties::longhands::font_size::DEFAULT_FONT_SIZE;
 use crate::values::computed::length::{LengthPercentageOrAuto, MaxSize, NonNegativeLengthPercentage, Size};
-use crate::values::specified::color::RGBA;
+use crate::values::computed::line::LineWidth;
+use crate::values::specified::color::{Color, RGBA};
+use crate::values::specified::layout::LineStyle;
 use crate::values::CSSFloat;
 
 #[derive(Debug)]
@@ -73,6 +75,42 @@ impl Default for Padding {
 }
 
 #[derive(Debug)]
+pub struct BorderEdge {
+	pub color: RGBA,
+	pub width: LineWidth,
+	pub style: LineStyle,
+}
+
+impl Default for BorderEdge {
+	fn default() -> Self {
+		Self {
+			color: RGBA::transparent(),
+			width: LineWidth::Medium,
+			style: LineStyle::None,
+		}
+	}
+}
+
+#[derive(Debug)]
+pub struct Border {
+	pub border_top: BorderEdge,
+	pub border_right: BorderEdge,
+	pub border_bottom: BorderEdge,
+	pub border_left: BorderEdge,
+}
+
+impl Default for Border {
+	fn default() -> Self {
+		Self {
+			border_top: Default::default(),
+			border_right: Default::default(),
+			border_bottom: Default::default(),
+			border_left: Default::default(),
+		}
+	}
+}
+
+#[derive(Debug)]
 pub struct Text {
 	pub color: RGBA,
 	pub font_families: Vec<String>,
@@ -109,6 +147,7 @@ pub struct ComputedValues {
 	text: Text,
 	margin: Margin,
 	padding: Padding,
+	border: Border,
 }
 
 impl Default for ComputedValues {
@@ -119,6 +158,7 @@ impl Default for ComputedValues {
 			text: Default::default(),
 			margin: Default::default(),
 			padding: Default::default(),
+			border: Default::default(),
 		}
 	}
 }
@@ -274,6 +314,102 @@ impl ComputedValues {
 
 	pub fn set_padding_left(&mut self, value: NonNegativeLengthPercentage) {
 		self.padding.padding_left = value;
+	}
+
+	pub fn get_border_top_color(&self) -> &RGBA {
+		&self.border.border_top.color
+	}
+
+	pub fn set_border_top_color(&mut self, value: RGBA) {
+		self.border.border_top.color = value;
+	}
+
+	pub fn get_border_top_style(&self) -> &LineStyle {
+		&self.border.border_top.style
+	}
+
+	pub fn set_border_top_style(&mut self, value: LineStyle) {
+		self.border.border_top.style = value;
+	}
+
+	pub fn get_border_top_width(&self) -> &LineWidth {
+		&self.border.border_top.width
+	}
+
+	pub fn set_border_top_width(&mut self, value: LineWidth) {
+		self.border.border_top.width = value;
+	}
+
+	pub fn get_border_right_color(&self) -> &RGBA {
+		&self.border.border_right.color
+	}
+
+	pub fn set_border_right_color(&mut self, value: RGBA) {
+		self.border.border_right.color = value;
+	}
+
+	pub fn get_border_right_style(&self) -> &LineStyle {
+		&self.border.border_right.style
+	}
+
+	pub fn set_border_right_style(&mut self, value: LineStyle) {
+		self.border.border_right.style = value;
+	}
+
+	pub fn get_border_right_width(&self) -> &LineWidth {
+		&self.border.border_right.width
+	}
+
+	pub fn set_border_right_width(&mut self, value: LineWidth) {
+		self.border.border_right.width = value;
+	}
+
+	pub fn get_border_bottom_color(&self) -> &RGBA {
+		&self.border.border_bottom.color
+	}
+
+	pub fn set_border_bottom_color(&mut self, value: RGBA) {
+		self.border.border_bottom.color = value;
+	}
+
+	pub fn get_border_bottom_style(&self) -> &LineStyle {
+		&self.border.border_bottom.style
+	}
+
+	pub fn set_border_bottom_style(&mut self, value: LineStyle) {
+		self.border.border_bottom.style = value;
+	}
+
+	pub fn get_border_bottom_width(&self) -> &LineWidth {
+		&self.border.border_bottom.width
+	}
+
+	pub fn set_border_bottom_width(&mut self, value: LineWidth) {
+		self.border.border_bottom.width = value;
+	}
+
+	pub fn get_border_left_color(&self) -> &RGBA {
+		&self.border.border_left.color
+	}
+
+	pub fn set_border_left_color(&mut self, value: RGBA) {
+		self.border.border_left.color = value;
+	}
+
+	pub fn get_border_left_style(&self) -> &LineStyle {
+		&self.border.border_left.style
+	}
+
+	pub fn set_border_left_style(&mut self, value: LineStyle) {
+		self.border.border_left.style = value;
+	}
+
+	pub fn get_border_left_width(&self) -> &LineWidth {
+		&self.border.border_left.width
+	}
+
+	pub fn set_border_left_width(&mut self, value: LineWidth) {
+		self.border.border_left.width = value;
 	}
 }
 

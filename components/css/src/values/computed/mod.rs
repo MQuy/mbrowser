@@ -1,4 +1,5 @@
 pub mod length;
+pub mod line;
 
 macro_rules! from_non_inherited_property {
 	($declaration: tt, $inherited_value: expr, $initial_value: expr, $longhand_id: expr, $pattern: pat => $then: expr) => {

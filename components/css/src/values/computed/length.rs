@@ -43,6 +43,9 @@ impl LengthPercentageOrAuto {
 		}
 	}
 }
+
+pub type NonNegativeLength = NonNegative<CSSFloat>;
+
 /// value = <length [0, ∞]> | <percentage>
 pub type NonNegativeLengthPercentage = NonNegative<LengthPercentage>;
 

@@ -1103,6 +1103,18 @@ impl LonghandId {
 	pub fn cascade<'a>(&self, declaration: Option<&PropertyDeclaration>, context: &'a mut StyleContext) {
 		let cascade_func = match self {
 			LonghandId::BackgroundColor => longhands::background_color::cascade_property,
+			LonghandId::BorderBottomColor => longhands::border_bottom_color::cascade_property,
+			LonghandId::BorderBottomStyle => longhands::border_bottom_style::cascade_property,
+			LonghandId::BorderBottomWidth => longhands::border_bottom_width::cascade_property,
+			LonghandId::BorderLeftColor => longhands::border_left_color::cascade_property,
+			LonghandId::BorderLeftStyle => longhands::border_left_style::cascade_property,
+			LonghandId::BorderLeftWidth => longhands::border_left_width::cascade_property,
+			LonghandId::BorderRightColor => longhands::border_right_color::cascade_property,
+			LonghandId::BorderRightStyle => longhands::border_right_style::cascade_property,
+			LonghandId::BorderRightWidth => longhands::border_right_width::cascade_property,
+			LonghandId::BorderTopColor => longhands::border_top_color::cascade_property,
+			LonghandId::BorderTopStyle => longhands::border_top_style::cascade_property,
+			LonghandId::BorderTopWidth => longhands::border_top_width::cascade_property,
 			LonghandId::Color => longhands::color::cascade_property,
 			LonghandId::Display => longhands::display::cascade_property,
 			LonghandId::FontFamily => longhands::font_family::cascade_property,

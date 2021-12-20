@@ -1,8 +1,11 @@
 use cssparser::{Parser, ToCss, _cssparser_internal_to_lowercase, match_ignore_ascii_case};
 
 use super::length::NonNegativeLength;
+use crate::computed_values::StyleContext;
 use crate::parser::ParseError;
 use crate::stylesheets::rule_parser::StyleParseErrorKind;
+use crate::values::generics::number::NonNegative;
+use crate::values::{computed, CSSFloat};
 
 #[derive(Clone, Debug)]
 pub enum LineWidth {
@@ -29,6 +32,17 @@ impl LineWidth {
 				let length = NonNegativeLength::parse(input)?;
 				Ok(LineWidth::Length(length))
 			})
+	}
+
+	pub fn to_computed_value(&self, context: &StyleContext) -> computed::line::LineWidth {
+		match self {
+			LineWidth::Thin => computed::line::LineWidth::Thin,
+			LineWidth::Medium => computed::line::LineWidth::Medium,
+			LineWidth::Thick => computed::line::LineWidth::Thick,
+			LineWidth::Length(length) => {
+				computed::line::LineWidth::Length(NonNegative::<CSSFloat>(length.0.to_computed_value(context)))
+			},
+		}
 	}
 }
 
