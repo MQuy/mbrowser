@@ -11,7 +11,7 @@ use crate::stylesheets::rule_parser::StyleParseErrorKind;
 use crate::stylesheets::stylesheet::ParserContext;
 use crate::values::computed;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DisplayOutside {
 	Block,
 	Inline,
@@ -24,7 +24,7 @@ property_keywords_impl! { DisplayOutside,
 	DisplayOutside::RunIn, "run-in",
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DisplayInside {
 	Flow,
 	FlowRoot,
@@ -34,7 +34,7 @@ pub enum DisplayInside {
 	Ruby,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DisplayBasic {
 	pub outside: Option<DisplayOutside>,
 	pub inside: Option<DisplayInside>,
@@ -78,7 +78,7 @@ property_keywords_impl! { DisplayInside,
 	DisplayInside::Ruby, "ruby",
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DisplayListItem {
 	outside: Option<DisplayOutside>,
 	inside: Option<DisplayInside>, // only allow flow, flow-root
@@ -133,7 +133,7 @@ impl ToCss for DisplayListItem {
 	}
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DisplayInternal {
 	TableRowGroup,
 	TableHeaderGroup,
@@ -191,7 +191,7 @@ property_keywords_impl! { DisplayLegacy,
 }
 
 /// https://drafts.csswg.org/css-display/#the-display-properties
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Display {
 	Basic(DisplayBasic),
 	ListItem(DisplayListItem),

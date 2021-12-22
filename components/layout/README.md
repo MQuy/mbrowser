@@ -372,5 +372,5 @@ pub enum Fragment {
 
 #### Notes
 
-- text run should be in its own anonymous block box, https://codesandbox.io/s/reverent-sky-czvn1?file=/index.html
 - https://codesandbox.io/s/lucid-kate-68itj?file=/index.html
+- support space characters between elements (currently, we assume there is no).

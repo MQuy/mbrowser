@@ -7,7 +7,7 @@ use crate::properties::longhands::display::Display;
 use crate::properties::longhands::font_size::DEFAULT_FONT_SIZE;
 use crate::values::computed::length::{LengthPercentageOrAuto, MaxSize, NonNegativeLengthPercentage, Size};
 use crate::values::computed::line::LineWidth;
-use crate::values::specified::color::{Color, RGBA};
+use crate::values::specified::color::RGBA;
 use crate::values::specified::layout::LineStyle;
 use crate::values::CSSFloat;
 
