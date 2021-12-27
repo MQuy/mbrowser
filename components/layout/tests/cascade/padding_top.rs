@@ -40,7 +40,7 @@ fn from_author() {
 
 #[test]
 #[serial]
-fn inherited() {
+fn non_inherited() {
 	let tree = Rc::new(construct_tree(
 		r#"<p id="test1"><span id="test2">Totoland</span></p>"#,
 		r#"

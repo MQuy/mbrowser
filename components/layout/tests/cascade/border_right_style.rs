@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
-use css::values::computed::length::LengthPercentage;
-use css::values::generics::number::NonNegative;
+use css::values::specified::layout::LineStyle;
 use dom::global_scope::GlobalScope;
 use serial_test::serial;
 use setup::{construct_tree, find_dom};
@@ -15,10 +14,7 @@ fn default() {
 	let tree = Rc::new(construct_tree(r#"<p id="test"></p>"#, r#""#));
 	let dom = find_dom(&tree, "test").unwrap();
 	let computed_values = GlobalScope::get_or_init_computed_values(dom.id());
-	assert_eq!(
-		computed_values.get_padding_right().clone(),
-		NonNegative(LengthPercentage::AbsoluteLength(0.0))
-	);
+	assert_eq!(computed_values.get_border_right_style().clone(), LineStyle::None);
 }
 
 #[test]
@@ -27,15 +23,12 @@ fn from_author() {
 	let tree = Rc::new(construct_tree(
 		r#"<p id="test"></p>"#,
 		r#"
-#test { padding-right: 100px; }
+#test { border-right-style: dotted; }
         "#,
 	));
 	let dom = find_dom(&tree, "test").unwrap();
 	let computed_values = GlobalScope::get_or_init_computed_values(dom.id());
-	assert_eq!(
-		computed_values.get_padding_right().clone(),
-		NonNegative(LengthPercentage::AbsoluteLength(100.0))
-	);
+	assert_eq!(computed_values.get_border_right_style().clone(), LineStyle::Dotted);
 }
 
 #[test]
@@ -44,13 +37,10 @@ fn non_inherited() {
 	let tree = Rc::new(construct_tree(
 		r#"<p id="test1"><span id="test2">Totoland</span></p>"#,
 		r#"
-#test1 { padding-right: 100px; }
+#test1 { border-right-style: dotted; }
         "#,
 	));
 	let dom = find_dom(&tree, "test2").unwrap();
 	let computed_values = GlobalScope::get_or_init_computed_values(dom.id());
-	assert_eq!(
-		computed_values.get_padding_right().clone(),
-		NonNegative(LengthPercentage::AbsoluteLength(0.0))
-	);
+	assert_eq!(computed_values.get_border_right_style().clone(), LineStyle::None);
 }
